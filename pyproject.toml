@@ -1,0 +1,43 @@
+[project]
+name = "rainbow"
+version = "0.1.0"
+description = "Simple data platform project"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "tuantran", email = "tntuan0910@gmail.com" }]
+keywords = ["data", "platform", "rainbow"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+######################################
+# THIRD PARTY TOOLS
+######################################
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["C901", "D300", "I", "F"]
+ignore = ["F541"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10

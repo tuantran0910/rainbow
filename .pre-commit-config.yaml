@@ -1,0 +1,91 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+        args:
+          - --unsafe
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: pretty-format-json
+        args: ["--autofix"]
+      - id: trailing-whitespace
+      - id: detect-private-key
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.0
+    hooks:
+      - id: codespell
+        name: Run codespell to check for common misspellings in files
+        language: python
+        types: [text]
+        args:
+          - -L connexion,aci
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+      - id: python-no-log-warn
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py37-plus
+          - --py38-plus
+          - --py39-plus
+          - --pyi-plus
+          - --keep-runtime-typing
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.2
+    hooks:
+      - id: ruff
+        types_or: [python, pyi]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: ["--config", "./pyproject.toml"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        name: mypy-python
+        args: [--config-file, "./pyproject.toml"]
+        additional_dependencies:
+          [
+            types-PyYAML,
+            types-attrs,
+            attrs,
+            types-pytz,
+            types-requests,
+            types-python-dateutil
+          ]
+
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v3.14.0
+    hooks:
+      - id: reorder-python-imports
+        args: [
+            "--unclassifiable-application-module=src",
+            "--py311-plus",
+          ]
+
+ci:
+  autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
+  autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
+  skip:
+    - mypy
