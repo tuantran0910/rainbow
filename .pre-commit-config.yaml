@@ -1,3 +1,7 @@
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -41,7 +45,6 @@ repos:
           - --py37-plus
           - --py38-plus
           - --py39-plus
-          - --pyi-plus
           - --keep-runtime-typing
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -90,6 +93,7 @@ repos:
       - id: conventional-pre-commit
         name: Check commit message naming convention
         stages: [commit-msg]
+        args: []
 
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
