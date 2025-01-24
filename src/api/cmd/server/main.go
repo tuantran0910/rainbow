@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"github.com/tuantran0910/rainbow/internal/routes"
+)
 
 func main() {
-	fmt.Println("Hi")
+	// Create a new router
+	r := routes.NewRouter()
+
+	// Run the server
+	r.Run(":5000")
 }
