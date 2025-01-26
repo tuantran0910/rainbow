@@ -9,8 +9,8 @@ import (
 
 type BaseController struct{}
 
-func NewBaseController() *BaseController {
-	return &BaseController{}
+func NewBaseController() (*BaseController, error) {
+	return &BaseController{}, nil
 }
 
 func (bc *BaseController) HealthCheck(ctx *gin.Context) {
