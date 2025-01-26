@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Simple data platform project"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "tuantran", email = "tntuan0910@gmail.com" }]
+authors = [{ name = "tuan.tran", email = "tntuan0910@gmail.com" }]
 keywords = ["data", "platform", "rainbow"]
 classifiers = [
     "Programming Language :: Python :: 3.11",

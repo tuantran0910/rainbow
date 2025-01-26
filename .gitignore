@@ -178,3 +178,9 @@ cython_debug/
 
 # Airflow
 logs/
+
+# Golang
+tmp/
+
+# Swagger UI
+src/api/docs/
