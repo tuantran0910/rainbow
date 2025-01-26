@@ -12,6 +12,9 @@ import (
 )
 
 type IProductRepository interface {
+	Begin() (*productRepository, error)
+	Commit()
+	Rollback()
 	GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error)
 	GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error)
 	CreateProduct(ctx context.Context, product *model.Product) error
@@ -20,19 +23,38 @@ type IProductRepository interface {
 }
 
 type productRepository struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 func NewProductRepository(db *gorm.DB) IProductRepository {
 	return &productRepository{
-		DB: db,
+		db: db,
 	}
+}
+
+func (pr *productRepository) Begin() (*productRepository, error) {
+	tx := pr.db.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return &productRepository{
+		db: tx,
+	}, nil
+}
+
+func (pr *productRepository) Commit() {
+	pr.db.Commit()
+}
+
+func (pr *productRepository) Rollback() {
+	pr.db.Rollback()
 }
 
 func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error) {
 	// Get total number of products
 	var totalProducts int64
-	if err := pr.DB.WithContext(ctx).Model(&model.Product{}).Count(&totalProducts).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Model(&model.Product{}).Count(&totalProducts).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of products: %w", err)
 	}
 
@@ -40,7 +62,7 @@ func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) (
 	pagination := pagination.NewPagination(page, limit, int(totalProducts))
 
 	var products []*model.Product
-	if err := pr.DB.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&products).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch products: %w", err)
 	}
 	return products, pagination, nil
@@ -48,7 +70,7 @@ func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) (
 
 func (pr *productRepository) GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
 	var product model.Product
-	if err := pr.DB.WithContext(ctx).First(&product, "id = ?", productId).Error; err != nil {
+	if err := pr.db.WithContext(ctx).First(&product, "id = ?", productId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -58,21 +80,21 @@ func (pr *productRepository) GetProduct(ctx context.Context, productId uuid.UUID
 }
 
 func (pr *productRepository) CreateProduct(ctx context.Context, product *model.Product) error {
-	if err := pr.DB.WithContext(ctx).Create(product).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Create(product).Error; err != nil {
 		return fmt.Errorf("failed to create product: %w", err)
 	}
 	return nil
 }
 
 func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.UUID, product *model.Product) error {
-	if err := pr.DB.WithContext(ctx).Model(&model.Product{}).Where("id = ?", productId).Updates(product).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Model(&model.Product{}).Where("id = ?", productId).Updates(product).Error; err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
 	}
 	return nil
 }
 
 func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
-	if err := pr.DB.WithContext(ctx).Delete(&model.Product{}, "id = ?", productId).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Delete(&model.Product{}, "id = ?", productId).Error; err != nil {
 		return fmt.Errorf("failed to delete product: %w", err)
 	}
 	return nil

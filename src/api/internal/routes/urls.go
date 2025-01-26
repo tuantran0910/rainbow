@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/tuantran0910/rainbow/cmd/wire"
 	"github.com/tuantran0910/rainbow/internal/controllers"
-	"github.com/tuantran0910/rainbow/internal/controllers/v1/product"
 	"gorm.io/gorm"
 )
 
@@ -11,8 +11,8 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 
 	// Define controllers
-	baseController := controllers.NewBaseController()
-	productController := product.NewProductController(db)
+	baseController, _ := controllers.NewBaseController()
+	productController, _ := wire.InitializeProductController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)

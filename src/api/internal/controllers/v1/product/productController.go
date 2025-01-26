@@ -11,24 +11,15 @@ import (
 	service "github.com/tuantran0910/rainbow/internal/services/product"
 	"github.com/tuantran0910/rainbow/pkg/headers"
 	"github.com/tuantran0910/rainbow/pkg/utils/response"
-	"gorm.io/gorm"
 )
-
-type IProductController interface {
-	GetProducts(ctx *gin.Context)
-	GetProduct(ctx *gin.Context)
-	CreateProduct(ctx *gin.Context)
-	UpdateProduct(ctx *gin.Context)
-	DeleteProduct(ctx *gin.Context)
-}
 
 type ProductController struct {
 	productService service.IProductService
 }
 
-func NewProductController(db *gorm.DB) IProductController {
+func NewProductController(productService service.IProductService) *ProductController {
 	return &ProductController{
-		productService: service.NewProductService(db),
+		productService: productService,
 	}
 }
 
