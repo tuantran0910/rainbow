@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tuantran0910/rainbow/pkg/response"
+	"github.com/tuantran0910/rainbow/pkg/utils/response"
 )
 
 type BaseController struct{}
