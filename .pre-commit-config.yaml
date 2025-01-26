@@ -27,8 +27,7 @@ repos:
         name: Run codespell to check for common misspellings in files
         language: python
         types: [text]
-        args:
-          - -L connexion,aci
+        args: ["-L connexion,aci", "--skip=*.sum"]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
