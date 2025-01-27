@@ -1,5 +1,5 @@
 # Define variables
-MIGRATION_DIR = ./pkg/databases/migrations
+ENV_FILE = ../../deployments/docker/.env
 
 # Define targets
 .PHONY: api goose-create goose-up goose-down
@@ -7,14 +7,17 @@ MIGRATION_DIR = ./pkg/databases/migrations
 api: ## Start the API server in development mode
 	@air -c ./.air.toml
 
+goose-status: ## Show the status of all migrations
+	@goose status -env $(ENV_FILE)
+
 goose-create: ## Create a new migration file
-	@goose create $(filter-out $@,$(MAKECMDGOALS)) sql -dir $(MIGRATION_DIR)
+	@goose create $(filter-out $@,$(MAKECMDGOALS)) sql -env $(ENV_FILE)
 
 goose-up: ## Run all pending migrations
-	@docker exec -it api goose up
+	@goose up -env $(ENV_FILE)
 
-goose-down: ## Rollback the most recent migrationq
-	@docker exec -it api goose down
+goose-down: ## Rollback the most recent migration
+	@goose down -env $(ENV_FILE)
 
 %: ## Make anything which matches that doesn't have a rule defined prevent Make from throwing an error.
 	@:
