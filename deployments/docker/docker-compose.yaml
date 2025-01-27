@@ -16,6 +16,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/plugins:/opt/airflow/plugins
+  env_file:
+    - ./.env
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -37,6 +39,8 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - ./.env
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
       interval: 5s
@@ -46,85 +50,103 @@ services:
     networks:
       - airflow-network
 
-  airflow-webserver:
-    <<: *airflow-common
-    container_name: airflow-webserver
-    command: webserver
+  api:
+    build:
+      context: ../../src/api
+      dockerfile: Dockerfile
+    container_name: api
+    hostname: api
     ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
-    networks:
-      - airflow-network
-
-  airflow-scheduler:
-    <<: *airflow-common
-    container_name: airflow-scheduler
-    command: scheduler
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: "0.5"
-        reservations:
-          memory: 512M
-          cpus: "0.25"
-    networks:
-      - airflow-network
-
-  airflow-init:
-    <<: *airflow-common
-    container_name: airflow-init
-    entrypoint: /bin/bash
-    command:
-      - -c
-      - |
-        airflow db init
-        if [[ -z "${AIRFLOW_UID}" ]]; then
-          echo
-          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
-          echo "If you are on Linux, you SHOULD follow the instructions below to set "
-          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
-          echo "For other operating systems you can get rid of the warning with manually created .env file:"
-          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
-          echo
-        fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-        exec /entrypoint airflow version
-    user: "0:0"
-    environment:
-      <<: *airflow-common-env
-      _AIRFLOW_DB_MIGRATE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER:-airflow}
-      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: ''
+      - "${SERVER_PORT}:${SERVER_PORT}"
     volumes:
-      - ${AIRFLOW_PROJ_DIR:-.}:/sources
-    restart: on-failure
+      - ../../src/api/migrations:/migrations
+    env_file:
+      - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - airflow-network
+
+  # airflow-webserver:
+  #   <<: *airflow-common
+  #   container_name: airflow-webserver
+  #   command: webserver
+  #   ports:
+  #     - "8080:8080"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   restart: always
+  #   depends_on:
+  #     <<: *airflow-common-depends-on
+  #     airflow-init:
+  #       condition: service_completed_successfully
+  #   networks:
+  #     - airflow-network
+
+  # airflow-scheduler:
+  #   <<: *airflow-common
+  #   container_name: airflow-scheduler
+  #   command: scheduler
+  #   healthcheck:
+  #     test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   restart: always
+  #   depends_on:
+  #     <<: *airflow-common-depends-on
+  #     airflow-init:
+  #       condition: service_completed_successfully
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #         cpus: "0.5"
+  #       reservations:
+  #         memory: 512M
+  #         cpus: "0.25"
+  #   networks:
+  #     - airflow-network
+
+  # airflow-init:
+  #   <<: *airflow-common
+  #   container_name: airflow-init
+  #   entrypoint: /bin/bash
+  #   command:
+  #     - -c
+  #     - |
+  #       airflow db init
+  #       if [[ -z "${AIRFLOW_UID}" ]]; then
+  #         echo
+  #         echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+  #         echo "If you are on Linux, you SHOULD follow the instructions below to set "
+  #         echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+  #         echo "For other operating systems you can get rid of the warning with manually created .env file:"
+  #         echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+  #         echo
+  #       fi
+  #       mkdir -p /sources/logs /sources/dags /sources/plugins
+  #       chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+  #       exec /entrypoint airflow version
+  #   user: "0:0"
+  #   environment:
+  #     <<: *airflow-common-env
+  #     _AIRFLOW_DB_MIGRATE: 'true'
+  #     _AIRFLOW_WWW_USER_CREATE: 'true'
+  #     _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER:-airflow}
+  #     _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD:-airflow}
+  #     _PIP_ADDITIONAL_REQUIREMENTS: ''
+  #   volumes:
+  #     - ${AIRFLOW_PROJ_DIR:-.}:/sources
+  #   restart: on-failure
+  #   networks:
+  #     - airflow-network
 
 volumes:
   db:
