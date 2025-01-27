@@ -7,7 +7,7 @@ type IAPIResponse interface {
 	SetHeaders(headers interface{}) *APIResponse
 	SetData(data interface{}) *APIResponse
 	SetPagination(pagination interface{}) *APIResponse
-	SetStatusCode(status_code int) *APIResponse
+	SetStatusCode(statusCode int) *APIResponse
 	SetError(error string) *APIResponse
 	Respond(ctx *gin.Context)
 }
@@ -47,8 +47,8 @@ func (r *APIResponse) SetPagination(pagination interface{}) *APIResponse {
 	return r
 }
 
-func (r *APIResponse) SetStatusCode(status_code int) *APIResponse {
-	r.StatusCode = status_code
+func (r *APIResponse) SetStatusCode(statusCode int) *APIResponse {
+	r.StatusCode = statusCode
 	return r
 }
 
