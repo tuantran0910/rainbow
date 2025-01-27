@@ -7,6 +7,7 @@ import (
 	model "github.com/tuantran0910/rainbow/internal/models/product"
 	repository "github.com/tuantran0910/rainbow/internal/repositories/product"
 	"github.com/tuantran0910/rainbow/pkg/pagination"
+	"gorm.io/gorm"
 )
 
 type IProductService interface {
@@ -17,119 +18,81 @@ type IProductService interface {
 	DeleteProduct(ctx context.Context, productId uuid.UUID) error
 }
 
-type ProductService struct {
+type productService struct {
+	db                *gorm.DB
 	productRepository repository.IProductRepository
 }
 
-func NewProductService(productRepository repository.IProductRepository) IProductService {
-	return &ProductService{
+func NewProductService(db *gorm.DB, productRepository repository.IProductRepository) IProductService {
+	return &productService{
+		db:                db,
 		productRepository: productRepository,
 	}
 }
 
-func (ps *ProductService) GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error) {
+func (ps *productService) withTx(ctx context.Context, fn func(context.Context, repository.IProductRepository) error) error {
+	return ps.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		productRepository := ps.productRepository.WithTX(tx)
+		return fn(ctx, productRepository)
+	})
+}
+
+func (ps *productService) GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error) {
 	return ps.productRepository.GetProducts(ctx, page, limit)
 }
 
-func (ps *ProductService) GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
+func (ps *productService) GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
 	return ps.productRepository.GetProduct(ctx, productId)
 }
 
-func (ps *ProductService) CreateProduct(ctx context.Context, productRequest model.ProductRequest) error {
-	// Define a new product
-	product := &model.Product{
-		Name:  *productRequest.Name,
-		Price: *productRequest.Price,
-	}
-
-	// Begin a transaction
-	productRepository, err := ps.productRepository.Begin()
-	if err != nil {
-		return err
-	}
-
-	// Ensure the transaction is committed or rolled back properly
-	defer func() {
-		if r := recover(); r != nil {
-			productRepository.Rollback()
-			panic(r)
-		} else if err != nil {
-			productRepository.Rollback()
-		} else {
-			productRepository.Commit()
+func (ps *productService) CreateProduct(ctx context.Context, productRequest model.ProductRequest) error {
+	return ps.withTx(ctx, func(ctx context.Context, productRepository repository.IProductRepository) error {
+		// Define a new product
+		product := &model.Product{
+			Name:  *productRequest.Name,
+			Price: *productRequest.Price,
 		}
-	}()
 
-	if err := productRepository.CreateProduct(ctx, product); err != nil {
-		return err
-	}
+		// Create a new product
+		if err := productRepository.CreateProduct(ctx, product); err != nil {
+			return err
+		}
 
-	return nil
+		return nil
+	})
 }
 
-func (ps *ProductService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest model.ProductRequest) error {
-	// Define an update product
-	product, err := ps.productRepository.GetProduct(ctx, productId)
-	if err != nil {
-		return err
-	}
-
-	// Apply the updates
-	if productRequest.Name != nil {
-		product.Name = *productRequest.Name
-	}
-	if productRequest.Price != nil {
-		product.Price = *productRequest.Price
-	}
-
-	// Begin a transaction
-	productRepository, err := ps.productRepository.Begin()
-	if err != nil {
-		return err
-	}
-
-	// Ensure the transaction is committed or rolled back properly
-	defer func() {
-		if r := recover(); r != nil {
-			productRepository.Rollback()
-			panic(r)
-		} else if err != nil {
-			productRepository.Rollback()
-		} else {
-			productRepository.Commit()
+func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest model.ProductRequest) error {
+	return ps.withTx(ctx, func(ctx context.Context, productRepository repository.IProductRepository) error {
+		// Define an update product
+		product, err := ps.productRepository.GetProduct(ctx, productId)
+		if err != nil {
+			return err
 		}
-	}()
 
-	if err := productRepository.UpdateProduct(ctx, productId, product); err != nil {
-		return err
-	}
+		// Apply the updates
+		if productRequest.Name != nil {
+			product.Name = *productRequest.Name
+		}
+		if productRequest.Price != nil {
+			product.Price = *productRequest.Price
+		}
 
-	return nil
+		if err := productRepository.UpdateProduct(ctx, productId, product); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
-func (ps *ProductService) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
-	// Begin a transaction
-	productRepository, err := ps.productRepository.Begin()
-	if err != nil {
-		return err
-	}
-
-	// Ensure the transaction is committed or rolled back properly
-	defer func() {
-		if r := recover(); r != nil {
-			productRepository.Rollback()
-			panic(r)
-		} else if err != nil {
-			productRepository.Rollback()
-		} else {
-			productRepository.Commit()
+func (ps *productService) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
+	return ps.withTx(ctx, func(ctx context.Context, productRepository repository.IProductRepository) error {
+		// Delete a product
+		if err := productRepository.DeleteProduct(ctx, productId); err != nil {
+			return err
 		}
-	}()
 
-	// Delete a product
-	if err := productRepository.DeleteProduct(ctx, productId); err != nil {
-		return err
-	}
-
-	return nil
+		return nil
+	})
 }

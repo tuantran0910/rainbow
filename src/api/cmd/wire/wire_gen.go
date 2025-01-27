@@ -17,7 +17,7 @@ import (
 
 func InitializeProductController(db *gorm.DB) (*product.ProductController, error) {
 	iProductRepository := product2.NewProductRepository(db)
-	iProductService := product3.NewProductService(iProductRepository)
+	iProductService := product3.NewProductService(db, iProductRepository)
 	productController := product.NewProductController(iProductService)
 	return productController, nil
 }

@@ -12,9 +12,7 @@ import (
 )
 
 type IProductRepository interface {
-	Begin() (*productRepository, error)
-	Commit()
-	Rollback()
+	WithTX(tx *gorm.DB) IProductRepository
 	GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error)
 	GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error)
 	CreateProduct(ctx context.Context, product *model.Product) error
@@ -32,23 +30,13 @@ func NewProductRepository(db *gorm.DB) IProductRepository {
 	}
 }
 
-func (pr *productRepository) Begin() (*productRepository, error) {
-	tx := pr.db.Begin()
-	if tx.Error != nil {
-		return nil, tx.Error
+func (pr *productRepository) WithTX(tx *gorm.DB) IProductRepository {
+	if tx == nil {
+		return pr
 	}
-
 	return &productRepository{
 		db: tx,
-	}, nil
-}
-
-func (pr *productRepository) Commit() {
-	pr.db.Commit()
-}
-
-func (pr *productRepository) Rollback() {
-	pr.db.Rollback()
+	}
 }
 
 func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error) {
