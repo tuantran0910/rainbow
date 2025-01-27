@@ -181,6 +181,3 @@ logs/
 
 # Golang
 tmp/
-
-# Swagger UI
-src/api/docs/
