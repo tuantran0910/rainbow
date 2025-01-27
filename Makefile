@@ -3,7 +3,7 @@ PROJECT_NAME = rainbow
 DOCKER_COMPOSE_FILE = ./deployments/docker/docker-compose.yaml
 
 # Define targets
-.PHONY: up down build api
+.PHONY: up api down build help
 
 up: ## Start all Docker compose services
 	@echo "Starting all Docker compose services..."

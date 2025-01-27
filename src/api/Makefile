@@ -2,7 +2,7 @@
 ENV_FILE = ../../deployments/docker/.env
 
 # Define targets
-.PHONY: api goose-create goose-up goose-down
+.PHONY: api goose-status goose-create goose-up goose-down help
 
 api: ## Start the API server in development mode
 	@air -c ./.air.toml
