@@ -28,9 +28,9 @@ func LoadConfig() (*Config, error) {
 
 	// Load database connection configuration
 	host := GetEnv("DB_HOST", "localhost")
-	user := GetEnv("DB_USER", "rainbow")
-	password := GetEnv("DB_PASSWORD", "R&inb0w2024!Data")
-	dbName := GetEnv("DB_NAME", "rainbow")
+	user := GetEnv("API_DB_USER", "rainbow")
+	password := GetEnv("API_DB_PASSWORD", "R&inb0w2024!Data")
+	dbName := GetEnv("API_DB_NAME", "rainbow")
 	dbPort := GetEnv("DB_PORT", "5432")
 	serverPort := GetEnv("SERVER_PORT", "5000")
 
