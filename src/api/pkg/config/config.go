@@ -15,7 +15,8 @@ type DatabaseConfig struct {
 }
 
 type ServerConfig struct {
-	Port string
+	MigrationsDir string
+	Port          string
 }
 
 type Config struct {
@@ -49,6 +50,8 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("invalid MAX_OPEN_CONNS: %v", err)
 	}
 
+	migrationsDir := GetEnv("MIGRATIONS_DIR", "migrations")
+
 	dbDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
 		host, user, password, dbName, dbPort)
 
@@ -60,7 +63,8 @@ func LoadConfig() (*Config, error) {
 			ConnMaxLifetime: connMaxLifetime,
 		},
 		ServerConfig: &ServerConfig{
-			Port: serverPort,
+			MigrationsDir: migrationsDir,
+			Port:          serverPort,
 		},
 	}, nil
 }

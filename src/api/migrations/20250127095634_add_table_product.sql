@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS product (
+CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS product (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS products;
 -- +goose StatementEnd

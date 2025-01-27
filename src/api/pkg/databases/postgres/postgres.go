@@ -2,8 +2,6 @@ package postgres
 
 import (
 	"fmt"
-	"path/filepath"
-	"runtime"
 	"sync"
 
 	"github.com/pressly/goose"
@@ -81,14 +79,8 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 				return
 			}
 
-			// Get the directory of the current file
-			_, filePath, _, ok := runtime.Caller(0)
-			if !ok {
-				log.Error("Failed to get the current file path")
-			}
-
 			// Apply migrations
-			migrationsDir := filepath.Join(filepath.Dir(filePath), "../migrations")
+			migrationsDir := pc.cfg.ServerConfig.MigrationsDir
 			if err := goose.Up(sqlDB, migrationsDir); err != nil {
 				log.Error("Failed to apply migrations %v", zap.Error(err))
 			}
