@@ -6,6 +6,7 @@ import (
 	"github.com/tuantran0910/rainbow/pkg/config"
 	"github.com/tuantran0910/rainbow/pkg/databases/postgres"
 	"github.com/tuantran0910/rainbow/pkg/utils/logger"
+	"go.uber.org/zap"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -30,14 +31,14 @@ func main() {
 	// Load the application configurations
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("Error loading the application configurations: ", zap.Error(err))
 	}
 
 	// Initialize the database connection
 	dbConnector := postgres.NewPostgresConnector(cfg)
 	db, err := dbConnector.GetInstance()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("Error initializing the database connection: ", zap.Error(err))
 	}
 
 	// Close the connection as the application stops
