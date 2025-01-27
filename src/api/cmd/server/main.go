@@ -28,6 +28,9 @@ var log = logger.GetLogger()
 // @host		localhost:5000
 // @BasePath	/api/v1
 func main() {
+	// TODO: Set the Gin to release mode
+	// gin.SetMode(gin.ReleaseMode)
+
 	// Load the application configurations
 	cfg, err := config.LoadConfig()
 	if err != nil {
