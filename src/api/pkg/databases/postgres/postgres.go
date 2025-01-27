@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"sync"
 
-	"github.com/tuantran0910/rainbow/internal/models/product"
+	"github.com/pressly/goose"
 	"github.com/tuantran0910/rainbow/pkg/config"
 	"github.com/tuantran0910/rainbow/pkg/utils/logger"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -53,21 +56,13 @@ func (pc *PostgresConnector) configureConnectionPool() error {
 	return nil
 }
 
-func (pc *PostgresConnector) migrateDatabaseTables(models ...interface{}) error {
-	if err := pc.ins.AutoMigrate(models...); err != nil {
-		log.Error(err.Error())
-		return err
-	}
-	return nil
-}
-
 func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 	var err error
 	pc.once.Do(func() {
 		if pc.ins == nil {
 			// Validate configs
 			if err := pc.validateConfig(); err != nil {
-				log.Error(err.Error())
+				log.Error("Failed to validate the database configuration %v", zap.Error(err))
 				return
 			}
 
@@ -75,8 +70,27 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 			var db *gorm.DB
 			db, err = gorm.Open(postgres.Open(pc.cfg.DatabaseConfig.DatabaseDsn), &gorm.Config{})
 			if err != nil {
-				log.Error(err.Error())
+				log.Error("Failed to connect to the database %v", zap.Error(err))
 				return
+			}
+
+			// Convert GORM DB to Goose DB
+			sqlDB, err := db.DB()
+			if err != nil {
+				log.Error("Failed to convert GORM DB to Goose DB %v", zap.Error(err))
+				return
+			}
+
+			// Get the directory of the current file
+			_, filePath, _, ok := runtime.Caller(0)
+			if !ok {
+				log.Error("Failed to get the current file path")
+			}
+
+			// Apply migrations
+			migrationsDir := filepath.Join(filepath.Dir(filePath), "../migrations")
+			if err := goose.Up(sqlDB, migrationsDir); err != nil {
+				log.Error("Failed to apply migrations %v", zap.Error(err))
 			}
 
 			// Set the instance
@@ -84,12 +98,6 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 
 			// Set pool configuration
 			if err := pc.configureConnectionPool(); err != nil {
-				pc.ins = nil
-				return
-			}
-
-			// Auto table migration
-			if err := pc.migrateDatabaseTables(&product.Product{}); err != nil {
 				pc.ins = nil
 				return
 			}
@@ -103,13 +111,13 @@ func (pc *PostgresConnector) Close() error {
 	if pc.ins != nil {
 		db, err := pc.ins.DB()
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to get the database connection %v", zap.Error(err))
 			return err
 		}
 
 		// Close the database connection
 		if err := db.Close(); err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to close the database connection %v", zap.Error(err))
 			return err
 		}
 	}
