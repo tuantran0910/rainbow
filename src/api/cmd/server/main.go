@@ -53,8 +53,5 @@ func main() {
 
 	// Run the server
 	serverPort := cfg.ServerConfig.Port
-	if serverPort == "" {
-		serverPort = "5000"
-	}
 	r.Run(":" + serverPort)
 }
