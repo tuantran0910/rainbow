@@ -34,14 +34,14 @@ func main() {
 	// Load the application configurations
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal("Error loading the application configurations: ", zap.Error(err))
+		log.Error("Error loading the application configurations: ", zap.Error(err))
 	}
 
 	// Initialize the database connection
 	dbConnector := postgres.NewPostgresConnector(cfg)
 	db, err := dbConnector.GetInstance()
 	if err != nil {
-		log.Fatal("Error initializing the database connection: ", zap.Error(err))
+		log.Error("Error initializing the database connection: ", zap.Error(err))
 	}
 
 	// Close the connection as the application stops
@@ -53,5 +53,7 @@ func main() {
 
 	// Run the server
 	serverPort := cfg.ServerConfig.ServerPort
-	r.Run(":" + serverPort)
+	if err := r.Run(":" + serverPort); err != nil {
+		log.Error("Error running the server: ", zap.Error(err))
+	}
 }
