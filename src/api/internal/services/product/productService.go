@@ -42,7 +42,7 @@ func (ps *productService) GetProducts(ctx context.Context, page, limit int) ([]*
 }
 
 func (ps *productService) GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
-	return ps.productRepository.GetProduct(ctx, productId)
+	return ps.productRepository.GetProductByID(ctx, productId)
 }
 
 func (ps *productService) CreateProduct(ctx context.Context, productRequest model.ProductRequest) error {
@@ -65,7 +65,7 @@ func (ps *productService) CreateProduct(ctx context.Context, productRequest mode
 func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest model.ProductRequest) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repository.IProductRepository) error {
 		// Define an update product
-		product, err := ps.productRepository.GetProduct(ctx, productId)
+		product, err := ps.productRepository.GetProductByID(ctx, productId)
 		if err != nil {
 			return err
 		}
