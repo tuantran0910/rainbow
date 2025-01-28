@@ -53,17 +53,19 @@ func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) (
 	if err := pr.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch products: %w", err)
 	}
+
 	return products, pagination, nil
 }
 
 func (pr *productRepository) GetProductByID(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
 	var product model.Product
-	if err := pr.db.WithContext(ctx).First(&product, "id = ?", productId).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Take(&product, "id = ?", productId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to fetch product: %w", err)
 	}
+
 	return &product, nil
 }
 
@@ -71,19 +73,32 @@ func (pr *productRepository) CreateProduct(ctx context.Context, product *model.P
 	if err := pr.db.WithContext(ctx).Create(product).Error; err != nil {
 		return fmt.Errorf("failed to create product: %w", err)
 	}
+
 	return nil
 }
 
 func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.UUID, product *model.Product) error {
-	if err := pr.db.WithContext(ctx).Model(&model.Product{}).Where("id = ?", productId).Updates(product).Error; err != nil {
-		return fmt.Errorf("failed to update product: %w", err)
+	result := pr.db.WithContext(ctx).Model(&model.Product{}).Where("id = ?", productId).Updates(product)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update product: %w", result.Error)
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("product with ID %s not found", productId)
+	}
+
 	return nil
 }
 
 func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
-	if err := pr.db.WithContext(ctx).Delete(&model.Product{}, "id = ?", productId).Error; err != nil {
-		return fmt.Errorf("failed to delete product: %w", err)
+	result := pr.db.WithContext(ctx).Delete(&model.Product{}, "id = ?", productId)
+	if result.Error != nil {
+		return fmt.Errorf("failed to delete product: %w", result.Error)
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("product with ID %s not found", productId)
+	}
+
 	return nil
 }
