@@ -47,7 +47,7 @@ func LoadConfig() (*Config, error) {
 
 	connMaxLifetime, err := time.ParseDuration(GetEnv("CONN_MAX_LIFETIME", "1h"))
 	if err != nil {
-		return nil, fmt.Errorf("invalid MAX_OPEN_CONNS: %v", err)
+		return nil, fmt.Errorf("invalid CONN_MAX_LIFETIME: %v", err)
 	}
 
 	migrationsDir := GetEnv("MIGRATIONS_DIR", "migrations")
