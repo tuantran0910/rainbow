@@ -47,6 +47,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
+
 	limit, err := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	if err != nil {
 		response.
