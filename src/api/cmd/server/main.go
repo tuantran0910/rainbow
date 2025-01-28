@@ -52,6 +52,6 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Run the server
-	serverPort := cfg.ServerConfig.Port
+	serverPort := cfg.ServerConfig.ServerPort
 	r.Run(":" + serverPort)
 }

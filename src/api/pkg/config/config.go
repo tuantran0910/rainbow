@@ -16,7 +16,7 @@ type DatabaseConfig struct {
 
 type ServerConfig struct {
 	MigrationsDir string
-	Port          string
+	ServerPort    string
 }
 
 type Config struct {
@@ -64,7 +64,7 @@ func LoadConfig() (*Config, error) {
 		},
 		ServerConfig: &ServerConfig{
 			MigrationsDir: migrationsDir,
-			Port:          serverPort,
+			ServerPort:    serverPort,
 		},
 	}, nil
 }
