@@ -39,21 +39,21 @@ func NewProductController(productService service.IProductService) *ProductContro
 func (pc *ProductController) GetProducts(ctx *gin.Context) {
 	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
-	if err != nil {
+	if err != nil || page <= 0 {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Invalid pagination's parameter page").
+			SetMessage("Invalid pagination's parameter page, page must be a positive integer").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
 
 	limit, err := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
-	if err != nil {
+	if err != nil || limit <= 0 {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Invalid pagination's parameter limit").
+			SetMessage("Invalid pagination's parameter limit, limit must be a positive integer").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
