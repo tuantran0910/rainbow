@@ -64,7 +64,7 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 		if pc.ins == nil {
 			// Validate configs
 			if err := pc.validateConfig(); err != nil {
-				log.Error("Failed to validate the database configuration %v", zap.Error(err))
+				log.Error("Failed to validate the database configuration", zap.Error(err))
 				return
 			}
 
@@ -72,21 +72,21 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 			var db *gorm.DB
 			db, err = gorm.Open(postgres.Open(pc.cfg.DatabaseConfig.DatabaseDsn), &gorm.Config{})
 			if err != nil {
-				log.Error("Failed to connect to the database %v", zap.Error(err))
+				log.Error("Failed to connect to the database", zap.Error(err))
 				return
 			}
 
 			// Convert GORM DB to Goose DB
 			sqlDB, err := db.DB()
 			if err != nil {
-				log.Error("Failed to convert GORM DB to Goose DB %v", zap.Error(err))
+				log.Error("Failed to convert GORM DB to Goose DB", zap.Error(err))
 				return
 			}
 
 			// Apply migrations
 			migrationsDir := pc.cfg.ServerConfig.MigrationsDir
 			if err := goose.Up(sqlDB, migrationsDir); err != nil {
-				log.Error("Failed to apply migrations %v", zap.Error(err))
+				log.Error("Failed to apply migrations", zap.Error(err))
 			}
 
 			// Set the instance
@@ -107,13 +107,13 @@ func (pc *PostgresConnector) Close() error {
 	if pc.ins != nil {
 		db, err := pc.ins.DB()
 		if err != nil {
-			log.Error("Failed to get the database connection %v", zap.Error(err))
+			log.Error("Failed to get the database connection", zap.Error(err))
 			return err
 		}
 
 		// Close the database connection
 		if err := db.Close(); err != nil {
-			log.Error("Failed to close the database connection %v", zap.Error(err))
+			log.Error("Failed to close the database connection", zap.Error(err))
 			return err
 		}
 	}
