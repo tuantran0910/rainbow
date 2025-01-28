@@ -1,0 +1,279 @@
+{
+  "basePath": "/api/v1",
+  "definitions": {
+    "product.ProductRequest": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "response.APIResponse": {
+      "properties": {
+        "data": {},
+        "error": {},
+        "headers": {},
+        "message": {
+          "type": "string"
+        },
+        "pagination": {},
+        "status_code": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "localhost:5000",
+  "info": {
+    "contact": {
+      "email": "tntuan0910@gmail.com",
+      "name": "tuan.tran"
+    },
+    "description": "This is the API documentation for the Rainbow API.",
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "Rainbow API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/products": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Fetch a list of products",
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "type": "integer"
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "limit",
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get Products",
+        "tags": [
+          "Product"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Create a new product and store it in the database",
+        "parameters": [
+          {
+            "description": "Product Request",
+            "in": "body",
+            "name": "productRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.ProductRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Create Product",
+        "tags": [
+          "Product"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Delete a product by its ID",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Delete Product",
+        "tags": [
+          "Product"
+        ]
+      },
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Fetch a product by its ID",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get Product by ID",
+        "tags": [
+          "Product"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Update a product by its ID",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Product Request",
+            "in": "body",
+            "name": "productRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.ProductRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Update Product",
+        "tags": [
+          "Product"
+        ]
+      }
+    }
+  },
+  "swagger": "2.0"
+}

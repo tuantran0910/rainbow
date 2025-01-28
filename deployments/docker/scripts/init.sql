@@ -1,3 +1,8 @@
+---------------------------------------------------------------------
+--                      Apache Airflow                             --
+---------------------------------------------------------------------
+
+-- Initialize the necessary resources for the Apache Airflow.
 CREATE DATABASE airflow;
 
 -- Drop the user if it already exists
@@ -13,10 +18,30 @@ END $$;
 -- Create the user with a password
 CREATE ROLE airflow WITH LOGIN PASSWORD 'airflow';
 
--- Grant privileges to the user
-GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE airflow TO airflow;
+GRANT TEMPORARY ON DATABASE airflow TO airflow;
 
--- Grant privileges to the user on the public schema
+-- Switch to the airflow database and grant schema permissions
 \c airflow
-GRANT ALL PRIVILEGES ON SCHEMA public TO airflow;
-GRANT CREATE ON SCHEMA public TO airflow;
+GRANT USAGE, CREATE ON SCHEMA public TO airflow;
+
+
+---------------------------------------------------------------------
+--                      API                                        --
+---------------------------------------------------------------------
+
+-- Initialize the necessary resources for the API
+CREATE DATABASE rainbow;
+CREATE DATABASE rainbow_test;
+
+-- Create the user with a password
+CREATE ROLE rainbow WITH LOGIN PASSWORD 'R&inb0w2024!Data';
+
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE rainbow TO rainbow;
+GRANT TEMPORARY ON DATABASE rainbow TO rainbow;
+
+-- Switch to the rainbow database and grant schema permissions
+\c rainbow
+GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
