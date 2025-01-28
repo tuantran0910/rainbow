@@ -36,6 +36,10 @@ func (pc *PostgresConnector) validateConfig() error {
 		return fmt.Errorf("invalid database configuration")
 	}
 
+	if pc.cfg.DatabaseConfig.DatabaseDsn == "" {
+		return fmt.Errorf("database DSN is required")
+	}
+
 	return nil
 }
 
