@@ -126,7 +126,7 @@ func (pc *ProductController) GetProduct(ctx *gin.Context) {
 	}
 
 	// Get a product
-	product, err := pc.productService.GetProduct(reqCtx, productId)
+	product, err := pc.productService.GetProductByID(reqCtx, productId)
 	if err != nil {
 		response.
 			NewAPIResponse().

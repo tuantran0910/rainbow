@@ -12,7 +12,7 @@ import (
 
 type IProductService interface {
 	GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error)
-	GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error)
+	GetProductByID(ctx context.Context, productId uuid.UUID) (*model.Product, error)
 	CreateProduct(ctx context.Context, productRequest model.ProductRequest) error
 	UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest model.ProductRequest) error
 	DeleteProduct(ctx context.Context, productId uuid.UUID) error
@@ -41,7 +41,7 @@ func (ps *productService) GetProducts(ctx context.Context, page, limit int) ([]*
 	return ps.productRepository.GetProducts(ctx, page, limit)
 }
 
-func (ps *productService) GetProduct(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
+func (ps *productService) GetProductByID(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
 	return ps.productRepository.GetProductByID(ctx, productId)
 }
 
