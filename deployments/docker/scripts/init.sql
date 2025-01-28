@@ -45,9 +45,3 @@ GRANT TEMPORARY ON DATABASE rainbow TO rainbow;
 -- Switch to the rainbow database and grant schema permissions
 \c rainbow
 GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
-
--- Grant privileges for the test database
-\c rainbow_test
-GRANT CONNECT ON DATABASE rainbow_test TO rainbow;
-GRANT TEMPORARY ON DATABASE rainbow_test TO rainbow;
-GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
