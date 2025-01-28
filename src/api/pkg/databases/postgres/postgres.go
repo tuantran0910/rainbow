@@ -87,6 +87,7 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 			migrationsDir := pc.cfg.ServerConfig.MigrationsDir
 			if err := goose.Up(sqlDB, migrationsDir); err != nil {
 				log.Error("Failed to apply migrations", zap.Error(err))
+				return
 			}
 
 			// Set the instance
