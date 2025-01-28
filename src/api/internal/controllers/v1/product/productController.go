@@ -322,6 +322,5 @@ func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).
-		SetMessage("Successfully updated product").
 		Respond(ctx)
 }
