@@ -2,7 +2,7 @@
 comments: true
 ---
 
-# Welcome to MkDocs
+# Welcome to Rainbow Data Platform Documentation
 
 For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 
