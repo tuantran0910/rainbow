@@ -1,0 +1,137 @@
+# Project information
+site_name: Rainbow Data Platform
+site_url: https://rainbow.tuantrann.work
+site_author: Tuan Tran
+site_description: >-
+  Rainbow Data Platform is a platform for data engineering.
+
+# Repository
+repo_name: tuantran0910/rainbow
+repo_url: https://github.com/tuantran0910/rainbow
+
+# Copyright
+copyright: Copyright &copy; 2025 Tuan Tran
+
+# Theme
+theme:
+  name: material
+  custom_dir: docs/overrides
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tooltips
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.path
+    - navigation.top
+    - search.suggest
+    - search.highlight
+  logo: assets/images/logo.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font:
+    text: Inter
+    code: Roboto Mono
+  icon:
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+edit_uri: edit/main/docs/
+
+# Navigation
+nav:
+  - Home: index.md
+  - About: about.md
+  - Setup:
+    - setup/index.md
+    - Setup Guide: setup/setup.md
+  - Tags: tags.md
+  - External Link: https://external.com
+
+# Markdown extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# Plugins
+plugins:
+  - search
+  - tags:
+      tags_file: tags.md
+  - git-revision-date-localized:
+      enable_creation_date: true
+
+# Validation
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:<email-address>
+
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - overrides/assets/javascripts/tablesort.js
+
+extra_css:
+  - overrides/assets/stylesheets/extra.css
