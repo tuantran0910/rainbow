@@ -7,6 +7,12 @@ on:
       - master
     paths:
       "dbdocs/**"
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      "dbdocs/**"
 
 jobs:
   build:
