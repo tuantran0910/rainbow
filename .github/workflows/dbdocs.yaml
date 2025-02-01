@@ -1,0 +1,33 @@
+name: dbdocs
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      "dbdocs/**"
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      "dbdocs/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Install dbdocs
+        run: sudo npm install -g dbdocs
+
+      - name: Check dbdocs
+        run: dbdocs --version
+
+      - name: Build dbdocs
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: dbdocs build dbdocs/rainbow_db.dbml
