@@ -4,11 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tuantran0910/rainbow/cmd/wire"
 	"github.com/tuantran0910/rainbow/internal/controllers"
+	"github.com/tuantran0910/rainbow/internal/middlewares"
 	"gorm.io/gorm"
 )
 
 func NewRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+
+	// Define middlewares
+	r.Use(middlewares.LoggingMiddleware())
 
 	// Define controllers
 	baseController, _ := controllers.NewBaseController()
@@ -26,11 +30,11 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		auth.POST("/register", authController.Register)
 	}
 
-	// Add routes
-	v1 := r.Group("/api/v1")
+	api := r.Group("/api")
 	{
 		// Product routes
-		products := v1.Group("/products")
+		products := api.Group("/products")
+		products.Use(middlewares.AuthMiddleware())
 		{
 			products.GET("", productController.GetProducts)
 			products.GET(":id", productController.GetProduct)

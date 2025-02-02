@@ -1,20 +1,20 @@
-package auth
+package controllers
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	model "github.com/tuantran0910/rainbow/internal/models/user"
-	service "github.com/tuantran0910/rainbow/internal/services/auth"
+	"github.com/tuantran0910/rainbow/internal/dtos"
+	"github.com/tuantran0910/rainbow/internal/services"
 	"github.com/tuantran0910/rainbow/pkg/headers"
 	"github.com/tuantran0910/rainbow/pkg/utils/response"
 )
 
 type AuthController struct {
-	authService service.IAuthService
+	authService services.IAuthService
 }
 
-func NewAuthController(authService service.IAuthService) *AuthController {
+func NewAuthController(authService services.IAuthService) *AuthController {
 	return &AuthController{
 		authService: authService,
 	}
@@ -25,8 +25,8 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	reqCtx := ctx.Request.Context()
 
 	// Get the body request
-	var userRequest model.UserRequest
-	if err := ctx.ShouldBindJSON(&userRequest); err != nil {
+	var loginUserRequest dtos.LoginUserRequest
+	if err := ctx.ShouldBindJSON(&loginUserRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
@@ -37,7 +37,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	}
 
 	// Get the token
-	token, err := ac.authService.Login(reqCtx, *userRequest.Email, *userRequest.Password)
+	token, err := ac.authService.Login(reqCtx, loginUserRequest)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -64,8 +64,8 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 	reqCtx := ctx.Request.Context()
 
 	// Get the body request
-	var userRequest model.UserRequest
-	if err := ctx.ShouldBindJSON(&userRequest); err != nil {
+	var registerUserRequest dtos.RegisterUserRequest
+	if err := ctx.ShouldBindJSON(&registerUserRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
@@ -76,7 +76,7 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 	}
 
 	// Create a user
-	if err := ac.authService.Register(reqCtx, userRequest); err != nil {
+	if err := ac.authService.Register(reqCtx, registerUserRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).

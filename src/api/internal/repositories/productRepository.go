@@ -1,4 +1,4 @@
-package product
+package repositories
 
 import (
 	"context"
@@ -6,17 +6,17 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	model "github.com/tuantran0910/rainbow/internal/models/product"
+	"github.com/tuantran0910/rainbow/internal/models"
 	"github.com/tuantran0910/rainbow/pkg/pagination"
 	"gorm.io/gorm"
 )
 
 type IProductRepository interface {
 	WithTX(tx *gorm.DB) IProductRepository
-	GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error)
-	GetProductByID(ctx context.Context, productId uuid.UUID) (*model.Product, error)
-	CreateProduct(ctx context.Context, product *model.Product) error
-	UpdateProduct(ctx context.Context, productId uuid.UUID, product *model.Product) error
+	GetProducts(ctx context.Context, page, limit int) ([]*models.Product, *pagination.Pagination, error)
+	GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error)
+	CreateProduct(ctx context.Context, product *models.Product) error
+	UpdateProduct(ctx context.Context, productId uuid.UUID, product *models.Product) error
 	DeleteProduct(ctx context.Context, productId uuid.UUID) error
 }
 
@@ -40,17 +40,17 @@ func (pr *productRepository) WithTX(tx *gorm.DB) IProductRepository {
 	}
 }
 
-func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) ([]*model.Product, *pagination.Pagination, error) {
+func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) ([]*models.Product, *pagination.Pagination, error) {
 	// Get total number of products
 	var totalProducts int64
-	if err := pr.db.WithContext(ctx).Model(&model.Product{}).Count(&totalProducts).Error; err != nil {
+	if err := pr.db.WithContext(ctx).Model(&models.Product{}).Count(&totalProducts).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of products: %w", err)
 	}
 
 	// Define pagination
 	pagination := pagination.NewPagination(page, limit, int(totalProducts))
 
-	var products []*model.Product
+	var products []*models.Product
 	if err := pr.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch products: %w", err)
 	}
@@ -58,8 +58,8 @@ func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) (
 	return products, pagination, nil
 }
 
-func (pr *productRepository) GetProductByID(ctx context.Context, productId uuid.UUID) (*model.Product, error) {
-	var product model.Product
+func (pr *productRepository) GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error) {
+	var product models.Product
 	if err := pr.db.WithContext(ctx).Take(&product, "id = ?", productId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -70,7 +70,7 @@ func (pr *productRepository) GetProductByID(ctx context.Context, productId uuid.
 	return &product, nil
 }
 
-func (pr *productRepository) CreateProduct(ctx context.Context, product *model.Product) error {
+func (pr *productRepository) CreateProduct(ctx context.Context, product *models.Product) error {
 	if err := pr.db.WithContext(ctx).Create(product).Error; err != nil {
 		return fmt.Errorf("failed to create product: %w", err)
 	}
@@ -78,8 +78,8 @@ func (pr *productRepository) CreateProduct(ctx context.Context, product *model.P
 	return nil
 }
 
-func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.UUID, product *model.Product) error {
-	result := pr.db.WithContext(ctx).Model(&model.Product{}).Where("id = ?", productId).Updates(product)
+func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.UUID, product *models.Product) error {
+	result := pr.db.WithContext(ctx).Model(&models.Product{}).Where("id = ?", productId).Updates(product)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update product: %w", result.Error)
 	}
@@ -92,7 +92,7 @@ func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.U
 }
 
 func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
-	result := pr.db.WithContext(ctx).Delete(&model.Product{}, "id = ?", productId)
+	result := pr.db.WithContext(ctx).Delete(&models.Product{}, "id = ?", productId)
 	if result.Error != nil {
 		return fmt.Errorf("failed to delete product: %w", result.Error)
 	}

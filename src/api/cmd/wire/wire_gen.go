@@ -7,27 +7,24 @@
 package wire
 
 import (
-	"github.com/tuantran0910/rainbow/internal/controllers/auth"
-	"github.com/tuantran0910/rainbow/internal/controllers/v1/product"
-	product2 "github.com/tuantran0910/rainbow/internal/repositories/product"
-	"github.com/tuantran0910/rainbow/internal/repositories/user"
-	auth2 "github.com/tuantran0910/rainbow/internal/services/auth"
-	product3 "github.com/tuantran0910/rainbow/internal/services/product"
+	"github.com/tuantran0910/rainbow/internal/controllers"
+	"github.com/tuantran0910/rainbow/internal/repositories"
+	"github.com/tuantran0910/rainbow/internal/services"
 	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func InitializeProductController(db *gorm.DB) (*product.ProductController, error) {
-	iProductRepository := product2.NewProductRepository(db)
-	iProductService := product3.NewProductService(db, iProductRepository)
-	productController := product.NewProductController(iProductService)
+func InitializeProductController(db *gorm.DB) (*controllers.ProductController, error) {
+	iProductRepository := repositories.NewProductRepository(db)
+	iProductService := services.NewProductService(db, iProductRepository)
+	productController := controllers.NewProductController(iProductService)
 	return productController, nil
 }
 
-func InitializeAuthController(db *gorm.DB) (*auth.AuthController, error) {
-	iUserRepository := user.NewUserRepository(db)
-	iAuthService := auth2.NewAuthService(db, iUserRepository)
-	authController := auth.NewAuthController(iAuthService)
+func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) {
+	iUserRepository := repositories.NewUserRepository(db)
+	iAuthService := services.NewAuthService(db, iUserRepository)
+	authController := controllers.NewAuthController(iAuthService)
 	return authController, nil
 }

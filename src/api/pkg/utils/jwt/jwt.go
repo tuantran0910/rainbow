@@ -14,7 +14,7 @@ func GenerateToken(userId uuid.UUID) (string, error) {
 		"user_id": userId,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }
 

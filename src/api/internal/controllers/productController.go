@@ -1,4 +1,4 @@
-package product
+package controllers
 
 import (
 	"net/http"
@@ -7,17 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	_ "github.com/tuantran0910/rainbow/docs"
-	model "github.com/tuantran0910/rainbow/internal/models/product"
-	service "github.com/tuantran0910/rainbow/internal/services/product"
+	"github.com/tuantran0910/rainbow/internal/dtos"
+	"github.com/tuantran0910/rainbow/internal/services"
 	"github.com/tuantran0910/rainbow/pkg/headers"
 	"github.com/tuantran0910/rainbow/pkg/utils/response"
 )
 
 type ProductController struct {
-	productService service.IProductService
+	productService services.IProductService
 }
 
-func NewProductController(productService service.IProductService) *ProductController {
+func NewProductController(productService services.IProductService) *ProductController {
 	return &ProductController{
 		productService: productService,
 	}
@@ -74,9 +74,9 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 	}
 
 	// Parse output
-	data := make([]*model.ProductResponse, 0)
+	productResponses := make([]*dtos.GetProductResponse, 0)
 	for _, product := range products {
-		data = append(data, &model.ProductResponse{
+		productResponses = append(productResponses, &dtos.GetProductResponse{
 			ID:        product.ID,
 			Name:      product.Name,
 			Price:     product.Price,
@@ -84,6 +84,9 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 			UpdatedAt: product.UpdatedAt,
 			DeletedAt: product.DeletedAt,
 		})
+	}
+	data := &dtos.ListProductsResponse{
+		Products: productResponses,
 	}
 
 	// Set headers
@@ -146,7 +149,7 @@ func (pc *ProductController) GetProduct(ctx *gin.Context) {
 	}
 
 	// Parse output
-	data := &model.ProductResponse{
+	data := &dtos.GetProductResponse{
 		ID:        product.ID,
 		Name:      product.Name,
 		Price:     product.Price,
@@ -183,7 +186,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 	reqCtx := ctx.Request.Context()
 
 	// Get the request body
-	var productRequest model.ProductRequest
+	var productRequest dtos.CreateProductRequest
 	if err := ctx.ShouldBindJSON(&productRequest); err != nil {
 		response.
 			NewAPIResponse().
@@ -245,7 +248,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 	}
 
 	// Get the request body
-	var productRequest model.ProductRequest
+	var productRequest dtos.UpdateProductRequest
 	if err := ctx.ShouldBindJSON(&productRequest); err != nil {
 		response.
 			NewAPIResponse().

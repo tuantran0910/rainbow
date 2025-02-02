@@ -1,4 +1,4 @@
-package postgres
+package databases
 
 import (
 	"fmt"
@@ -12,8 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var log = logger.GetLogger()
-
 type IPostgresConnector interface {
 	GetInstance() (*gorm.DB, error)
 	Close() error
@@ -23,11 +21,27 @@ type PostgresConnector struct {
 	ins  *gorm.DB
 	cfg  *config.Config
 	once sync.Once
+	log  *zap.Logger
 }
 
 func NewPostgresConnector() IPostgresConnector {
+	// Get the logger
+	log, err := logger.GetLogger()
+	if err != nil {
+		log.Error("Failed to get the logger", zap.Error(err))
+		return nil
+	}
+
+	// Get the configuration
+	cfg, err := config.GetConfig()
+	if err != nil {
+		log.Error("Failed to get the configuration", zap.Error(err))
+		return nil
+	}
+
 	return &PostgresConnector{
-		cfg: config.GetConfig(),
+		cfg: cfg,
+		log: log,
 	}
 }
 
@@ -47,7 +61,7 @@ func (pc *PostgresConnector) configureConnectionPool() error {
 	// Configure the database connection pool
 	db, err := pc.ins.DB()
 	if err != nil {
-		log.Error(err.Error())
+		pc.log.Error(err.Error())
 		return err
 	}
 
@@ -62,14 +76,14 @@ func (pc *PostgresConnector) doMigration() error {
 	// Convert GORM DB to Goose DB
 	sqlDB, err := pc.ins.DB()
 	if err != nil {
-		log.Error("Failed to convert GORM DB to Goose DB", zap.Error(err))
+		pc.log.Error("Failed to convert GORM DB to Goose DB", zap.Error(err))
 		return err
 	}
 
 	// Apply migrations
 	migrationsDir := pc.cfg.ServerConfig.MigrationsDir
 	if err := goose.Up(sqlDB, migrationsDir); err != nil {
-		log.Error("Failed to apply migrations", zap.Error(err))
+		pc.log.Error("Failed to apply migrations", zap.Error(err))
 		return err
 	}
 
@@ -82,7 +96,7 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 		if pc.ins == nil {
 			// Validate configs
 			if err := pc.validateConfig(); err != nil {
-				log.Error("Failed to validate the database configuration", zap.Error(err))
+				pc.log.Error("Failed to validate the database configuration", zap.Error(err))
 				return
 			}
 
@@ -90,18 +104,18 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 			var db *gorm.DB
 			db, err = gorm.Open(postgres.Open(pc.cfg.DatabaseConfig.DatabaseDsn), &gorm.Config{})
 			if err != nil {
-				log.Error("Failed to connect to the database", zap.Error(err))
-				return
-			}
-
-			// Apply migrations
-			if err := pc.doMigration(); err != nil {
-				log.Error("Failed to apply migrations", zap.Error(err))
+				pc.log.Error("Failed to connect to the database", zap.Error(err))
 				return
 			}
 
 			// Set the instance
 			pc.ins = db
+
+			// Apply migrations
+			if err := pc.doMigration(); err != nil {
+				pc.log.Error("Failed to apply migrations", zap.Error(err))
+				return
+			}
 
 			// Set pool configuration
 			if err := pc.configureConnectionPool(); err != nil {
@@ -118,13 +132,13 @@ func (pc *PostgresConnector) Close() error {
 	if pc.ins != nil {
 		db, err := pc.ins.DB()
 		if err != nil {
-			log.Error("Failed to get the database connection", zap.Error(err))
+			pc.log.Error("Failed to get the database connection", zap.Error(err))
 			return err
 		}
 
 		// Close the database connection
 		if err := db.Close(); err != nil {
-			log.Error("Failed to close the database connection", zap.Error(err))
+			pc.log.Error("Failed to close the database connection", zap.Error(err))
 			return err
 		}
 	}
