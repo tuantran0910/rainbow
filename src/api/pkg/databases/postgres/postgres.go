@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/pressly/goose"
-	"github.com/tuantran0910/rainbow/pkg/config"
+	"github.com/tuantran0910/rainbow/config"
 	"github.com/tuantran0910/rainbow/pkg/utils/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -25,9 +25,9 @@ type PostgresConnector struct {
 	once sync.Once
 }
 
-func NewPostgresConnector(cfg *config.Config) IPostgresConnector {
+func NewPostgresConnector() IPostgresConnector {
 	return &PostgresConnector{
-		cfg: cfg,
+		cfg: config.GetConfig(),
 	}
 }
 
