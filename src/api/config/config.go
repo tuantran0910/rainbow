@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+var (
+	once sync.Once
+	cfg  *Config
+)
+
 type DatabaseConfig struct {
 	DatabaseDsn     string
 	MaxIdleConns    int
@@ -16,81 +21,146 @@ type DatabaseConfig struct {
 }
 
 type ServerConfig struct {
-	MigrationsDir string
-	ServerPort    string
+	MigrationsDir  string
+	ServerPort     string
+	ServiceName    string
+	ServiceVersion string
+}
+
+type LoggerConfig struct {
+	LogLevel      string
+	EnableConsole bool
 }
 
 type Config struct {
+	Environment    string
 	DatabaseConfig *DatabaseConfig
 	ServerConfig   *ServerConfig
+	LoggerConfig   *LoggerConfig
 }
 
-var (
-	once sync.Once
-	cfg  *Config
-)
+func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
+	// Load database connection configuration
+	host := getEnv("DB_HOST", "localhost")
+	user := getEnv("API_DB_USER", "rainbow")
+	password := getEnv("API_DB_PASSWORD", "")
+	if password == "" {
+		if env == "production" {
+			return nil, fmt.Errorf("API_DB_PASSWORD is required in production environment but not set")
+		} else {
+			password = "R&inb0w2024!Data"
+		}
+	}
+
+	dbName := getEnv("API_DB_NAME", "rainbow")
+	dbPort := getEnv("DB_PORT", "5432")
+
+	maxIdleConns, err := strconv.Atoi(getEnv("MAX_IDLE_CONNS", "10"))
+	if err != nil {
+		return nil, err
+	}
+
+	maxOpenConns, err := strconv.Atoi(getEnv("MAX_OPEN_CONNS", "20"))
+	if err != nil {
+		return nil, err
+	}
+
+	connMaxLifetime, err := time.ParseDuration(getEnv("CONN_MAX_LIFETIME", "1h"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Construct the database DSN
+	dbDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		host, user, password, dbName, dbPort)
+
+	return &DatabaseConfig{
+		DatabaseDsn:     dbDsn,
+		MaxIdleConns:    maxIdleConns,
+		MaxOpenConns:    maxOpenConns,
+		ConnMaxLifetime: connMaxLifetime,
+	}, nil
+}
+
+func loadServerConfig() (*ServerConfig, error) {
+	serverPort := getEnv("SERVER_PORT", "5000")
+	migrationsDir := getEnv("MIGRATIONS_DIR", "migrations")
+	serverName := getEnv("SERVICE_NAME", "rainbow-api")
+	serverVersion := getEnv("SERVICE_VERSION", "1.0.0")
+
+	return &ServerConfig{
+		MigrationsDir:  migrationsDir,
+		ServerPort:     serverPort,
+		ServiceName:    serverName,
+		ServiceVersion: serverVersion,
+	}, nil
+}
+
+func loadLoggerConfig() (*LoggerConfig, error) {
+	logLevel := getEnv("LOG_LEVEL", "debug")
+	enableConsole, err := strconv.ParseBool(getEnv("ENABLE_CONSOLE", "true"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoggerConfig{
+		LogLevel:      logLevel,
+		EnableConsole: enableConsole,
+	}, nil
+}
 
 func LoadConfig() error {
 	var err error
 	once.Do(func() {
 		os.Setenv("TZ", "UTC")
 
+		// Get the environment
+		env := getEnv("ENV", "development")
+		if env != "production" && env != "development" {
+			err = fmt.Errorf("invalid environment: %s", env)
+			return
+		}
+
 		// Load database connection configuration
-		host := getEnv("DB_HOST", "localhost")
-		user := getEnv("API_DB_USER", "rainbow")
-		password := getEnv("API_DB_PASSWORD", "")
-		if password == "" {
-			err = fmt.Errorf("API_DB_PASSWORD is required but not set")
+		databaseConfig, dbErr := loadDatabaseConfig(env)
+		if dbErr != nil {
+			err = fmt.Errorf("failed to load database configuration: %w", dbErr)
 			return
 		}
 
-		dbName := getEnv("API_DB_NAME", "rainbow")
-		dbPort := getEnv("DB_PORT", "5432")
-		serverPort := getEnv("SERVER_PORT", "5000")
-
-		maxIdleConns, convErr := strconv.Atoi(getEnv("MAX_IDLE_CONNS", "10"))
-		if convErr != nil {
-			err = fmt.Errorf("invalid MAX_IDLE_CONNS: %v", convErr)
+		// Load server configuration
+		serverConfig, svErr := loadServerConfig()
+		if svErr != nil {
+			err = fmt.Errorf("failed to load server configuration: %v", svErr)
 			return
 		}
 
-		maxOpenConns, convErr := strconv.Atoi(getEnv("MAX_OPEN_CONNS", "20"))
-		if err != nil {
-			err = fmt.Errorf("invalid MAX_OPEN_CONNS: %v", convErr)
+		// Get the logger configuration
+		loggerConfig, lgErr := loadLoggerConfig()
+		if lgErr != nil {
+			err = fmt.Errorf("failed to load logger configuration: %v", lgErr)
+			return
 		}
-
-		connMaxLifetime, convErr := time.ParseDuration(getEnv("CONN_MAX_LIFETIME", "1h"))
-		if err != nil {
-			err = fmt.Errorf("invalid CONN_MAX_LIFETIME: %v", convErr)
-		}
-
-		migrationsDir := getEnv("MIGRATIONS_DIR", "migrations")
-
-		dbDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-			host, user, password, dbName, dbPort)
 
 		cfg = &Config{
-			DatabaseConfig: &DatabaseConfig{
-				DatabaseDsn:     dbDsn,
-				MaxIdleConns:    maxIdleConns,
-				MaxOpenConns:    maxOpenConns,
-				ConnMaxLifetime: connMaxLifetime,
-			},
-			ServerConfig: &ServerConfig{
-				MigrationsDir: migrationsDir,
-				ServerPort:    serverPort,
-			},
+			Environment:    env,
+			DatabaseConfig: databaseConfig,
+			ServerConfig:   serverConfig,
+			LoggerConfig:   loggerConfig,
 		}
 	})
 
 	return err
 }
 
-func GetConfig() *Config {
+func GetConfig() (*Config, error) {
 	if cfg == nil {
-		LoadConfig()
+		if err := LoadConfig(); err != nil {
+			return nil, err
+		}
 	}
-	return cfg
+
+	return cfg, nil
 }
 
 // Helper function to get environment variables with defaults
