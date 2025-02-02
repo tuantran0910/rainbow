@@ -12,6 +12,7 @@ Table users {
   last_login timestamp [default: null]
   is_active bool [default: true]
   phone_number varchar(20)
+  role varchar(20) [default: 'user', note: 'user, admin']
   created_at timestamp [default: `current_timestamp`]
   updated_at timestamp [default: `current_timestamp`]
   deleted_at timestamp [default: null]
