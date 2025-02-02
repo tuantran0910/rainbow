@@ -7,8 +7,11 @@
 package wire
 
 import (
+	"github.com/tuantran0910/rainbow/internal/controllers/auth"
 	"github.com/tuantran0910/rainbow/internal/controllers/v1/product"
 	product2 "github.com/tuantran0910/rainbow/internal/repositories/product"
+	"github.com/tuantran0910/rainbow/internal/repositories/user"
+	auth2 "github.com/tuantran0910/rainbow/internal/services/auth"
 	product3 "github.com/tuantran0910/rainbow/internal/services/product"
 	"gorm.io/gorm"
 )
@@ -20,4 +23,11 @@ func InitializeProductController(db *gorm.DB) (*product.ProductController, error
 	iProductService := product3.NewProductService(db, iProductRepository)
 	productController := product.NewProductController(iProductService)
 	return productController, nil
+}
+
+func InitializeAuthController(db *gorm.DB) (*auth.AuthController, error) {
+	iUserRepository := user.NewUserRepository(db)
+	iAuthService := auth2.NewAuthService(db, iUserRepository)
+	authController := auth.NewAuthController(iAuthService)
+	return authController, nil
 }

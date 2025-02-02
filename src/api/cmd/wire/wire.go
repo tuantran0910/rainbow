@@ -6,17 +6,30 @@ import (
 	"github.com/google/wire"
 	"gorm.io/gorm"
 
-	controller "github.com/tuantran0910/rainbow/internal/controllers/v1/product"
-	repository "github.com/tuantran0910/rainbow/internal/repositories/product"
-	service "github.com/tuantran0910/rainbow/internal/services/product"
+	authController "github.com/tuantran0910/rainbow/internal/controllers/auth"
+	productController "github.com/tuantran0910/rainbow/internal/controllers/v1/product"
+	productRepository "github.com/tuantran0910/rainbow/internal/repositories/product"
+	userRepository "github.com/tuantran0910/rainbow/internal/repositories/user"
+	authService "github.com/tuantran0910/rainbow/internal/services/auth"
+	productService "github.com/tuantran0910/rainbow/internal/services/product"
 )
 
-func InitializeProductController(db *gorm.DB) (*controller.ProductController, error) {
+func InitializeProductController(db *gorm.DB) (*productController.ProductController, error) {
 	wire.Build(
-		repository.NewProductRepository,
-		service.NewProductService,
-		controller.NewProductController,
+		productRepository.NewProductRepository,
+		productService.NewProductService,
+		productController.NewProductController,
 	)
 
-	return &controller.ProductController{}, nil
+	return &productController.ProductController{}, nil
+}
+
+func InitializeAuthController(db *gorm.DB) (*authController.AuthController, error) {
+	wire.Build(
+		userRepository.NewUserRepository,
+		authService.NewAuthService,
+		authController.NewAuthController,
+	)
+
+	return &authController.AuthController{}, nil
 }

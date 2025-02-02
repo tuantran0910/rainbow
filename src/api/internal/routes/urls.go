@@ -13,10 +13,18 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	// Define controllers
 	baseController, _ := controllers.NewBaseController()
 	productController, _ := wire.InitializeProductController(db)
+	authController, _ := wire.InitializeAuthController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
 	r.GET("/health", baseController.HealthCheck)
+
+	// Auth routes
+	auth := r.Group("/auth")
+	{
+		auth.POST("/login", authController.Login)
+		auth.POST("/register", authController.Register)
+	}
 
 	// Add routes
 	v1 := r.Group("/api/v1")
