@@ -58,6 +58,24 @@ func (pc *PostgresConnector) configureConnectionPool() error {
 	return nil
 }
 
+func (pc *PostgresConnector) doMigration() error {
+	// Convert GORM DB to Goose DB
+	sqlDB, err := pc.ins.DB()
+	if err != nil {
+		log.Error("Failed to convert GORM DB to Goose DB", zap.Error(err))
+		return err
+	}
+
+	// Apply migrations
+	migrationsDir := pc.cfg.ServerConfig.MigrationsDir
+	if err := goose.Up(sqlDB, migrationsDir); err != nil {
+		log.Error("Failed to apply migrations", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
 func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 	var err error
 	pc.once.Do(func() {
@@ -76,16 +94,8 @@ func (pc *PostgresConnector) GetInstance() (*gorm.DB, error) {
 				return
 			}
 
-			// Convert GORM DB to Goose DB
-			sqlDB, err := db.DB()
-			if err != nil {
-				log.Error("Failed to convert GORM DB to Goose DB", zap.Error(err))
-				return
-			}
-
 			// Apply migrations
-			migrationsDir := pc.cfg.ServerConfig.MigrationsDir
-			if err := goose.Up(sqlDB, migrationsDir); err != nil {
+			if err := pc.doMigration(); err != nil {
 				log.Error("Failed to apply migrations", zap.Error(err))
 				return
 			}
