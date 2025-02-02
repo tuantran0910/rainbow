@@ -34,6 +34,7 @@ func (pr *productRepository) WithTX(tx *gorm.DB) IProductRepository {
 	if tx == nil {
 		return pr
 	}
+
 	return &productRepository{
 		db: tx,
 	}
