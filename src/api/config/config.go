@@ -25,6 +25,7 @@ type ServerConfig struct {
 	ServerPort     string
 	ServiceName    string
 	ServiceVersion string
+	JWTSecret      string
 }
 
 type LoggerConfig struct {
@@ -87,12 +88,14 @@ func loadServerConfig() (*ServerConfig, error) {
 	migrationsDir := getEnv("MIGRATIONS_DIR", "migrations")
 	serverName := getEnv("SERVICE_NAME", "rainbow-api")
 	serverVersion := getEnv("SERVICE_VERSION", "1.0.0")
+	jwtSecret := getEnv("JWT_SECRET", "jwt_secret")
 
 	return &ServerConfig{
 		MigrationsDir:  migrationsDir,
 		ServerPort:     serverPort,
 		ServiceName:    serverName,
 		ServiceVersion: serverVersion,
+		JWTSecret:      jwtSecret,
 	}, nil
 }
 
