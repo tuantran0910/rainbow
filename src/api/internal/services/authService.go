@@ -87,6 +87,7 @@ func (as *authService) Register(ctx context.Context, registerUserRequest dtos.Re
 			FirstName:   registerUserRequest.FirstName,
 			LastName:    registerUserRequest.LastName,
 			PhoneNumber: registerUserRequest.PhoneNumber,
+			Role:        models.Role(registerUserRequest.Role),
 		}
 
 		// Create a new user

@@ -48,7 +48,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Get the token
+	// Login and get the token
 	token, err := ac.authService.Login(reqCtx, loginUserRequest)
 	if err != nil {
 		response.
@@ -60,13 +60,18 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+	// Parse output
+	data := &dtos.LoginUserResponse{
+		Token: token,
+	}
+
 	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
 
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetData(token).
+		SetData(data).
 		SetMessage("Successfully logged in").
 		Respond(ctx)
 }

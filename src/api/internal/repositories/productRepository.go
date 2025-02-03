@@ -92,7 +92,7 @@ func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.U
 }
 
 func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
-	result := pr.db.WithContext(ctx).Delete(&models.Product{}, "id = ?", productId)
+	result := pr.db.WithContext(ctx).Unscoped().Where("id = ?", productId).Delete(&models.Product{})
 	if result.Error != nil {
 		return fmt.Errorf("failed to delete product: %w", result.Error)
 	}

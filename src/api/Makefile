@@ -2,7 +2,7 @@
 ENV_FILE = ../../deployments/docker/.env
 
 # Define targets
-.PHONY: api goose-status goose-create goose-up goose-down swag swag-fmt help
+.PHONY: api goose-status goose-create goose-up goose-down swag swag-fmt wire help
 
 api: ## Start the API server in development mode
 	@air -c ./.air.toml
@@ -27,6 +27,9 @@ swag-fmt: ## Format swagger documentation
 
 swag-serve: ## Serve swagger documentation
 	@open http://localhost:5000/swagger/index.html
+
+wire: ## Generate wire.go
+	@wire ./cmd/wire
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'

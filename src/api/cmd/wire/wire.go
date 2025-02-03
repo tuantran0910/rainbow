@@ -29,3 +29,13 @@ func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) 
 
 	return &controllers.AuthController{}, nil
 }
+
+func InitializeUserController(db *gorm.DB) (*controllers.UserController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		services.NewUserService,
+		controllers.NewUserController,
+	)
+
+	return &controllers.UserController{}, nil
+}

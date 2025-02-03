@@ -65,7 +65,7 @@ func (ps *productService) CreateProduct(ctx context.Context, productRequest dtos
 
 func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest dtos.UpdateProductRequest) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
-		// Define an update product
+		// Get the product by id
 		product, err := ps.productRepository.GetProductByID(ctx, productId)
 		if err != nil {
 			return err
@@ -90,10 +90,6 @@ func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID
 func (ps *productService) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
 		// Delete a product
-		if err := productRepository.DeleteProduct(ctx, productId); err != nil {
-			return err
-		}
-
-		return nil
+		return productRepository.DeleteProduct(ctx, productId)
 	})
 }

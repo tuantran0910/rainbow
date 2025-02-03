@@ -67,7 +67,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot retrieve products").
+			SetMessage("Failed to fetch a list of products").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -133,7 +133,7 @@ func (pc *ProductController) GetProduct(ctx *gin.Context) {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot retrieve product").
+			SetMessage("Failed to fetch a product").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}

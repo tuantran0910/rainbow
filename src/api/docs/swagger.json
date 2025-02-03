@@ -88,6 +88,37 @@
       },
       "type": "object"
     },
+    "dtos.UpdateUserRequest": {
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "last_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "ADMIN",
+            "USER"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "response.APIResponse": {
       "properties": {
         "data": {},
@@ -432,6 +463,227 @@
         "summary": "Register",
         "tags": [
           "Auth"
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get a list of users",
+        "parameters": [
+          {
+            "description": "Page",
+            "in": "query",
+            "name": "page",
+            "type": "integer"
+          },
+          {
+            "description": "Limit",
+            "in": "query",
+            "name": "limit",
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get a list of users",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get the current user",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get the current user",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Delete a user",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Delete a user",
+        "tags": [
+          "User"
+        ]
+      },
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get a user by ID",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get a user by ID",
+        "tags": [
+          "User"
+        ]
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Update a user",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Update User Request",
+            "in": "body",
+            "name": "req",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.UpdateUserRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Update a user",
+        "tags": [
+          "User"
         ]
       }
     }

@@ -28,3 +28,10 @@ func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) 
 	authController := controllers.NewAuthController(iAuthService)
 	return authController, nil
 }
+
+func InitializeUserController(db *gorm.DB) (*controllers.UserController, error) {
+	iUserRepository := repositories.NewUserRepository(db)
+	iUserService := services.NewUserService(db, iUserRepository)
+	userController := controllers.NewUserController(iUserService)
+	return userController, nil
+}
