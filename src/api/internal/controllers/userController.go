@@ -22,6 +22,19 @@ func NewUserController(userService services.IUserService) *UserController {
 	}
 }
 
+// GetUsers godoc
+//
+//	@Summary		Get a list of users
+//	@Description	Get a list of users
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page"
+//	@Param			limit	query		int	false	"Limit"
+//	@Success		200		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/users [get]
 func (uc *UserController) GetUsers(ctx *gin.Context) {
 	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
@@ -93,6 +106,16 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// GetCurrentUser godoc
+//
+//	@Summary		Get the current user
+//	@Description	Get the current user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/users/me [get]
 func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -154,6 +177,19 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// GetUserById godoc
+//
+//	@Summary		Get a user by ID
+//	@Description	Get a user by ID
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		404	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/users/{id} [get]
 func (uc *UserController) GetUserById(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -215,6 +251,19 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// UpdateUser godoc
+//
+//	@Summary		Update a user
+//	@Description	Update a user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string					true	"User ID"
+//	@Param			req	body		dtos.UpdateUserRequest	true	"Update User Request"
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/users/{id} [patch]
 func (uc *UserController) UpdateUser(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -272,6 +321,18 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// DeleteUser godoc
+//
+//	@Summary		Delete a user
+//	@Description	Delete a user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		204	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/users/{id} [delete]
 func (uc *UserController) DeleteUser(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
