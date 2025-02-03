@@ -20,6 +20,18 @@ func NewAuthController(authService services.IAuthService) *AuthController {
 	}
 }
 
+// Login godoc
+//
+//	@Summary		Login
+//	@Description	Login to the system
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			req	body		dtos.LoginUserRequest	true	"Login User Request"
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		401	{object}	response.APIResponse
+//	@Router			/login [post]
 func (ac *AuthController) Login(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -59,6 +71,18 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// Register godoc
+//
+//	@Summary		Register
+//	@Description	Register a new user
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			req	body		dtos.RegisterUserRequest	true	"Register User Request"
+//	@Success		201	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/register [post]
 func (ac *AuthController) Register(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()

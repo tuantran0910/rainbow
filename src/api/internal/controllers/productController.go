@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	_ "github.com/tuantran0910/rainbow/docs"
 	"github.com/tuantran0910/rainbow/internal/dtos"
 	"github.com/tuantran0910/rainbow/internal/services"
 	"github.com/tuantran0910/rainbow/pkg/headers"
@@ -172,15 +171,15 @@ func (pc *ProductController) GetProduct(ctx *gin.Context) {
 // CreateProduct godoc
 //
 //	@Summary		Create Product
-//	@Description	Create a new product and store it in the database
+//	@Description	Create a product
 //	@Tags			Product
 //	@Accept			json
 //	@Produce		json
-//	@Param			productRequest	body		model.ProductRequest	true	"Product Request"
-//	@Success		201				{object}	response.APIResponse
-//	@Failure		400				{object}	response.APIResponse
-//	@Failure		500				{object}	response.APIResponse
-//	@Router			/products [post]
+//	@Param			req	body		dtos.CreateProductRequest	true	"Create Product Request"
+//	@Success		204	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/products/{id} [post]
 func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -220,17 +219,16 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 
 // UpdateProduct godoc
 //
-//	@Summary		Update Product
+//	@Summary		Update Product by ID
 //	@Description	Update a product by its ID
 //	@Tags			Product
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path		int						true	"Product ID"
-//	@Param			productRequest	body		model.ProductRequest	true	"Product Request"
-//	@Success		200				{object}	response.APIResponse
-//	@Failure		400				{object}	response.APIResponse
-//	@Failure		500				{object}	response.APIResponse
-//	@Router			/products/{id} [put]
+//	@Param			req	body		dtos.UpdateProductRequest	true	"Update Product Request"
+//	@Success		204	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/products/{id} [patch]
 func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
@@ -282,7 +280,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 
 // DeleteProduct godoc
 //
-//	@Summary		Delete Product
+//	@Summary		Delete Product by ID
 //	@Description	Delete a product by its ID
 //	@Tags			Product
 //	@Accept			json
