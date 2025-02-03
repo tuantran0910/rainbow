@@ -14,7 +14,7 @@ type BaseGormModel struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (b *BaseGormModel) BeforeCreate(tx *gorm.DB) (err error) {
+func (b *BaseGormModel) BeforeCreate(tx *gorm.DB) error {
 	b.ID = uuid.New()
-	return
+	return nil
 }

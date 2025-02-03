@@ -1,9 +1,85 @@
 {
   "basePath": "/api/v1",
   "definitions": {
-    "product.ProductRequest": {
+    "dtos.CreateProductRequest": {
       "properties": {
         "name": {
+          "maxLength": 255,
+          "minLength": 3,
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "price"
+      ],
+      "type": "object"
+    },
+    "dtos.LoginUserRequest": {
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "maxLength": 255,
+          "minLength": 6,
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "type": "object"
+    },
+    "dtos.RegisterUserRequest": {
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "last_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "password": {
+          "maxLength": 255,
+          "minLength": 6,
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "ADMIN",
+            "USER"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "first_name",
+        "last_name",
+        "password",
+        "phone_number"
+      ],
+      "type": "object"
+    },
+    "dtos.UpdateProductRequest": {
+      "properties": {
+        "name": {
+          "maxLength": 255,
+          "minLength": 3,
           "type": "string"
         },
         "price": {
@@ -44,6 +120,52 @@
     "version": "1.0"
   },
   "paths": {
+    "/login": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Login to the system",
+        "parameters": [
+          {
+            "description": "Login User Request",
+            "in": "body",
+            "name": "req",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.LoginUserRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/products": {
       "get": {
         "consumes": [
@@ -91,50 +213,6 @@
         "tags": [
           "Product"
         ]
-      },
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "description": "Create a new product and store it in the database",
-        "parameters": [
-          {
-            "description": "Product Request",
-            "in": "body",
-            "name": "productRequest",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/product.ProductRequest"
-            }
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/response.APIResponse"
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "schema": {
-              "$ref": "#/definitions/response.APIResponse"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/response.APIResponse"
-            }
-          }
-        },
-        "summary": "Create Product",
-        "tags": [
-          "Product"
-        ]
       }
     },
     "/products/{id}": {
@@ -175,7 +253,7 @@
             }
           }
         },
-        "summary": "Delete Product",
+        "summary": "Delete Product by ID",
         "tags": [
           "Product"
         ]
@@ -222,26 +300,19 @@
           "Product"
         ]
       },
-      "put": {
+      "patch": {
         "consumes": [
           "application/json"
         ],
         "description": "Update a product by its ID",
         "parameters": [
           {
-            "description": "Product ID",
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "description": "Product Request",
+            "description": "Update Product Request",
             "in": "body",
-            "name": "productRequest",
+            "name": "req",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/product.ProductRequest"
+              "$ref": "#/definitions/dtos.UpdateProductRequest"
             }
           }
         ],
@@ -249,8 +320,8 @@
           "application/json"
         ],
         "responses": {
-          "200": {
-            "description": "OK",
+          "204": {
+            "description": "No Content",
             "schema": {
               "$ref": "#/definitions/response.APIResponse"
             }
@@ -268,9 +339,99 @@
             }
           }
         },
-        "summary": "Update Product",
+        "summary": "Update Product by ID",
         "tags": [
           "Product"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Create a product",
+        "parameters": [
+          {
+            "description": "Create Product Request",
+            "in": "body",
+            "name": "req",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.CreateProductRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Create Product",
+        "tags": [
+          "Product"
+        ]
+      }
+    },
+    "/register": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Register a new user",
+        "parameters": [
+          {
+            "description": "Register User Request",
+            "in": "body",
+            "name": "req",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.RegisterUserRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Register",
+        "tags": [
+          "Auth"
         ]
       }
     }

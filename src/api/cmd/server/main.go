@@ -1,18 +1,18 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+	"github.com/tuantran0910/rainbow/config"
 	_ "github.com/tuantran0910/rainbow/docs"
 	"github.com/tuantran0910/rainbow/internal/routes"
-	"github.com/tuantran0910/rainbow/pkg/config"
-	"github.com/tuantran0910/rainbow/pkg/databases/postgres"
+	"github.com/tuantran0910/rainbow/pkg/databases"
 	"github.com/tuantran0910/rainbow/pkg/utils/logger"
-	"go.uber.org/zap"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
-
-var log = logger.GetLogger()
 
 //	@title			Rainbow API
 //	@version		1.0
@@ -28,20 +28,29 @@ var log = logger.GetLogger()
 // @host		localhost:5000
 // @BasePath	/api/v1
 func main() {
-	// TODO: Set the Gin to release mode
-	// gin.SetMode(gin.ReleaseMode)
-
 	// Load the application configurations
-	cfg, err := config.LoadConfig()
+	if err := config.LoadConfig(); err != nil {
+		panic(fmt.Sprintf("failed to load the application configurations: %v", err))
+	}
+
+	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Error("Error loading the application configurations: ", zap.Error(err))
+		panic(fmt.Sprintf("failed to get the application configurations: %v", err))
+	}
+
+	if cfg.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	if err := logger.InitLogger(); err != nil {
+		panic(fmt.Sprintf("failed to initialize the logger: %v", err))
 	}
 
 	// Initialize the database connection
-	dbConnector := postgres.NewPostgresConnector(cfg)
+	dbConnector := databases.NewPostgresConnector()
 	db, err := dbConnector.GetInstance()
 	if err != nil {
-		log.Error("Error initializing the database connection: ", zap.Error(err))
+		panic(fmt.Sprintf("failed to initialize the database connection: %v", err))
 	}
 
 	// Close the connection as the application stops
@@ -52,8 +61,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Run the server
-	serverPort := cfg.ServerConfig.ServerPort
-	if err := r.Run(":" + serverPort); err != nil {
-		log.Error("Error running the server: ", zap.Error(err))
+	if err := r.Run(":" + cfg.ServerConfig.ServerPort); err != nil {
+		panic(fmt.Sprintf("failed to run the server: %v", err))
 	}
 }

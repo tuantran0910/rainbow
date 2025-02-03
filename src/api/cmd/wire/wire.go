@@ -4,19 +4,28 @@ package wire
 
 import (
 	"github.com/google/wire"
+	"github.com/tuantran0910/rainbow/internal/controllers"
+	"github.com/tuantran0910/rainbow/internal/repositories"
+	"github.com/tuantran0910/rainbow/internal/services"
 	"gorm.io/gorm"
-
-	controller "github.com/tuantran0910/rainbow/internal/controllers/v1/product"
-	repository "github.com/tuantran0910/rainbow/internal/repositories/product"
-	service "github.com/tuantran0910/rainbow/internal/services/product"
 )
 
-func InitializeProductController(db *gorm.DB) (*controller.ProductController, error) {
+func InitializeProductController(db *gorm.DB) (*controllers.ProductController, error) {
 	wire.Build(
-		repository.NewProductRepository,
-		service.NewProductService,
-		controller.NewProductController,
+		repositories.NewProductRepository,
+		services.NewProductService,
+		controllers.NewProductController,
 	)
 
-	return &controller.ProductController{}, nil
+	return &controllers.ProductController{}, nil
+}
+
+func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		services.NewAuthService,
+		controllers.NewAuthController,
+	)
+
+	return &controllers.AuthController{}, nil
 }

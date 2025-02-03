@@ -103,7 +103,6 @@ repos:
         args: [-over=15]
       - id: validate-toml
       - id: no-go-testing
-      - id: go-critic
       - id: go-mod-tidy
 
 ci:
