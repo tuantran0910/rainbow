@@ -1,31 +1,34 @@
 package dtos
 
-type RegisterUserRequest struct {
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=6,max=255"`
-	FirstName   string `json:"first_name" binding:"required,min=1,max=255"`
-	LastName    string `json:"last_name" binding:"required,min=1,max=255"`
-	PhoneNumber string `json:"phone_number" binding:"required,len=10"`
-	Role        string `json:"role" binding:"omitempty,oneof=ADMIN USER"`
-}
+import (
+	"time"
 
-type LoginUserRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6,max=255"`
+	"github.com/google/uuid"
+	"github.com/tuantran0910/rainbow/internal/models"
+	"gorm.io/gorm"
+)
+
+type UpdateUserRequest struct {
+	Email       *string `json:"email" binding:"omitempty,email"`
+	FirstName   *string `json:"first_name" binding:"omitempty,min=1,max=255"`
+	LastName    *string `json:"last_name" binding:"omitempty,min=1,max=255"`
+	IsActive    *bool   `json:"is_active" binding:"omitempty"`
+	PhoneNumber *string `json:"phone_number" binding:"omitempty,len=10"`
+	Role        *string `json:"role" binding:"omitempty,oneof=ADMIN USER"`
 }
 
 type GetUserResponse struct {
-	ID          string `json:"id"`
-	Email       string `json:"email"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	LastLogin   string `json:"last_login"`
-	IsActive    bool   `json:"is_active"`
-	PhoneNumber string `json:"phone_number"`
-	Role        string `json:"role"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	DeletedAt   string `json:"deleted_at,omitempty"`
+	ID          uuid.UUID      `json:"id"`
+	Email       string         `json:"email"`
+	FirstName   string         `json:"first_name"`
+	LastName    string         `json:"last_name"`
+	LastLogin   time.Time      `json:"last_login"`
+	IsActive    bool           `json:"is_active"`
+	PhoneNumber string         `json:"phone_number"`
+	Role        models.Role    `json:"role"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at,omitempty"`
 }
 
 type ListUsersResponse struct {

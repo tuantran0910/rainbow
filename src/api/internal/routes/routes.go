@@ -18,6 +18,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	baseController, _ := controllers.NewBaseController()
 	productController, _ := wire.InitializeProductController(db)
 	authController, _ := wire.InitializeAuthController(db)
+	userController, _ := wire.InitializeUserController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -28,6 +29,17 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	{
 		auth.POST("/login", authController.Login)
 		auth.POST("/register", authController.Register)
+	}
+
+	// User routes
+	users := r.Group("/users")
+	users.Use(middlewares.AuthMiddleware())
+	{
+		users.GET("", userController.GetUsers)
+		users.GET("/me", userController.GetCurrentUser)
+		users.GET(":id", userController.GetUserById)
+		users.PATCH(":id", userController.UpdateUser)
+		users.DELETE(":id", userController.DeleteUser)
 	}
 
 	api := r.Group("/api")
