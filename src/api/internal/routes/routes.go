@@ -34,13 +34,12 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	{
 		// Product routes
 		products := api.Group("/products")
-		products.Use(middlewares.AuthMiddleware())
 		{
 			products.GET("", productController.GetProducts)
 			products.GET(":id", productController.GetProduct)
-			products.POST("", productController.CreateProduct)
-			products.PATCH(":id", productController.UpdateProduct)
-			products.DELETE(":id", productController.DeleteProduct)
+			products.POST("", middlewares.AuthMiddleware(), productController.CreateProduct)
+			products.PATCH(":id", middlewares.AuthMiddleware(), productController.UpdateProduct)
+			products.DELETE(":id", middlewares.AuthMiddleware(), productController.DeleteProduct)
 		}
 	}
 
