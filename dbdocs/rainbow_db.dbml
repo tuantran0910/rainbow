@@ -27,6 +27,17 @@ Table authors {
   deleted_at timestamp [default: null]
 }
 
+Table sellers {
+  id uuid [primary key]
+  user_id uuid [ref: > users.id, unique, null]
+  name varchar(100) [not null]
+  link varchar(255) [unique, not null]
+  logo varchar(255)
+  created_at timestamp [default: `current_timestamp`]
+  updated_at timestamp [default: `current_timestamp`]
+  deleted_at timestamp [default: null]
+}
+
 Table genres {
   id uuid [primary key]
   name varchar(100) [unique, not null]
