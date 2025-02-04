@@ -111,7 +111,7 @@ func (ur *userRepository) UpdateUser(ctx context.Context, userId uuid.UUID, user
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("user	with ID %s not found", userId)
+		return fmt.Errorf("user	with id %s not found", userId)
 	}
 
 	return nil
@@ -124,7 +124,7 @@ func (ur *userRepository) DeleteUser(ctx context.Context, userId uuid.UUID) erro
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("user with ID %s not found", userId)
+		return fmt.Errorf("user with id %s not found", userId)
 	}
 
 	return nil
