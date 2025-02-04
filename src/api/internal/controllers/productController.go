@@ -100,7 +100,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 		Respond(ctx)
 }
 
-// GetProduct godoc
+// GetProductById godoc
 //
 //	@Summary		Get Product by ID
 //	@Description	Fetch a product by its ID
@@ -112,7 +112,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 //	@Failure		404	{object}	response.APIResponse
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/products/{id} [get]
-func (pc *ProductController) GetProduct(ctx *gin.Context) {
+func (pc *ProductController) GetProductById(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 

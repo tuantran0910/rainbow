@@ -85,7 +85,7 @@ func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.U
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("product with ID %s not found", productId)
+		return fmt.Errorf("product with id %s not found", productId)
 	}
 
 	return nil
@@ -98,7 +98,7 @@ func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.U
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("product with ID %s not found", productId)
+		return fmt.Errorf("product with id %s not found", productId)
 	}
 
 	return nil
