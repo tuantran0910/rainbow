@@ -1,6 +1,19 @@
 {
   "basePath": "/api/v1",
   "definitions": {
+    "dtos.CreateCategoryRequest": {
+      "properties": {
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
     "dtos.CreateProductRequest": {
       "properties": {
         "name": {
@@ -94,6 +107,16 @@
       ],
       "type": "object"
     },
+    "dtos.UpdateCategoryRequest": {
+      "properties": {
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "dtos.UpdateProductRequest": {
       "properties": {
         "name": {
@@ -183,6 +206,242 @@
     "version": "1.0"
   },
   "paths": {
+    "/categories": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get a list of categories",
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "type": "integer"
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "limit",
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get a list of categories",
+        "tags": [
+          "categories"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Create a category",
+        "parameters": [
+          {
+            "description": "Category information",
+            "in": "body",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.CreateCategoryRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Create a category",
+        "tags": [
+          "categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Delete a category by its ID",
+        "parameters": [
+          {
+            "description": "Category ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Delete a category",
+        "tags": [
+          "categories"
+        ]
+      },
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get a category by its ID",
+        "parameters": [
+          {
+            "description": "Category ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get a category",
+        "tags": [
+          "categories"
+        ]
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Update a category by its ID",
+        "parameters": [
+          {
+            "description": "Category ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Category information",
+            "in": "body",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.UpdateCategoryRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Update a category",
+        "tags": [
+          "categories"
+        ]
+      }
+    },
     "/login": {
       "post": {
         "consumes": [
@@ -316,7 +575,7 @@
             }
           }
         },
-        "summary": "Delete Product by ID",
+        "summary": "Delete Product",
         "tags": [
           "Product"
         ]
@@ -358,7 +617,7 @@
             }
           }
         },
-        "summary": "Get Product by ID",
+        "summary": "Get Product",
         "tags": [
           "Product"
         ]
@@ -402,7 +661,7 @@
             }
           }
         },
-        "summary": "Update Product by ID",
+        "summary": "Update Product",
         "tags": [
           "Product"
         ]
@@ -629,7 +888,7 @@
             }
           }
         },
-        "summary": "Delete Seller by ID",
+        "summary": "Delete Seller",
         "tags": [
           "Seller"
         ]
@@ -638,7 +897,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Get a seller by ID",
+        "description": "Get a seller by its ID",
         "parameters": [
           {
             "description": "Seller ID",
@@ -677,7 +936,7 @@
             }
           }
         },
-        "summary": "Get a seller by ID",
+        "summary": "Get a seller",
         "tags": [
           "Seller"
         ]
@@ -734,7 +993,7 @@
             }
           }
         },
-        "summary": "Update Seller by ID",
+        "summary": "Update Seller",
         "tags": [
           "Seller"
         ]
@@ -823,7 +1082,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Delete a user",
+        "description": "Delete a user by its ID",
         "parameters": [
           {
             "description": "User ID",
@@ -865,7 +1124,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Get a user by ID",
+        "description": "Get a user by its ID",
         "parameters": [
           {
             "description": "User ID",
@@ -904,7 +1163,7 @@
             }
           }
         },
-        "summary": "Get a user by ID",
+        "summary": "Get a user",
         "tags": [
           "User"
         ]
@@ -913,7 +1172,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Update a user",
+        "description": "Update a user by its ID",
         "parameters": [
           {
             "description": "User ID",

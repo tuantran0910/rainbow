@@ -23,6 +23,242 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/categories": {
+            "get": {
+                "description": "Get a list of categories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get a list of categories",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Create a category",
+                "parameters": [
+                    {
+                        "description": "Category information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/{id}": {
+            "get": {
+                "description": "Get a category by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a category by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Delete a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update a category by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Update a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Category information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Login to the system",
@@ -130,7 +366,7 @@ const docTemplate = `{
                 "tags": [
                     "Product"
                 ],
-                "summary": "Get Product by ID",
+                "summary": "Get Product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -216,7 +452,7 @@ const docTemplate = `{
                 "tags": [
                     "Product"
                 ],
-                "summary": "Delete Product by ID",
+                "summary": "Delete Product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -258,7 +494,7 @@ const docTemplate = `{
                 "tags": [
                     "Product"
                 ],
-                "summary": "Update Product by ID",
+                "summary": "Update Product",
                 "parameters": [
                     {
                         "description": "Update Product Request",
@@ -433,7 +669,7 @@ const docTemplate = `{
         },
         "/sellers/{id}": {
             "get": {
-                "description": "Get a seller by ID",
+                "description": "Get a seller by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -443,7 +679,7 @@ const docTemplate = `{
                 "tags": [
                     "Seller"
                 ],
-                "summary": "Get a seller by ID",
+                "summary": "Get a seller",
                 "parameters": [
                     {
                         "type": "string",
@@ -491,7 +727,7 @@ const docTemplate = `{
                 "tags": [
                     "Seller"
                 ],
-                "summary": "Delete Seller by ID",
+                "summary": "Delete Seller",
                 "parameters": [
                     {
                         "type": "string",
@@ -533,7 +769,7 @@ const docTemplate = `{
                 "tags": [
                     "Seller"
                 ],
-                "summary": "Update Seller by ID",
+                "summary": "Update Seller",
                 "parameters": [
                     {
                         "type": "string",
@@ -660,7 +896,7 @@ const docTemplate = `{
         },
         "/users/{id}": {
             "get": {
-                "description": "Get a user by ID",
+                "description": "Get a user by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -670,7 +906,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get a user by ID",
+                "summary": "Get a user",
                 "parameters": [
                     {
                         "type": "string",
@@ -708,7 +944,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a user",
+                "description": "Delete a user by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -750,7 +986,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update a user",
+                "description": "Update a user by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -803,6 +1039,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dtos.CreateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
         "dtos.CreateProductRequest": {
             "type": "object",
             "required": [
@@ -893,6 +1142,16 @@ const docTemplate = `{
                         "ADMIN",
                         "USER"
                     ]
+                }
+            }
+        },
+        "dtos.UpdateCategoryRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         },
