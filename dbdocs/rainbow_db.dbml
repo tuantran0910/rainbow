@@ -38,6 +38,15 @@ Table sellers {
   deleted_at timestamp [default: null]
 }
 
+Table categories {
+  id uuid [primary key]
+  name varchar(100) [not null]
+  slug varchar(100) [unique, not null]
+  created_at timestamp [default: `current_timestamp`]
+  updated_at timestamp [default: `current_timestamp`]
+  deleted_at timestamp [default: null]
+}
+
 Table genres {
   id uuid [primary key]
   name varchar(100) [unique, not null]
