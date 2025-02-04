@@ -6,6 +6,6 @@ type Seller struct {
 	BaseGormModel
 	UserID uuid.UUID `json:"user_id" gorm:"unique;not null"`
 	Name   string    `json:"name"`
-	Link   string    `json:"link" gorm:"unique;null"`
+	Link   string    `json:"link" gorm:"unique;not null"`
 	Logo   string    `json:"logo" gorm:"unique;null"`
 }
