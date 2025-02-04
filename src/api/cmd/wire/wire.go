@@ -50,3 +50,14 @@ func InitializeSellerController(db *gorm.DB) (*controllers.SellerController, err
 
 	return &controllers.SellerController{}, nil
 }
+
+func InitializeCategoryController(db *gorm.DB) (*controllers.CategoryController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		repositories.NewCategoryRepository,
+		services.NewCategoryService,
+		controllers.NewCategoryController,
+	)
+
+	return &controllers.CategoryController{}, nil
+}

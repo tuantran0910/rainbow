@@ -20,6 +20,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	authController, _ := wire.InitializeAuthController(db)
 	userController, _ := wire.InitializeUserController(db)
 	sellerController, _ := wire.InitializeSellerController(db)
+	categoryController, _ := wire.InitializeCategoryController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -63,6 +64,16 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 			sellers.POST("", middlewares.AuthMiddleware(), sellerController.CreateSeller)
 			sellers.PATCH(":id", middlewares.AuthMiddleware(), sellerController.UpdateSeller)
 			sellers.DELETE(":id", middlewares.AuthMiddleware(), sellerController.DeleteSeller)
+		}
+
+		// Category routes
+		categories := api.Group("/categories")
+		{
+			categories.GET("", categoryController.GetCategories)
+			categories.GET(":id", categoryController.GetCategoryById)
+			categories.POST("", middlewares.AuthMiddleware(), categoryController.CreateCategory)
+			categories.PATCH(":id", middlewares.AuthMiddleware(), categoryController.UpdateCategory)
+			categories.DELETE(":id", middlewares.AuthMiddleware(), categoryController.DeleteCategory)
 		}
 	}
 
