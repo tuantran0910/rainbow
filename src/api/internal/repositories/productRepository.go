@@ -14,7 +14,7 @@ import (
 type IProductRepository interface {
 	WithTX(tx *gorm.DB) IProductRepository
 	GetProducts(ctx context.Context, page, limit int) ([]*models.Product, *pagination.Pagination, error)
-	GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error)
+	GetProductById(ctx context.Context, productId uuid.UUID) (*models.Product, error)
 	CreateProduct(ctx context.Context, product *models.Product) error
 	UpdateProduct(ctx context.Context, productId uuid.UUID, product *models.Product) error
 	DeleteProduct(ctx context.Context, productId uuid.UUID) error
@@ -58,7 +58,7 @@ func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) (
 	return products, pagination, nil
 }
 
-func (pr *productRepository) GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error) {
+func (pr *productRepository) GetProductById(ctx context.Context, productId uuid.UUID) (*models.Product, error) {
 	var product models.Product
 	if err := pr.db.WithContext(ctx).Take(&product, "id = ?", productId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

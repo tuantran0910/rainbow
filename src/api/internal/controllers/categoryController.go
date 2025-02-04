@@ -12,30 +12,30 @@ import (
 	"github.com/tuantran0910/rainbow/pkg/utils/response"
 )
 
-type SellerController struct {
-	sellerService services.ISellerService
+type CategoryController struct {
+	controllerService services.ICategoryService
 }
 
-func NewSellerController(sellerService services.ISellerService) *SellerController {
-	return &SellerController{
-		sellerService: sellerService,
+func NewCategoryController(categoryService services.ICategoryService) *CategoryController {
+	return &CategoryController{
+		controllerService: categoryService,
 	}
 }
 
-// GetSellers godoc
+// GetCategories godoc
 //
-//	@Summary		Get a list of sellers
-//	@Description	Get a list of sellers
-//	@Tags			Seller
+//	@Summary		Get a list of categories
+//	@Description	Get a list of categories
+//	@Tags			categories
 //	@Accept			json
 //	@Produce		json
 //	@Param			page	query		int	false	"Page number"
-//	@Param			limit	query		int	false	"Limit number"
+//	@Param			limit	query		int	false	"Number of items per page"
 //	@Success		200		{object}	response.APIResponse
 //	@Failure		400		{object}	response.APIResponse
 //	@Failure		500		{object}	response.APIResponse
-//	@Router			/sellers [get]
-func (sc *SellerController) GetSellers(ctx *gin.Context) {
+//	@Router			/categories [get]
+func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
@@ -61,67 +61,66 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 
-	// Get a list of sellers
-	sellers, pagination, err := sc.sellerService.GetSellers(reqCtx, page, limit)
+	// Get a list of categories
+	categories, pagination, err := cc.controllerService.GetCategories(reqCtx, page, limit)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to fetch a list of sellers").
+			SetMessage("Failed to get categories").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
 	}
 
 	// Parse output
-	sellerResponses := make([]*dtos.GetSellerResponse, 0)
-	for _, seller := range sellers {
-		sellerResponses = append(sellerResponses, &dtos.GetSellerResponse{
-			ID:        seller.ID,
-			UserID:    seller.UserID,
-			Name:      seller.Name,
-			Link:      seller.Link,
-			Logo:      seller.Logo,
-			CreatedAt: seller.CreatedAt,
-			UpdatedAt: seller.UpdatedAt,
-			DeletedAt: seller.DeletedAt,
+	categoryResponses := make([]*dtos.GetCategoryResponse, 0)
+	for _, category := range categories {
+		categoryResponses = append(categoryResponses, &dtos.GetCategoryResponse{
+			ID:        category.ID,
+			Name:      category.Name,
+			Slug:      category.Slug,
+			CreatedAt: category.CreatedAt,
+			UpdatedAt: category.UpdatedAt,
+			DeletedAt: category.DeletedAt,
 		})
 	}
-	data := &dtos.ListSellersResponse{
-		Sellers: sellerResponses,
+	data := &dtos.ListCategoriesResponse{
+		Categories: categoryResponses,
 	}
 
 	// Set headers
 	headers := headers.NewHeaders(data, ctx)
 
+	// Respond with the list of categories
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetData(data).
 		SetPagination(pagination).
-		SetMessage("Successfully retrieved sellers").
+		SetMessage("Successfully retrieved categories").
+		SetData(data).
 		Respond(ctx)
 }
 
-// GetSellerById godoc
+// GetCategoryById godoc
 //
-//	@Summary		Get a seller
-//	@Description	Get a seller by its ID
-//	@Tags			Seller
+//	@Summary		Get a category
+//	@Description	Get a category by its ID
+//	@Tags			categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Seller ID"
+//	@Param			id	path		string	true	"Category ID"
 //	@Success		200	{object}	response.APIResponse
 //	@Failure		400	{object}	response.APIResponse
 //	@Failure		404	{object}	response.APIResponse
 //	@Failure		500	{object}	response.APIResponse
-//	@Router			/sellers/{id} [get]
-func (sc *SellerController) GetSellerById(ctx *gin.Context) {
+//	@Router			/categories/{id} [get]
+func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 
 	// Get ID from the URL
-	sellerId, err := uuid.Parse(ctx.Param("id"))
+	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -131,73 +130,74 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 		return
 	}
 
-	// Get the seller
-	seller, err := sc.sellerService.GetSellerById(reqCtx, sellerId)
+	// Get the category by id
+	category, err := cc.controllerService.GetProductById(reqCtx, categoryId)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to fetch the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetMessage("Failed to get the category").
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
-	if seller == nil {
+	if category == nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusNotFound).
-			SetMessage("Seller not found").
+			SetMessage("Category not found").
 			Respond(ctx)
 		return
 	}
 
 	// Parse output
-	data := &dtos.GetSellerResponse{
-		ID:        seller.ID,
-		UserID:    seller.UserID,
-		Name:      seller.Name,
-		Link:      seller.Link,
-		Logo:      seller.Logo,
-		CreatedAt: seller.CreatedAt,
-		UpdatedAt: seller.UpdatedAt,
-		DeletedAt: seller.DeletedAt,
+	data := &dtos.GetCategoryResponse{
+		ID:        category.ID,
+		Name:      category.Name,
+		Slug:      category.Slug,
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
+		DeletedAt: category.DeletedAt,
 	}
 
 	// Set headers
 	headers := headers.NewHeaders(data, ctx)
 
+	// Respond with the category
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully retrieved seller").
+		SetMessage("Successfully retrieved category").
 		SetData(data).
 		Respond(ctx)
 }
 
-// CreateSeller godoc
+// CreateCategory godoc
 //
-//	@Summary		Create Seller
-//	@Description	Create a seller
-//	@Tags			Seller
+//	@Summary		Create a category
+//	@Description	Create a category
+//	@Tags			categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			req	body		dtos.CreateSellerRequest	true	"Create Seller Request"
-//	@Success		201	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
-//	@Router			/sellers [post]
-func (sc *SellerController) CreateSeller(ctx *gin.Context) {
+//	@Param			request	body		dtos.CreateCategoryRequest	true	"Category information"
+//	@Success		201		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/categories [post]
+func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 
-	// Bind the request body to the struct
-	var sellerRequest dtos.CreateSellerRequest
-	if err := ctx.ShouldBindJSON(&sellerRequest); err != nil {
+	// Parse input
+	var categoryRequest dtos.CreateCategoryRequest
+	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
 			SetMessage("Invalid request body").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -212,63 +212,66 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Create a seller
-	if err := sc.sellerService.CreateSeller(reqCtx, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
+	// Create a category
+	if err := cc.controllerService.CreateCategory(reqCtx, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to create a seller").
-			SetError(err.Error()).Respond(ctx)
+			SetMessage("Failed to create the category").
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
 	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
 
+	// Respond with the created category
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
-		SetMessage("Successfully created a seller").
+		SetMessage("Successfully created the category").
 		Respond(ctx)
 }
 
-// UpdateSeller godoc
+// UpdateCategory godoc
 //
-//	@Summary		Update Seller
-//	@Description	Update a seller by its ID
-//	@Tags			Seller
+//	@Summary		Update a category
+//	@Description	Update a category by its ID
+//	@Tags			categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string						true	"Seller ID"
-//	@Param			req	body		dtos.UpdateSellerRequest	true	"Update Seller Request"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
-//	@Router			/sellers/{id} [patch]
-func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
+//	@Param			id		path		string						true	"Category ID"
+//	@Param			request	body		dtos.UpdateCategoryRequest	true	"Category information"
+//	@Success		200		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/categories/{id} [patch]
+func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 
 	// Get ID from the URL
-	sellerId, err := uuid.Parse(ctx.Param("id"))
+	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
-	// Bind the request body to the struct
-	var sellerRequest dtos.UpdateSellerRequest
-	if err := ctx.ShouldBindJSON(&sellerRequest); err != nil {
+	// Get the request body
+	var categoryRequest dtos.UpdateCategoryRequest
+	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
 			SetMessage("Invalid request body").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -283,13 +286,14 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Update the seller
-	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
+	// Update the category
+	if err := cc.controllerService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to update the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetMessage("Failed to update the category").
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -299,38 +303,38 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully updated the seller").
+		SetMessage("Successfully updated category").
 		Respond(ctx)
 }
 
-// DeleteSeller godoc
+// DeleteCategory godoc
 //
-//	@Summary		Delete Seller
-//	@Description	Delete a seller by its ID
-//	@Tags			Seller
+//	@Summary		Delete a category
+//	@Description	Delete a category by its ID
+//	@Tags			categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Seller ID"
+//	@Param			id	path		string	true	"Category ID"
 //	@Success		204	{object}	response.APIResponse
 //	@Failure		400	{object}	response.APIResponse
 //	@Failure		500	{object}	response.APIResponse
-//	@Router			/sellers/{id} [delete]
-func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
+//	@Router			/categories/{id} [delete]
+func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
 	// Get the context
 	reqCtx := ctx.Request.Context()
 
 	// Get ID from the URL
-	sellerId, err := uuid.Parse(ctx.Param("id"))
+	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -341,13 +345,14 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Delete the seller
-	if err := sc.sellerService.DeleteSeller(reqCtx, sellerId, currentUserId.(uuid.UUID)); err != nil {
+	// Delete the category
+	if err := cc.controllerService.DeleteCategory(reqCtx, categoryId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to delete the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetMessage("Failed to delete the category").
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 

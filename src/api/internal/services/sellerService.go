@@ -77,11 +77,7 @@ func (ss *sellerService) CreateSeller(ctx context.Context, sellerRequest dtos.Cr
 		}
 
 		// Create a new seller
-		if err := ss.sellerRepository.CreateSeller(ctx, seller); err != nil {
-			return err
-		}
-
-		return nil
+		return ss.sellerRepository.CreateSeller(ctx, seller)
 	})
 }
 
@@ -108,20 +104,16 @@ func (ss *sellerService) UpdateSeller(ctx context.Context, sellerId uuid.UUID, s
 		}
 
 		// Update seller
-		if sellerRequest.Name != nil && *sellerRequest.Name != "" {
+		if sellerRequest.Name != nil && *sellerRequest.Name != seller.Name {
 			seller.Name = *sellerRequest.Name
 			seller.Link = fmt.Sprintf("https://rainbow.tuantrann.work/sellers/%s-%s", slug.Make(*sellerRequest.Name), uuid.New().String()[:8])
 		}
-		if sellerRequest.Logo != nil {
+		if sellerRequest.Logo != nil && *sellerRequest.Logo != seller.Logo {
 			seller.Logo = *sellerRequest.Logo
 		}
 
 		// Save seller
-		if err := sellerRepository.UpdateSeller(ctx, sellerId, seller); err != nil {
-			return err
-		}
-
-		return nil
+		return sellerRepository.UpdateSeller(ctx, sellerId, seller)
 	})
 }
 

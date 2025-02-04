@@ -137,7 +137,7 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to fetch a user").
+			SetMessage("Failed to fetch the user").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -179,8 +179,8 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 
 // GetUserById godoc
 //
-//	@Summary		Get a user by ID
-//	@Description	Get a user by ID
+//	@Summary		Get a user
+//	@Description	Get a user by its ID
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -254,7 +254,7 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 // UpdateUser godoc
 //
 //	@Summary		Update a user
-//	@Description	Update a user
+//	@Description	Update a user by its ID
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -301,12 +301,12 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// Update a user
+	// Update the user
 	if err := uc.userService.UpdateUser(reqCtx, userId, userRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to update a user").
+			SetMessage("Failed to update the user").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -324,7 +324,7 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 // DeleteUser godoc
 //
 //	@Summary		Delete a user
-//	@Description	Delete a user
+//	@Description	Delete a user by its ID
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -359,12 +359,12 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// Delete a user
+	// Delete the user
 	if err := uc.userService.DeleteUser(reqCtx, userId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to delete a user").
+			SetMessage("Failed to delete the user").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
