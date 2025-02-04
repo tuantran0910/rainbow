@@ -12,6 +12,19 @@ definitions:
     - name
     - price
     type: object
+  dtos.CreateSellerRequest:
+    properties:
+      link:
+        type: string
+      logo:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
   dtos.LoginUserRequest:
     properties:
       email:
@@ -62,6 +75,15 @@ definitions:
         type: string
       price:
         type: number
+    type: object
+  dtos.UpdateSellerRequest:
+    properties:
+      logo:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
     type: object
   dtos.UpdateUserRequest:
     properties:
@@ -316,6 +338,166 @@ paths:
       summary: Register
       tags:
       - Auth
+  /sellers:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of sellers
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit number
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Get a list of sellers
+      tags:
+      - Seller
+    post:
+      consumes:
+      - application/json
+      description: Create a seller
+      parameters:
+      - description: Create Seller Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateSellerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Create Seller
+      tags:
+      - Seller
+  /sellers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a seller by its ID
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Delete Seller by ID
+      tags:
+      - Seller
+    get:
+      consumes:
+      - application/json
+      description: Get a seller by ID
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Get a seller by ID
+      tags:
+      - Seller
+    patch:
+      consumes:
+      - application/json
+      description: Update a seller by its ID
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Seller Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateSellerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Update Seller by ID
+      tags:
+      - Seller
   /users:
     get:
       consumes:

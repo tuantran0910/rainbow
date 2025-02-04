@@ -35,3 +35,11 @@ func InitializeUserController(db *gorm.DB) (*controllers.UserController, error) 
 	userController := controllers.NewUserController(iUserService)
 	return userController, nil
 }
+
+func InitializeSellerController(db *gorm.DB) (*controllers.SellerController, error) {
+	iSellerRepository := repositories.NewSellerRepository(db)
+	iUserRepository := repositories.NewUserRepository(db)
+	iSellerService := services.NewSellerService(db, iSellerRepository, iUserRepository)
+	sellerController := controllers.NewSellerController(iSellerService)
+	return sellerController, nil
+}

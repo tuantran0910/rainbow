@@ -19,6 +19,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	productController, _ := wire.InitializeProductController(db)
 	authController, _ := wire.InitializeAuthController(db)
 	userController, _ := wire.InitializeUserController(db)
+	sellerController, _ := wire.InitializeSellerController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -48,10 +49,20 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		products := api.Group("/products")
 		{
 			products.GET("", productController.GetProducts)
-			products.GET(":id", productController.GetProduct)
+			products.GET(":id", productController.GetProductById)
 			products.POST("", middlewares.AuthMiddleware(), productController.CreateProduct)
 			products.PATCH(":id", middlewares.AuthMiddleware(), productController.UpdateProduct)
 			products.DELETE(":id", middlewares.AuthMiddleware(), productController.DeleteProduct)
+		}
+
+		// Seller routes
+		sellers := api.Group("/sellers")
+		{
+			sellers.GET("", sellerController.GetSellers)
+			sellers.GET(":id", sellerController.GetSellerById)
+			sellers.POST("", middlewares.AuthMiddleware(), sellerController.CreateSeller)
+			sellers.PATCH(":id", middlewares.AuthMiddleware(), sellerController.UpdateSeller)
+			sellers.DELETE(":id", middlewares.AuthMiddleware(), sellerController.DeleteSeller)
 		}
 	}
 
