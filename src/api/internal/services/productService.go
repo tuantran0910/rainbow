@@ -13,7 +13,7 @@ import (
 
 type IProductService interface {
 	GetProducts(ctx context.Context, page, limit int) ([]*models.Product, *pagination.Pagination, error)
-	GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error)
+	GetProductById(ctx context.Context, productId uuid.UUID) (*models.Product, error)
 	CreateProduct(ctx context.Context, productRequest dtos.CreateProductRequest) error
 	UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest dtos.UpdateProductRequest) error
 	DeleteProduct(ctx context.Context, productId uuid.UUID) error
@@ -42,8 +42,8 @@ func (ps *productService) GetProducts(ctx context.Context, page, limit int) ([]*
 	return ps.productRepository.GetProducts(ctx, page, limit)
 }
 
-func (ps *productService) GetProductByID(ctx context.Context, productId uuid.UUID) (*models.Product, error) {
-	return ps.productRepository.GetProductByID(ctx, productId)
+func (ps *productService) GetProductById(ctx context.Context, productId uuid.UUID) (*models.Product, error) {
+	return ps.productRepository.GetProductById(ctx, productId)
 }
 
 func (ps *productService) CreateProduct(ctx context.Context, productRequest dtos.CreateProductRequest) error {
@@ -55,35 +55,27 @@ func (ps *productService) CreateProduct(ctx context.Context, productRequest dtos
 		}
 
 		// Create a new product
-		if err := productRepository.CreateProduct(ctx, product); err != nil {
-			return err
-		}
-
-		return nil
+		return productRepository.CreateProduct(ctx, product)
 	})
 }
 
 func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest dtos.UpdateProductRequest) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
 		// Get the product by id
-		product, err := ps.productRepository.GetProductByID(ctx, productId)
+		product, err := ps.productRepository.GetProductById(ctx, productId)
 		if err != nil {
 			return err
 		}
 
 		// Apply the updates
-		if productRequest.Name != nil {
+		if productRequest.Name != nil && *productRequest.Name != product.Name {
 			product.Name = *productRequest.Name
 		}
-		if productRequest.Price != nil {
+		if productRequest.Price != nil && *productRequest.Price != product.Price {
 			product.Price = *productRequest.Price
 		}
 
-		if err := productRepository.UpdateProduct(ctx, productId, product); err != nil {
-			return err
-		}
-
-		return nil
+		return productRepository.UpdateProduct(ctx, productId, product)
 	})
 }
 

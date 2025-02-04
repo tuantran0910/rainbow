@@ -70,7 +70,7 @@ func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userReq
 		}
 
 		// Apply the updates
-		if userRequest.Email != nil {
+		if userRequest.Email != nil && *userRequest.Email != user.Email {
 			// Check if the email is already taken
 			userByEmail, err := userRepository.GetUserByEmail(ctx, *userRequest.Email)
 			if err != nil && err != gorm.ErrRecordNotFound {
@@ -84,7 +84,7 @@ func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userReq
 			user.Email = *userRequest.Email
 		}
 
-		if userRequest.PhoneNumber != nil {
+		if userRequest.PhoneNumber != nil && *userRequest.PhoneNumber != user.PhoneNumber {
 			// Check if the phone number is already taken
 			userByPhoneNumber, err := userRepository.GetUserByPhoneNumber(ctx, *userRequest.PhoneNumber)
 			if err != nil && err != gorm.ErrRecordNotFound {
@@ -98,19 +98,19 @@ func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userReq
 			user.PhoneNumber = *userRequest.PhoneNumber
 		}
 
-		if userRequest.FirstName != nil {
+		if userRequest.FirstName != nil && *userRequest.FirstName != user.FirstName {
 			user.FirstName = *userRequest.FirstName
 		}
 
-		if userRequest.LastName != nil {
+		if userRequest.LastName != nil && *userRequest.LastName != user.LastName {
 			user.LastName = *userRequest.LastName
 		}
 
-		if userRequest.IsActive != nil {
+		if userRequest.IsActive != nil && *userRequest.IsActive != user.IsActive {
 			user.IsActive = *userRequest.IsActive
 		}
 
-		if userRequest.Role != nil {
+		if userRequest.Role != nil && *userRequest.Role != string(user.Role) {
 			// Check if the current user is admin
 			if string(currentUser.Role) == string(models.AdminRole) {
 				user.Role = models.Role(*userRequest.Role)

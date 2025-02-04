@@ -91,10 +91,6 @@ func (as *authService) Register(ctx context.Context, registerUserRequest dtos.Re
 		}
 
 		// Create a new user
-		if err := userRepository.CreateUser(ctx, user); err != nil {
-			return err
-		}
-
-		return nil
+		return userRepository.CreateUser(ctx, user)
 	})
 }

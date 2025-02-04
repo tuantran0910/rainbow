@@ -105,8 +105,8 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 
 // GetSellerById godoc
 //
-//	@Summary		Get a seller by ID
-//	@Description	Get a seller by ID
+//	@Summary		Get a seller
+//	@Description	Get a seller by its ID
 //	@Tags			Seller
 //	@Accept			json
 //	@Produce		json
@@ -131,13 +131,13 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 		return
 	}
 
-	// Get a seller
+	// Get the seller
 	seller, err := sc.sellerService.GetSellerById(reqCtx, sellerId)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to fetch a seller").
+			SetMessage("Failed to fetch the seller").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -234,7 +234,7 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 
 // UpdateSeller godoc
 //
-//	@Summary		Update Seller by ID
+//	@Summary		Update Seller
 //	@Description	Update a seller by its ID
 //	@Tags			Seller
 //	@Accept			json
@@ -283,12 +283,12 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Update a seller
+	// Update the seller
 	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to update a seller").
+			SetMessage("Failed to update the seller").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -299,13 +299,13 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully updated a seller").
+		SetMessage("Successfully updated the seller").
 		Respond(ctx)
 }
 
 // DeleteSeller godoc
 //
-//	@Summary		Delete Seller by ID
+//	@Summary		Delete Seller
 //	@Description	Delete a seller by its ID
 //	@Tags			Seller
 //	@Accept			json
@@ -341,12 +341,12 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Delete a seller
+	// Delete the seller
 	if err := sc.sellerService.DeleteSeller(reqCtx, sellerId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to delete a seller").
+			SetMessage("Failed to delete the seller").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}

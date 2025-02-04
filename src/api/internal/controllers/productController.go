@@ -102,7 +102,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 
 // GetProductById godoc
 //
-//	@Summary		Get Product by ID
+//	@Summary		Get Product
 //	@Description	Fetch a product by its ID
 //	@Tags			Product
 //	@Accept			json
@@ -127,13 +127,13 @@ func (pc *ProductController) GetProductById(ctx *gin.Context) {
 		return
 	}
 
-	// Get a product
-	product, err := pc.productService.GetProductByID(reqCtx, productId)
+	// Get the product
+	product, err := pc.productService.GetProductById(reqCtx, productId)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to fetch a product").
+			SetMessage("Failed to fetch the product").
 			SetError(err.Error()).Respond(ctx)
 		return
 	}
@@ -219,7 +219,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 
 // UpdateProduct godoc
 //
-//	@Summary		Update Product by ID
+//	@Summary		Update Product
 //	@Description	Update a product by its ID
 //	@Tags			Product
 //	@Accept			json
@@ -257,7 +257,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Update a product
+	// Update the product
 	if err := pc.productService.UpdateProduct(reqCtx, productId, productRequest); err != nil {
 		response.
 			NewAPIResponse().
@@ -280,7 +280,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 
 // DeleteProduct godoc
 //
-//	@Summary		Delete Product by ID
+//	@Summary		Delete Product
 //	@Description	Delete a product by its ID
 //	@Tags			Product
 //	@Accept			json
@@ -306,12 +306,12 @@ func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Delete a product
+	// Delete the product
 	if err := pc.productService.DeleteProduct(reqCtx, productId); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Cannot delete product").
+			SetMessage("Failed to delete the product").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
