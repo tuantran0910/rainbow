@@ -1,0 +1,27 @@
+<clickhouse>
+    <!-- Network settings -->
+    <listen_host>0.0.0.0</listen_host>
+
+    <!-- Compression -->
+    <compression>
+        <case>
+            <min_part_size>1000000000</min_part_size> <!-- 1 GB -->
+            <method>lz4</method>
+        </case>
+    </compression>
+
+    <!-- Logging -->
+    <logger>
+        <level>information</level>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+    </logger>
+
+    <!-- Query logging -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+</clickhouse>
