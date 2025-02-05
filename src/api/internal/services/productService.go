@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/dtos"
@@ -48,40 +49,36 @@ func (ps *productService) GetProductById(ctx context.Context, productId uuid.UUI
 
 func (ps *productService) CreateProduct(ctx context.Context, productRequest dtos.CreateProductRequest) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
-		// Define a new product
 		product := &models.Product{
 			Name:  productRequest.Name,
 			Price: productRequest.Price,
 		}
-
-		// Create a new product
 		return productRepository.CreateProduct(ctx, product)
 	})
 }
 
 func (ps *productService) UpdateProduct(ctx context.Context, productId uuid.UUID, productRequest dtos.UpdateProductRequest) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
-		// Get the product by id
 		product, err := ps.productRepository.GetProductById(ctx, productId)
 		if err != nil {
 			return err
 		}
+		if product == nil {
+			return fmt.Errorf("product with id %s not found", productId)
+		}
 
-		// Apply the updates
 		if productRequest.Name != nil && *productRequest.Name != product.Name {
 			product.Name = *productRequest.Name
 		}
 		if productRequest.Price != nil && *productRequest.Price != product.Price {
 			product.Price = *productRequest.Price
 		}
-
 		return productRepository.UpdateProduct(ctx, productId, product)
 	})
 }
 
 func (ps *productService) DeleteProduct(ctx context.Context, productId uuid.UUID) error {
 	return ps.withTx(ctx, func(ctx context.Context, productRepository repositories.IProductRepository) error {
-		// Delete a product
 		return productRepository.DeleteProduct(ctx, productId)
 	})
 }

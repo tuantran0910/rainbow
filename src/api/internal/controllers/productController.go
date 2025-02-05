@@ -36,7 +36,6 @@ func NewProductController(productService services.IProductService) *ProductContr
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/products [get]
 func (pc *ProductController) GetProducts(ctx *gin.Context) {
-	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
 		response.
@@ -58,10 +57,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 		return
 	}
 
-	// Get the context
 	reqCtx := ctx.Request.Context()
-
-	// Get a list of products
 	products, pagination, err := pc.productService.GetProducts(reqCtx, page, limit)
 	if err != nil {
 		response.
@@ -72,7 +68,6 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	productResponses := make([]*dtos.GetProductResponse, 0)
 	for _, product := range products {
 		productResponses = append(productResponses, &dtos.GetProductResponse{
@@ -88,9 +83,7 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 		Products: productResponses,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -113,10 +106,6 @@ func (pc *ProductController) GetProducts(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/products/{id} [get]
 func (pc *ProductController) GetProductById(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	productId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -127,7 +116,7 @@ func (pc *ProductController) GetProductById(ctx *gin.Context) {
 		return
 	}
 
-	// Get the product
+	reqCtx := ctx.Request.Context()
 	product, err := pc.productService.GetProductById(reqCtx, productId)
 	if err != nil {
 		response.
@@ -147,7 +136,6 @@ func (pc *ProductController) GetProductById(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.GetProductResponse{
 		ID:        product.ID,
 		Name:      product.Name,
@@ -157,9 +145,7 @@ func (pc *ProductController) GetProductById(ctx *gin.Context) {
 		DeletedAt: product.DeletedAt,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -181,10 +167,6 @@ func (pc *ProductController) GetProductById(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/products/{id} [post]
 func (pc *ProductController) CreateProduct(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get the request body
 	var productRequest dtos.CreateProductRequest
 	if err := ctx.ShouldBindJSON(&productRequest); err != nil {
 		response.
@@ -196,7 +178,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Create a product
+	reqCtx := ctx.Request.Context()
 	if err := pc.productService.CreateProduct(reqCtx, productRequest); err != nil {
 		response.
 			NewAPIResponse().
@@ -207,9 +189,7 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
@@ -230,10 +210,6 @@ func (pc *ProductController) CreateProduct(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/products/{id} [patch]
 func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	productId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -245,7 +221,6 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Get the request body
 	var productRequest dtos.UpdateProductRequest
 	if err := ctx.ShouldBindJSON(&productRequest); err != nil {
 		response.
@@ -257,7 +232,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Update the product
+	reqCtx := ctx.Request.Context()
 	if err := pc.productService.UpdateProduct(reqCtx, productId, productRequest); err != nil {
 		response.
 			NewAPIResponse().
@@ -268,9 +243,7 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -291,10 +264,6 @@ func (pc *ProductController) UpdateProduct(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/products/{id} [delete]
 func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	productId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -306,7 +275,7 @@ func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Delete the product
+	reqCtx := ctx.Request.Context()
 	if err := pc.productService.DeleteProduct(reqCtx, productId); err != nil {
 		response.
 			NewAPIResponse().
@@ -317,9 +286,7 @@ func (pc *ProductController) DeleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).

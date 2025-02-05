@@ -49,50 +49,45 @@ func (us *userService) GetUserById(ctx context.Context, userId uuid.UUID) (*mode
 //gocyclo:ignore
 func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userRequest dtos.UpdateUserRequest, currentUserId uuid.UUID) error {
 	return us.withTx(ctx, func(ctx context.Context, userRepository repositories.IUserRepository) error {
-		// Get user by id
 		user, err := userRepository.GetUserById(ctx, userId)
 		if err != nil {
 			return err
 		}
-
-		// Get current user by id
-		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
-			return err
+		if user == nil {
+			return fmt.Errorf("user with id %s not found", userId)
 		}
 
+		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
+		if err != nil {
+			return err
+		}
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if currentUser.ID != userId && string(currentUser.Role) != string(models.AdminRole) {
+		if currentUser.ID != userId && currentUser.Role != models.AdminRole {
 			return fmt.Errorf("only admin can update other user's information")
 		}
 
-		// Apply the updates
 		if userRequest.Email != nil && *userRequest.Email != user.Email {
-			// Check if the email is already taken
 			userByEmail, err := userRepository.GetUserByEmail(ctx, *userRequest.Email)
-			if err != nil && err != gorm.ErrRecordNotFound {
+			if err != nil {
+				if userByEmail != nil && userByEmail.ID != userId {
+					return fmt.Errorf("email %s is already taken", *userRequest.Email)
+				}
 				return err
-			}
-
-			if userByEmail != nil && userByEmail.ID != userId {
-				return fmt.Errorf("email %s is already taken", *userRequest.Email)
 			}
 
 			user.Email = *userRequest.Email
 		}
 
 		if userRequest.PhoneNumber != nil && *userRequest.PhoneNumber != user.PhoneNumber {
-			// Check if the phone number is already taken
 			userByPhoneNumber, err := userRepository.GetUserByPhoneNumber(ctx, *userRequest.PhoneNumber)
-			if err != nil && err != gorm.ErrRecordNotFound {
+			if err != nil {
+				if userByPhoneNumber != nil && userByPhoneNumber.ID != userId {
+					return fmt.Errorf("phone number %s is already taken", *userRequest.PhoneNumber)
+				}
 				return err
-			}
-
-			if userByPhoneNumber != nil && userByPhoneNumber.ID != userId {
-				return fmt.Errorf("phone number %s is already taken", *userRequest.PhoneNumber)
 			}
 
 			user.PhoneNumber = *userRequest.PhoneNumber
@@ -111,40 +106,30 @@ func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userReq
 		}
 
 		if userRequest.Role != nil && *userRequest.Role != string(user.Role) {
-			// Check if the current user is admin
-			if string(currentUser.Role) == string(models.AdminRole) {
+			if currentUser.Role == models.AdminRole {
 				user.Role = models.Role(*userRequest.Role)
 			}
-
 			return fmt.Errorf("only admin can update user role")
 		}
 
-		if err := userRepository.UpdateUser(ctx, userId, user); err != nil {
-			return err
-		}
-
-		return nil
+		return userRepository.UpdateUser(ctx, userId, user)
 	})
 }
 
 func (us *userService) DeleteUser(ctx context.Context, userId uuid.UUID, currentUserId uuid.UUID) error {
 	return us.withTx(ctx, func(ctx context.Context, userRepository repositories.IUserRepository) error {
-		// Get the current user by id
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		// Check if the current user is admin
-		if string(currentUser.Role) != string(models.AdminRole) {
+		if currentUser.Role != models.AdminRole {
 			return fmt.Errorf("only admin can delete user")
 		}
 
-		// Delete a user
 		return userRepository.DeleteUser(ctx, userId)
 	})
 }

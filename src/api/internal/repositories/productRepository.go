@@ -41,20 +41,17 @@ func (pr *productRepository) WithTX(tx *gorm.DB) IProductRepository {
 }
 
 func (pr *productRepository) GetProducts(ctx context.Context, page, limit int) ([]*models.Product, *pagination.Pagination, error) {
-	// Get total number of products
 	var totalProducts int64
 	if err := pr.db.WithContext(ctx).Model(&models.Product{}).Count(&totalProducts).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of products: %w", err)
 	}
 
-	// Define pagination
 	pagination := pagination.NewPagination(page, limit, int(totalProducts))
 
 	var products []*models.Product
 	if err := pr.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch products: %w", err)
 	}
-
 	return products, pagination, nil
 }
 
@@ -66,7 +63,6 @@ func (pr *productRepository) GetProductById(ctx context.Context, productId uuid.
 		}
 		return nil, fmt.Errorf("failed to fetch product: %w", err)
 	}
-
 	return &product, nil
 }
 
@@ -74,7 +70,6 @@ func (pr *productRepository) CreateProduct(ctx context.Context, product *models.
 	if err := pr.db.WithContext(ctx).Create(product).Error; err != nil {
 		return fmt.Errorf("failed to create product: %w", err)
 	}
-
 	return nil
 }
 
@@ -87,7 +82,6 @@ func (pr *productRepository) UpdateProduct(ctx context.Context, productId uuid.U
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("product with id %s not found", productId)
 	}
-
 	return nil
 }
 
@@ -100,6 +94,5 @@ func (pr *productRepository) DeleteProduct(ctx context.Context, productId uuid.U
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("product with id %s not found", productId)
 	}
-
 	return nil
 }

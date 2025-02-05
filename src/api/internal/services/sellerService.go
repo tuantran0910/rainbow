@@ -53,57 +53,50 @@ func (ss *sellerService) GetSellerById(ctx context.Context, sellerId uuid.UUID) 
 
 func (ss *sellerService) CreateSeller(ctx context.Context, sellerRequest dtos.CreateSellerRequest, currentUserId uuid.UUID) error {
 	return ss.withTx(ctx, func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
-		// Check if user has already been a seller
 		exitingSeller, err := sellerRepository.GetSellerByUserID(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
+			if exitingSeller != nil {
+				return fmt.Errorf("seller already exists")
+			}
 			return err
 		}
 
-		if exitingSeller != nil {
-			return fmt.Errorf("user has already been a seller")
-		}
-
-		// Construct a seller link
 		if sellerRequest.Link == "" {
 			sellerRequest.Link = fmt.Sprintf("https://rainbow.tuantrann.work/sellers/%s-%s", slug.Make(sellerRequest.Name), uuid.New().String()[:8])
 		}
 
-		// Define a new seller
 		seller := &models.Seller{
 			UserID: currentUserId,
 			Link:   sellerRequest.Link,
 			Name:   sellerRequest.Name,
 			Logo:   sellerRequest.Logo,
 		}
-
-		// Create a new seller
 		return ss.sellerRepository.CreateSeller(ctx, seller)
 	})
 }
 
 func (ss *sellerService) UpdateSeller(ctx context.Context, sellerId uuid.UUID, sellerRequest dtos.UpdateSellerRequest, currentUserId uuid.UUID) error {
 	return ss.withTx(ctx, func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
-		// Get seller by id
 		seller, err := sellerRepository.GetSellerById(ctx, sellerId)
 		if err != nil {
 			return err
 		}
-
-		// Get current user by id
-		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
-			return err
+		if seller == nil {
+			return fmt.Errorf("seller with id %s not found", sellerId)
 		}
 
+		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
+		if err != nil {
+			return err
+		}
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if currentUser.ID != seller.UserID && string(currentUser.Role) != string(models.AdminRole) {
+		if currentUser.ID != seller.UserID && currentUser.Role != models.AdminRole {
 			return fmt.Errorf("only admin can update other seller's information")
 		}
 
-		// Update seller
 		if sellerRequest.Name != nil && *sellerRequest.Name != seller.Name {
 			seller.Name = *sellerRequest.Name
 			seller.Link = fmt.Sprintf("https://rainbow.tuantrann.work/sellers/%s-%s", slug.Make(*sellerRequest.Name), uuid.New().String()[:8])
@@ -111,39 +104,31 @@ func (ss *sellerService) UpdateSeller(ctx context.Context, sellerId uuid.UUID, s
 		if sellerRequest.Logo != nil && *sellerRequest.Logo != seller.Logo {
 			seller.Logo = *sellerRequest.Logo
 		}
-
-		// Save seller
 		return sellerRepository.UpdateSeller(ctx, sellerId, seller)
 	})
 }
 
 func (ss *sellerService) DeleteSeller(ctx context.Context, sellerId uuid.UUID, currentUserId uuid.UUID) error {
 	return ss.withTx(ctx, func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
-		// Get seller by id
 		seller, err := sellerRepository.GetSellerById(ctx, sellerId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if seller == nil {
-			return fmt.Errorf("seller not found")
+			return fmt.Errorf("seller with id %s not found", sellerId)
 		}
 
-		// Get current user by id
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if currentUser.ID != seller.UserID && string(currentUser.Role) != string(models.AdminRole) {
+		if currentUser.ID != seller.UserID && currentUser.Role != models.AdminRole {
 			return fmt.Errorf("only admin can delete other seller")
 		}
-
-		// Delete a seller
 		return sellerRepository.DeleteSeller(ctx, sellerId)
 	})
 }

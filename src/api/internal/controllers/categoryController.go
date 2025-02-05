@@ -13,12 +13,12 @@ import (
 )
 
 type CategoryController struct {
-	controllerService services.ICategoryService
+	categoryService services.ICategoryService
 }
 
 func NewCategoryController(categoryService services.ICategoryService) *CategoryController {
 	return &CategoryController{
-		controllerService: categoryService,
+		categoryService: categoryService,
 	}
 }
 
@@ -36,7 +36,6 @@ func NewCategoryController(categoryService services.ICategoryService) *CategoryC
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/categories [get]
 func (cc *CategoryController) GetCategories(ctx *gin.Context) {
-	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
 		response.
@@ -58,11 +57,8 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 		return
 	}
 
-	// Get the context
 	reqCtx := ctx.Request.Context()
-
-	// Get a list of categories
-	categories, pagination, err := cc.controllerService.GetCategories(reqCtx, page, limit)
+	categories, pagination, err := cc.categoryService.GetCategories(reqCtx, page, limit)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -73,7 +69,6 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	categoryResponses := make([]*dtos.GetCategoryResponse, 0)
 	for _, category := range categories {
 		categoryResponses = append(categoryResponses, &dtos.GetCategoryResponse{
@@ -89,10 +84,7 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 		Categories: categoryResponses,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
-	// Respond with the list of categories
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -116,10 +108,6 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/categories/{id} [get]
 func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -130,8 +118,8 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 		return
 	}
 
-	// Get the category by id
-	category, err := cc.controllerService.GetProductById(reqCtx, categoryId)
+	reqCtx := ctx.Request.Context()
+	category, err := cc.categoryService.GetCategoryById(reqCtx, categoryId)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -151,7 +139,6 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.GetCategoryResponse{
 		ID:        category.ID,
 		Name:      category.Name,
@@ -161,10 +148,62 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 		DeletedAt: category.DeletedAt,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
+	response.NewAPIResponse().
+		SetHeaders(headers).
+		SetStatusCode(http.StatusOK).
+		SetMessage("Successfully retrieved category").
+		SetData(data).
+		Respond(ctx)
+}
 
-	// Respond with the category
+// GetCategoryBySlug godoc
+//
+//	@Summary		Get a category
+//	@Description	Get a category by its slug
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			slug	path		string	true	"Category slug"
+//	@Success		200		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		404		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/categories/{slug} [get]
+func (cc *CategoryController) GetCategoryBySlug(ctx *gin.Context) {
+	categorySlug := ctx.Param("slug")
+
+	reqCtx := ctx.Request.Context()
+	category, err := cc.categoryService.GetCategoryBySlug(reqCtx, categorySlug)
+	if err != nil {
+		response.
+			NewAPIResponse().
+			SetStatusCode(http.StatusInternalServerError).
+			SetMessage("Failed to get the category").
+			SetError(err.Error()).
+			Respond(ctx)
+		return
+	}
+
+	if category == nil {
+		response.
+			NewAPIResponse().
+			SetStatusCode(http.StatusNotFound).
+			SetMessage("Category not found").
+			Respond(ctx)
+		return
+	}
+
+	data := &dtos.GetCategoryResponse{
+		ID:        category.ID,
+		Name:      category.Name,
+		Slug:      category.Slug,
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
+		DeletedAt: category.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -186,10 +225,6 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/categories [post]
 func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Parse input
 	var categoryRequest dtos.CreateCategoryRequest
 	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
 		response.
@@ -201,7 +236,6 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -212,8 +246,8 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Create a category
-	if err := cc.controllerService.CreateCategory(reqCtx, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	reqCtx := ctx.Request.Context()
+	if err := cc.categoryService.CreateCategory(reqCtx, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -223,10 +257,7 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
-	// Respond with the created category
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
@@ -248,10 +279,6 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/categories/{id} [patch]
 func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -263,7 +290,6 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Get the request body
 	var categoryRequest dtos.UpdateCategoryRequest
 	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
 		response.
@@ -275,7 +301,6 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -286,8 +311,8 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Update the category
-	if err := cc.controllerService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	reqCtx := ctx.Request.Context()
+	if err := cc.categoryService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -297,9 +322,7 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -320,10 +343,6 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/categories/{id} [delete]
 func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	categoryId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -345,8 +364,8 @@ func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Delete the category
-	if err := cc.controllerService.DeleteCategory(reqCtx, categoryId, currentUserId.(uuid.UUID)); err != nil {
+	reqCtx := ctx.Request.Context()
+	if err := cc.categoryService.DeleteCategory(reqCtx, categoryId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -356,9 +375,7 @@ func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).

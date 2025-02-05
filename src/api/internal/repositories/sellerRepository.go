@@ -35,27 +35,23 @@ func (sr *sellerRepository) WithTX(tx *gorm.DB) ISellerRepository {
 	if tx == nil {
 		return sr
 	}
-
 	return &sellerRepository{
 		db: tx,
 	}
 }
 
 func (sr *sellerRepository) GetSellers(ctx context.Context, page, limit int) ([]*models.Seller, *pagination.Pagination, error) {
-	// Get total number of sellers
 	var totalSellers int64
 	if err := sr.db.WithContext(ctx).Model(&models.Seller{}).Count(&totalSellers).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of sellers: %w", err)
 	}
 
-	// Define pagination
 	pagination := pagination.NewPagination(page, limit, int(totalSellers))
 
 	var sellers []*models.Seller
 	if err := sr.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&sellers).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch sellers: %w", err)
 	}
-
 	return sellers, pagination, nil
 }
 
@@ -67,7 +63,6 @@ func (sr *sellerRepository) GetSellerById(ctx context.Context, sellerId uuid.UUI
 		}
 		return nil, fmt.Errorf("failed to get seller: %w", err)
 	}
-
 	return &seller, nil
 }
 
@@ -79,7 +74,6 @@ func (sr *sellerRepository) GetSellerByUserID(ctx context.Context, userId uuid.U
 		}
 		return nil, fmt.Errorf("failed to get seller: %w", err)
 	}
-
 	return &seller, nil
 }
 
@@ -87,7 +81,6 @@ func (sr *sellerRepository) CreateSeller(ctx context.Context, seller *models.Sel
 	if err := sr.db.WithContext(ctx).Create(seller).Error; err != nil {
 		return fmt.Errorf("failed to create seller: %w", err)
 	}
-
 	return nil
 }
 
@@ -100,7 +93,6 @@ func (sr *sellerRepository) UpdateSeller(ctx context.Context, sellerId uuid.UUID
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("seller with id %s not found", sellerId)
 	}
-
 	return nil
 }
 
@@ -113,6 +105,5 @@ func (sr *sellerRepository) DeleteSeller(ctx context.Context, sellerId uuid.UUID
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("seller with id %s not found", sellerId)
 	}
-
 	return nil
 }

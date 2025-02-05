@@ -15,8 +15,8 @@ type IUserRepository interface {
 	WithTX(tx *gorm.DB) IUserRepository
 	GetUsers(ctx context.Context, page, limit int) ([]*models.User, *pagination.Pagination, error)
 	GetUserById(ctx context.Context, userId uuid.UUID) (*models.User, error)
-	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (*models.User, error)
+	GetUserByEmail(ctx context.Context, userEmail string) (*models.User, error)
+	GetUserByPhoneNumber(ctx context.Context, userPhoneNumber string) (*models.User, error)
 	CreateUser(ctx context.Context, user *models.User) error
 	UpdateUser(ctx context.Context, userId uuid.UUID, user *models.User) error
 	DeleteUser(ctx context.Context, userId uuid.UUID) error
@@ -36,27 +36,23 @@ func (ur *userRepository) WithTX(tx *gorm.DB) IUserRepository {
 	if tx == nil {
 		return ur
 	}
-
 	return &userRepository{
 		db: tx,
 	}
 }
 
 func (ur *userRepository) GetUsers(ctx context.Context, page, limit int) ([]*models.User, *pagination.Pagination, error) {
-	// Get total number of users
 	var totalUsers int64
-	if err := ur.db.Model(&models.User{}).Count(&totalUsers).Error; err != nil {
+	if err := ur.db.WithContext(ctx).Model(&models.User{}).Count(&totalUsers).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of users: %w", err)
 	}
 
-	// Define pagination
 	pagination := pagination.NewPagination(page, limit, int(totalUsers))
 
 	var users []*models.User
 	if err := ur.db.WithContext(ctx).Offset(pagination.Offset).Limit(limit).Find(&users).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch users %w: ", err)
 	}
-
 	return users, pagination, nil
 }
 
@@ -68,31 +64,28 @@ func (ur *userRepository) GetUserById(ctx context.Context, userId uuid.UUID) (*m
 		}
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
 	}
-
 	return &user, nil
 }
 
-func (ur *userRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+func (ur *userRepository) GetUserByEmail(ctx context.Context, userEmail string) (*models.User, error) {
 	var user models.User
-	if err := ur.db.WithContext(ctx).Take(&user, "email = ?", email).Error; err != nil {
+	if err := ur.db.WithContext(ctx).Take(&user, "email = ?", userEmail).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
 	}
-
 	return &user, nil
 }
 
-func (ur *userRepository) GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (*models.User, error) {
+func (ur *userRepository) GetUserByPhoneNumber(ctx context.Context, userPhoneNumber string) (*models.User, error) {
 	var user models.User
-	if err := ur.db.WithContext(ctx).Take(&user, "phone_number = ?", phoneNumber).Error; err != nil {
+	if err := ur.db.WithContext(ctx).Take(&user, "phone_number = ?", userPhoneNumber).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
 	}
-
 	return &user, nil
 }
 
@@ -100,7 +93,6 @@ func (ur *userRepository) CreateUser(ctx context.Context, user *models.User) err
 	if err := ur.db.WithContext(ctx).Create(user).Error; err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
-
 	return nil
 }
 
@@ -113,7 +105,6 @@ func (ur *userRepository) UpdateUser(ctx context.Context, userId uuid.UUID, user
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("user	with id %s not found", userId)
 	}
-
 	return nil
 }
 
@@ -126,6 +117,5 @@ func (ur *userRepository) DeleteUser(ctx context.Context, userId uuid.UUID) erro
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("user with id %s not found", userId)
 	}
-
 	return nil
 }
