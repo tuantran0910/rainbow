@@ -5,14 +5,12 @@ on:
     branches:
       - main
       - master
-    paths:
-      "dbdocs/**"
+    paths: dbdocs/**
   pull_request:
     branches:
       - main
       - master
-    paths:
-      "dbdocs/**"
+    paths: dbdocs/**
 
 jobs:
   build:

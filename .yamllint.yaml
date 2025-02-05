@@ -1,0 +1,16 @@
+extends: default
+
+rules:
+  document-start:
+    present: false
+
+  line-length:
+    max: 150
+    level: warning
+
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+
+  colons: {max-spaces-before: 0, max-spaces-after: 1}
+  new-lines: {type: unix}

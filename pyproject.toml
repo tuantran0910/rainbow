@@ -39,6 +39,51 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.sqlfluff.core]
+dialect = "clickhouse"
+templater = "jinja"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+exclude_rules = "L014,L016,L020,L026,L027,L028,L029,L031,L032,L034,L037,L042,L044,L051"
+runaway_limit = 100
+ignore = "parsing,templating"
+large_file_skip_byte_limit = 100000
+
+[tool.sqlfluff.templater.jinja]
+apply_dbt_builtins = true
+
+[tool.sqlfluff.templater.dbt]
+project_dir = "./src/dbt"
+profiles_dir = "./src/dbt"
+profile = "clickhouse-profile"
+
+[tool.sqlfluff.indentation]
+indented_ctes = true
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = true
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.capitalisation.identifiers]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.capitalisation.functions]
+extended_capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.references.special_chars]
+allow_space_in_identifier = true
+additional_allowed_characters = ['.','(',')','-']
+
+[tool.sqlfluff.rules.aliasing.length]
+min_alias_length = 4
+
+[tool.uv.workspace]
+members = ["src/dbt"]
+
 [dependency-groups]
 docs = [
     "mkdocs-git-authors-plugin>=0.9.2",
@@ -48,6 +93,3 @@ docs = [
 dev = [
     "pre-commit>=4.1.0",
 ]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
