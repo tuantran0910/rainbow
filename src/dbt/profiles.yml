@@ -1,0 +1,20 @@
+clickhouse-profile:
+  target: dev
+  outputs:
+    common: &common
+      type: clickhouse
+      port: 8123
+      threads: 1
+      secure: false
+    dev:
+      <<: *common
+      host: localhost
+      user: dbt
+      password: "{{ env_var('CLICKHOUSE_DBT_PASSWORD') }}"
+      schema: raw
+    prod:
+      <<: *common
+      host: localhost
+      user: dbt
+      password: "{{ env_var('CLICKHOUSE_DBT_PASSWORD') }}"
+      schema: raw

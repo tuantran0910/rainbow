@@ -1,10 +1,8 @@
-x-airflow-common:
-  &airflow-common
+x-airflow-common: &airflow-common
   build:
     context: ${AIRFLOW_PROJ_DIR:-../../src/airflow}
     dockerfile: Dockerfile
-  environment:
-    &airflow-common-env
+  environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${AIRFLOW_DB_NAME}
     AIRFLOW__CORE__FERNET_KEY: ''
@@ -18,9 +16,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/plugins:/opt/airflow/plugins
   env_file:
     - ./.env
-  user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    &airflow-common-depends-on
+  user: ${AIRFLOW_UID:-50000}:0
+  depends_on: &airflow-common-depends-on
     postgres:
       condition: service_healthy
   networks:
@@ -35,14 +32,14 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${DB_PORT}:5432"
+      - ${DB_PORT}:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ./.env
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      test: [CMD, pg_isready, -U, '${DB_USER}']
       interval: 5s
       retries: 5
       start_period: 10s
@@ -57,7 +54,7 @@ services:
     container_name: api
     hostname: api
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - ../../src/api/migrations:/migrations
     env_file:
@@ -73,9 +70,9 @@ services:
     container_name: airflow-webserver
     command: webserver
     ports:
-      - "8080:8080"
+      - 8080:8080
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: [CMD, curl, --fail, http://localhost:8080/health]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -93,7 +90,7 @@ services:
     container_name: airflow-scheduler
     command: scheduler
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      test: [CMD, curl, --fail, http://localhost:8974/health]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -107,10 +104,10 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: "0.5"
+          cpus: '0.5'
         reservations:
           memory: 512M
-          cpus: "0.25"
+          cpus: '0.25'
     networks:
       - airflow-network
 
@@ -134,7 +131,7 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         exec /entrypoint airflow version
-    user: "0:0"
+    user: 0:0
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_MIGRATE: 'true'

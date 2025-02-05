@@ -7,7 +7,7 @@ definitions:
         minLength: 1
         type: string
     required:
-    - name
+      - name
     type: object
   dtos.CreateProductRequest:
     properties:
@@ -18,8 +18,8 @@ definitions:
       price:
         type: number
     required:
-    - name
-    - price
+      - name
+      - price
     type: object
   dtos.CreateSellerRequest:
     properties:
@@ -32,7 +32,7 @@ definitions:
         minLength: 1
         type: string
     required:
-    - name
+      - name
     type: object
   dtos.LoginUserRequest:
     properties:
@@ -43,8 +43,8 @@ definitions:
         minLength: 6
         type: string
     required:
-    - email
-    - password
+      - email
+      - password
     type: object
   dtos.RegisterUserRequest:
     properties:
@@ -66,15 +66,15 @@ definitions:
         type: string
       role:
         enum:
-        - ADMIN
-        - USER
+          - ADMIN
+          - USER
         type: string
     required:
-    - email
-    - first_name
-    - last_name
-    - password
-    - phone_number
+      - email
+      - first_name
+      - last_name
+      - password
+      - phone_number
     type: object
   dtos.UpdateCategoryRequest:
     properties:
@@ -119,8 +119,8 @@ definitions:
         type: string
       role:
         enum:
-        - ADMIN
-        - USER
+          - ADMIN
+          - USER
         type: string
     type: object
   response.APIResponse:
@@ -145,675 +145,675 @@ info:
     url: http://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
   title: Rainbow API
-  version: "1.0"
+  version: '1.0'
 paths:
   /categories:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a list of categories
       parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
+        - description: Page number
+          in: query
+          name: page
+          type: integer
+        - description: Number of items per page
+          in: query
+          name: limit
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a list of categories
       tags:
-      - categories
+        - categories
     post:
       consumes:
-      - application/json
+        - application/json
       description: Create a category
       parameters:
-      - description: Category information
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.CreateCategoryRequest'
+        - description: Category information
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.CreateCategoryRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "201":
+        '201':
           description: Created
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Create a category
       tags:
-      - categories
+        - categories
   /categories/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       description: Delete a category by its ID
       parameters:
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Category ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Delete a category
       tags:
-      - categories
+        - categories
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a category by its ID
       parameters:
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Category ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "404":
+        '404':
           description: Not Found
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a category
       tags:
-      - categories
+        - categories
     patch:
       consumes:
-      - application/json
+        - application/json
       description: Update a category by its ID
       parameters:
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Category information
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.UpdateCategoryRequest'
+        - description: Category ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Category information
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.UpdateCategoryRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Update a category
       tags:
-      - categories
+        - categories
   /login:
     post:
       consumes:
-      - application/json
+        - application/json
       description: Login to the system
       parameters:
-      - description: Login User Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.LoginUserRequest'
+        - description: Login User Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.LoginUserRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "401":
+        '401':
           description: Unauthorized
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Login
       tags:
-      - Auth
+        - Auth
   /products:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Fetch a list of products
       parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
+        - description: Page number
+          in: query
+          name: page
+          type: integer
+        - description: Number of items per page
+          in: query
+          name: limit
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get Products
       tags:
-      - Product
+        - Product
   /products/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       description: Delete a product by its ID
       parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: integer
+        - description: Product ID
+          in: path
+          name: id
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Delete Product
       tags:
-      - Product
+        - Product
     get:
       consumes:
-      - application/json
+        - application/json
       description: Fetch a product by its ID
       parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: integer
+        - description: Product ID
+          in: path
+          name: id
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "404":
+        '404':
           description: Not Found
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get Product
       tags:
-      - Product
+        - Product
     patch:
       consumes:
-      - application/json
+        - application/json
       description: Update a product by its ID
       parameters:
-      - description: Update Product Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.UpdateProductRequest'
+        - description: Update Product Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.UpdateProductRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Update Product
       tags:
-      - Product
+        - Product
     post:
       consumes:
-      - application/json
+        - application/json
       description: Create a product
       parameters:
-      - description: Create Product Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.CreateProductRequest'
+        - description: Create Product Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.CreateProductRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Create Product
       tags:
-      - Product
+        - Product
   /register:
     post:
       consumes:
-      - application/json
+        - application/json
       description: Register a new user
       parameters:
-      - description: Register User Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.RegisterUserRequest'
+        - description: Register User Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.RegisterUserRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "201":
+        '201':
           description: Created
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Register
       tags:
-      - Auth
+        - Auth
   /sellers:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a list of sellers
       parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Limit number
-        in: query
-        name: limit
-        type: integer
+        - description: Page number
+          in: query
+          name: page
+          type: integer
+        - description: Limit number
+          in: query
+          name: limit
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a list of sellers
       tags:
-      - Seller
+        - Seller
     post:
       consumes:
-      - application/json
+        - application/json
       description: Create a seller
       parameters:
-      - description: Create Seller Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.CreateSellerRequest'
+        - description: Create Seller Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.CreateSellerRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "201":
+        '201':
           description: Created
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Create Seller
       tags:
-      - Seller
+        - Seller
   /sellers/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       description: Delete a seller by its ID
       parameters:
-      - description: Seller ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Seller ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Delete Seller
       tags:
-      - Seller
+        - Seller
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a seller by its ID
       parameters:
-      - description: Seller ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Seller ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "404":
+        '404':
           description: Not Found
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a seller
       tags:
-      - Seller
+        - Seller
     patch:
       consumes:
-      - application/json
+        - application/json
       description: Update a seller by its ID
       parameters:
-      - description: Seller ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Update Seller Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.UpdateSellerRequest'
+        - description: Seller ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Update Seller Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.UpdateSellerRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "404":
+        '404':
           description: Not Found
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Update Seller
       tags:
-      - Seller
+        - Seller
   /users:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a list of users
       parameters:
-      - description: Page
-        in: query
-        name: page
-        type: integer
-      - description: Limit
-        in: query
-        name: limit
-        type: integer
+        - description: Page
+          in: query
+          name: page
+          type: integer
+        - description: Limit
+          in: query
+          name: limit
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a list of users
       tags:
-      - User
+        - User
   /users/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       description: Delete a user by its ID
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: User ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "204":
+        '204':
           description: No Content
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Delete a user
       tags:
-      - User
+        - User
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a user by its ID
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: User ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "404":
+        '404':
           description: Not Found
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get a user
       tags:
-      - User
+        - User
     patch:
       consumes:
-      - application/json
+        - application/json
       description: Update a user by its ID
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Update User Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.UpdateUserRequest'
+        - description: User ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Update User Request
+          in: body
+          name: req
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.UpdateUserRequest'
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "400":
+        '400':
           description: Bad Request
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Update a user
       tags:
-      - User
+        - User
   /users/me:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get the current user
       produces:
-      - application/json
+        - application/json
       responses:
-        "200":
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/response.APIResponse'
-        "500":
+        '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.APIResponse'
       summary: Get the current user
       tags:
-      - User
-swagger: "2.0"
+        - User
+swagger: '2.0'
