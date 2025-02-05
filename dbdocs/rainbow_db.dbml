@@ -21,7 +21,7 @@ Table users {
 Table authors {
   id uuid [primary key]
   name varchar(100) [not null]
-  nationality varchar(50)
+  slug varchar(100) [unique, not null]
   created_at timestamp [default: `current_timestamp`]
   updated_at timestamp [default: `current_timestamp`]
   deleted_at timestamp [default: null]
