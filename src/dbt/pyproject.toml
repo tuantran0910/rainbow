@@ -1,7 +1,7 @@
 [project]
 name = "dbt"
 version = "0.1.0"
-description = "Add your description here"
+description = "Rainbow dbt for data transformation and data modeling."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
