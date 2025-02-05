@@ -2,4 +2,4 @@ target/
 dbt_modules/
 dbt_packages/
 
-deployments/docker/scripts/postgres/init.sql
+deployments/docker/scripts/
