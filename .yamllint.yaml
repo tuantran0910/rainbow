@@ -1,3 +1,6 @@
+ignore: |
+  mkdocs.yml
+
 extends: default
 
 rules:
