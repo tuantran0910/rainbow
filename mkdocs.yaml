@@ -32,16 +32,16 @@ theme:
     - search.highlight
   logo: assets/images/logo.svg
   palette:
-    - media: (prefers-color-scheme)
+    - media: "(prefers-color-scheme)"
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
-    - media: '(prefers-color-scheme: light)'
+    - media: "(prefers-color-scheme: light)"
       scheme: default
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - media: '(prefers-color-scheme: dark)'
+    - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
         icon: material/brightness-4
@@ -63,8 +63,8 @@ nav:
   - Home: index.md
   - About: about.md
   - Setup:
-      - setup/index.md
-      - Setup Guide: setup/setup.md
+    - setup/index.md
+    - Setup Guide: setup/setup.md
   - Tags: tags.md
   - External Link: https://external.com
 
@@ -83,8 +83,8 @@ markdown_extensions:
       smart_enable: all
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !%21python/name:material.extensions.emoji.twemoji
-      emoji_generator: !%21python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -99,7 +99,7 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !%21python/name:pymdownx.superfences.fence_code_format
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.snippets
   - pymdownx.tabbed:
       alternate_style: true
