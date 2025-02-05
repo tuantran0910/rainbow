@@ -1,0 +1,64 @@
+<clickhouse>
+    <!--  Users -->
+    <users>
+        <root>
+            <password from_env="CLICKHOUSE_ROOT_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>admin_profile</profile>
+            <quota>default</quota>
+            <access_management>1</access_management>
+        </root>
+
+        <dbt>
+            <password from_env="CLICKHOUSE_DBT_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+            <access_management>1</access_management>
+            <allow_databases>
+                <database>raw</database>
+                <database>warehouse</database>
+            </allow_databases>
+        </dbt>
+
+        <superset>
+            <password from_env="CLICKHOUSE_SUPERSET_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>readonly</profile>
+            <allow_databases>
+                <database>analytics</database>
+            </allow_databases>
+        </superset>
+    </users>
+
+    <!-- Profiles -->
+    <profiles>
+        <default>
+            <max_memory_usage>1073741824</max_memory_usage> <!-- 1GB -->
+        </default>
+        <admin_profile>
+            <max_memory_usage>2147483648</max_memory_usage> <!-- 2 GB -->
+        </admin_profile>
+        <readonly>
+            <readonly>1</readonly>
+        </readonly>
+    </profiles>
+
+    <!-- Quotas -->
+    <quotas>
+        <default>
+            <interval>
+                <duration>3600</duration>
+                <queries>1000</queries>
+                <errors>50</errors>
+                <execution_time>60</execution_time>
+            </interval>
+        </default>
+    </quotas>
+</clickhouse>
