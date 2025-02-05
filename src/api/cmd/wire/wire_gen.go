@@ -51,3 +51,11 @@ func InitializeCategoryController(db *gorm.DB) (*controllers.CategoryController,
 	categoryController := controllers.NewCategoryController(iCategoryService)
 	return categoryController, nil
 }
+
+func InitializeAuthorController(db *gorm.DB) (*controllers.AuthorController, error) {
+	iAuthorRepository := repositories.NewAuthorRepository(db)
+	iUserRepository := repositories.NewUserRepository(db)
+	iAuthorService := services.NewAuthorService(db, iAuthorRepository, iUserRepository)
+	authorController := controllers.NewAuthorController(iAuthorService)
+	return authorController, nil
+}

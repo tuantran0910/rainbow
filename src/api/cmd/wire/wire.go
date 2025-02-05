@@ -61,3 +61,14 @@ func InitializeCategoryController(db *gorm.DB) (*controllers.CategoryController,
 
 	return &controllers.CategoryController{}, nil
 }
+
+func InitializeAuthorController(db *gorm.DB) (*controllers.AuthorController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		repositories.NewAuthorRepository,
+		services.NewAuthorService,
+		controllers.NewAuthorController,
+	)
+
+	return &controllers.AuthorController{}, nil
+}
