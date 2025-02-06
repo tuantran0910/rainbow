@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/dtos"
@@ -190,6 +191,10 @@ func (ps *bookService) UpdateBook(ctx context.Context, bookId uuid.UUID, bookReq
 			}
 			if bookInventory == nil {
 				return fmt.Errorf("inventory for book with id %s not found", bookId)
+			}
+
+			if *bookRequest.Stock > bookInventory.Stock {
+				bookInventory.LastRestockedAt = time.Now()
 			}
 
 			bookInventory.Stock = *bookRequest.Stock
