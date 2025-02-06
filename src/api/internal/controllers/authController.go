@@ -33,10 +33,6 @@ func NewAuthController(authService services.IAuthService) *AuthController {
 //	@Failure		401	{object}	response.APIResponse
 //	@Router			/login [post]
 func (ac *AuthController) Login(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get the body request
 	var loginUserRequest dtos.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&loginUserRequest); err != nil {
 		response.
@@ -48,7 +44,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Login and get the token
+	reqCtx := ctx.Request.Context()
 	token, err := ac.authService.Login(reqCtx, loginUserRequest)
 	if err != nil {
 		response.
@@ -60,14 +56,11 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.LoginUserResponse{
 		Token: token,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -89,10 +82,6 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/register [post]
 func (ac *AuthController) Register(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get the body request
 	var registerUserRequest dtos.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&registerUserRequest); err != nil {
 		response.
@@ -104,7 +93,7 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	// Create a user
+	reqCtx := ctx.Request.Context()
 	if err := ac.authService.Register(reqCtx, registerUserRequest); err != nil {
 		response.
 			NewAPIResponse().
@@ -115,9 +104,7 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).

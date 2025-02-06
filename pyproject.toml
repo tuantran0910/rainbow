@@ -43,7 +43,7 @@ docstring-code-line-length = "dynamic"
 max-complexity = 10
 
 [tool.sqlfluff.core]
-dialect = "clickhouse"
+dialect = "ansi"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
 exclude_rules = "L014,L016,L020,L026,L027,L028,L029,L031,L032,L034,L037,L042,L044,L051"

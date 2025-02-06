@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -16,7 +15,8 @@ import (
 
 type ICategoryService interface {
 	GetCategories(ctx context.Context, page, limit int) ([]*models.Category, *pagination.Pagination, error)
-	GetProductById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error)
+	GetCategoryById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error)
+	GetCategoryBySlug(ctx context.Context, categorySlug string) (*models.Category, error)
 	CreateCategory(ctx context.Context, categoryRequest dtos.CreateCategoryRequest, currentUserId uuid.UUID) error
 	UpdateCategory(ctx context.Context, categoryId uuid.UUID, categoryRequest dtos.UpdateCategoryRequest, currentUserId uuid.UUID) error
 	DeleteCategory(ctx context.Context, categoryId uuid.UUID, currentUserId uuid.UUID) error
@@ -48,89 +48,74 @@ func (cs *categoryService) GetCategories(ctx context.Context, page, limit int) (
 	return cs.categoryRepository.GetCategories(ctx, page, limit)
 }
 
-func (cs *categoryService) GetProductById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error) {
-	return cs.categoryRepository.GetProductById(ctx, categoryId)
+func (cs *categoryService) GetCategoryById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error) {
+	return cs.categoryRepository.GetCategoryById(ctx, categoryId)
+}
+
+func (cs *categoryService) GetCategoryBySlug(ctx context.Context, categorySlug string) (*models.Category, error) {
+	return cs.categoryRepository.GetCategoryBySlug(ctx, categorySlug)
 }
 
 func (cs *categoryService) CreateCategory(ctx context.Context, categoryRequest dtos.CreateCategoryRequest, currentUserId uuid.UUID) error {
 	return cs.withTx(ctx, func(ctx context.Context, categoryRepository repositories.ICategoryRepository, userRepository repositories.IUserRepository) error {
-		// Check if the user is an admin
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if string(currentUser.Role) != string(models.AdminRole) {
-			return fmt.Errorf("only admin can create category")
+		if currentUser.Role != models.AdminRole {
+			return fmt.Errorf("current user does not have permission to create category")
 		}
 
-		// Construct a slug for the category
-		slug := slug.Make(categoryRequest.Name)
+		categorySlug := categoryRequest.Slug
+		if categorySlug == "" {
+			categorySlug = slug.Make(categoryRequest.Name)
+		}
 
-		// Check if the category already exists
-		existingCategory, err := categoryRepository.GetCategoryBySlug(ctx, slug)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		existingCategory, err := categoryRepository.GetCategoryBySlug(ctx, categorySlug)
+		if err != nil {
+			if existingCategory != nil {
+				return fmt.Errorf("category with slug %s already existed", categorySlug)
+			}
 			return err
 		}
 
-		if existingCategory != nil {
-			return errors.New("category already exists")
-		}
-
-		// Define a new category
 		category := &models.Category{
 			Name: categoryRequest.Name,
-			Slug: slug,
+			Slug: categorySlug,
 		}
-
 		return categoryRepository.CreateCategory(ctx, category)
 	})
 }
 
 func (cs *categoryService) UpdateCategory(ctx context.Context, categoryId uuid.UUID, categoryRequest dtos.UpdateCategoryRequest, currentUserId uuid.UUID) error {
 	return cs.withTx(ctx, func(ctx context.Context, categoryRepository repositories.ICategoryRepository, userRepository repositories.IUserRepository) error {
-		// Check if the user is an admin
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if string(currentUser.Role) != string(models.AdminRole) {
-			return fmt.Errorf("only admin can update category")
+		if currentUser.Role != models.AdminRole {
+			return fmt.Errorf("current user does not have permission to update ")
 		}
 
-		// Get the category by id
-		category, err := categoryRepository.GetProductById(ctx, categoryId)
+		category, err := categoryRepository.GetCategoryById(ctx, categoryId)
 		if err != nil {
 			return err
 		}
-
-		// Apply the updates
-		if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
-			category.Name = *categoryRequest.Name
-			slug := slug.Make(*categoryRequest.Name)
-
-			// Check if the category already exists
-			existingCategory, err := categoryRepository.GetCategoryBySlug(ctx, slug)
-			if err != nil && err != gorm.ErrRecordNotFound {
-				return err
-			}
-
-			if existingCategory != nil {
-				return errors.New("category already exists")
-			}
-
-			category.Slug = slug
+		if category == nil {
+			return fmt.Errorf("category with id %s not found", categoryId)
 		}
 
+		if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
+			category.Name = *categoryRequest.Name
+		}
 		return categoryRepository.UpdateCategory(ctx, categoryId, category)
 	})
 }
@@ -139,18 +124,16 @@ func (cs *categoryService) DeleteCategory(ctx context.Context, categoryId uuid.U
 	return cs.withTx(ctx, func(ctx context.Context, categoryRepository repositories.ICategoryRepository, userRepository repositories.IUserRepository) error {
 		// Check if the user is an admin
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil {
 			return err
 		}
-
 		if currentUser == nil {
 			return fmt.Errorf("current user not found")
 		}
 
-		if string(currentUser.Role) != string(models.AdminRole) {
-			return fmt.Errorf("only admin can delete category")
+		if currentUser.Role != models.AdminRole {
+			return fmt.Errorf("current user does not have permission to delete category")
 		}
-
 		return categoryRepository.DeleteCategory(ctx, categoryId)
 	})
 }

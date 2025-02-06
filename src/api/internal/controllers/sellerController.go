@@ -36,7 +36,6 @@ func NewSellerController(sellerService services.ISellerService) *SellerControlle
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/sellers [get]
 func (sc *SellerController) GetSellers(ctx *gin.Context) {
-	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
 		response.
@@ -58,10 +57,7 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 		return
 	}
 
-	// Get the context
 	reqCtx := ctx.Request.Context()
-
-	// Get a list of sellers
 	sellers, pagination, err := sc.sellerService.GetSellers(reqCtx, page, limit)
 	if err != nil {
 		response.
@@ -73,7 +69,6 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	sellerResponses := make([]*dtos.GetSellerResponse, 0)
 	for _, seller := range sellers {
 		sellerResponses = append(sellerResponses, &dtos.GetSellerResponse{
@@ -91,9 +86,7 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 		Sellers: sellerResponses,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -117,10 +110,6 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/sellers/{id} [get]
 func (sc *SellerController) GetSellerById(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	sellerId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -131,7 +120,7 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 		return
 	}
 
-	// Get the seller
+	reqCtx := ctx.Request.Context()
 	seller, err := sc.sellerService.GetSellerById(reqCtx, sellerId)
 	if err != nil {
 		response.
@@ -151,7 +140,6 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.GetSellerResponse{
 		ID:        seller.ID,
 		UserID:    seller.UserID,
@@ -163,9 +151,7 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 		DeletedAt: seller.DeletedAt,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -187,10 +173,6 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/sellers [post]
 func (sc *SellerController) CreateSeller(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Bind the request body to the struct
 	var sellerRequest dtos.CreateSellerRequest
 	if err := ctx.ShouldBindJSON(&sellerRequest); err != nil {
 		response.
@@ -201,7 +183,6 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -212,7 +193,7 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Create a seller
+	reqCtx := ctx.Request.Context()
 	if err := sc.sellerService.CreateSeller(reqCtx, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
@@ -222,9 +203,7 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
@@ -247,10 +226,6 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/sellers/{id} [patch]
 func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	sellerId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -261,7 +236,6 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Bind the request body to the struct
 	var sellerRequest dtos.UpdateSellerRequest
 	if err := ctx.ShouldBindJSON(&sellerRequest); err != nil {
 		response.
@@ -272,7 +246,6 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -283,7 +256,7 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Update the seller
+	reqCtx := ctx.Request.Context()
 	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
@@ -293,9 +266,7 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -316,10 +287,6 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/sellers/{id} [delete]
 func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	sellerId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -330,7 +297,6 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -341,7 +307,7 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Delete the seller
+	reqCtx := ctx.Request.Context()
 	if err := sc.sellerService.DeleteSeller(reqCtx, sellerId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
@@ -351,9 +317,7 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).

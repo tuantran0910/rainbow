@@ -37,13 +37,14 @@ func (as *authService) withTx(ctx context.Context, fn func(context.Context, repo
 }
 
 func (as *authService) Login(ctx context.Context, loginUserRequest dtos.LoginUserRequest) (string, error) {
-	// Retrieve the user by email
 	user, err := as.userRepository.GetUserByEmail(ctx, loginUserRequest.Email)
 	if err != nil {
 		return "", err
 	}
+	if user == nil {
+		return "", fmt.Errorf("user not found")
+	}
 
-	// Compare the provided password and the password in the database
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUserRequest.Password)); err != nil {
 		return "", fmt.Errorf("invalid credentials: %w", err)
 	}
@@ -52,35 +53,27 @@ func (as *authService) Login(ctx context.Context, loginUserRequest dtos.LoginUse
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}
-
 	return token, nil
 }
 
 func (as *authService) Register(ctx context.Context, registerUserRequest dtos.RegisterUserRequest) error {
-	var existingUser *models.User
-
-	// Check if the email already exists
-	existingUser, err := as.userRepository.GetUserByEmail(ctx, registerUserRequest.Email)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return err
-	}
-
-	if existingUser != nil {
-		return fmt.Errorf("email already exists")
-	}
-
-	// Check if the phone number already exists
-	existingUser, err = as.userRepository.GetUserByPhoneNumber(ctx, registerUserRequest.PhoneNumber)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return err
-	}
-
-	if existingUser != nil {
-		return fmt.Errorf("phone number already exists")
-	}
-
 	return as.withTx(ctx, func(ctx context.Context, userRepository repositories.IUserRepository) error {
-		// Define a new user
+		existingUserWithEmail, err := as.userRepository.GetUserByEmail(ctx, registerUserRequest.Email)
+		if err != nil {
+			if existingUserWithEmail != nil {
+				return fmt.Errorf("email already exists")
+			}
+			return err
+		}
+
+		existingUserWithPhoneNumber, err := as.userRepository.GetUserByPhoneNumber(ctx, registerUserRequest.PhoneNumber)
+		if err != nil {
+			if existingUserWithPhoneNumber != nil {
+				return fmt.Errorf("phone number already exists")
+			}
+			return err
+		}
+
 		user := &models.User{
 			Email:       registerUserRequest.Email,
 			Password:    registerUserRequest.Password,
@@ -89,8 +82,6 @@ func (as *authService) Register(ctx context.Context, registerUserRequest dtos.Re
 			PhoneNumber: registerUserRequest.PhoneNumber,
 			Role:        models.Role(registerUserRequest.Role),
 		}
-
-		// Create a new user
 		return userRepository.CreateUser(ctx, user)
 	})
 }

@@ -36,7 +36,6 @@ func NewUserController(userService services.IUserService) *UserController {
 //	@Failure		500		{object}	response.APIResponse
 //	@Router			/users [get]
 func (uc *UserController) GetUsers(ctx *gin.Context) {
-	// Get pagination parameters from the query string
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
 		response.
@@ -58,10 +57,7 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 		return
 	}
 
-	// Get the context
 	reqCtx := ctx.Request.Context()
-
-	// Get a list of users
 	users, pagination, err := uc.userService.GetUsers(reqCtx, page, limit)
 	if err != nil {
 		response.
@@ -73,7 +69,6 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	userResponses := make([]*dtos.GetUserResponse, 0)
 	for _, user := range users {
 		userResponses = append(userResponses, &dtos.GetUserResponse{
@@ -94,9 +89,7 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 		Users: userResponses,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -117,10 +110,6 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/users/me [get]
 func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -131,7 +120,7 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	// Get a user by ID
+	reqCtx := ctx.Request.Context()
 	user, err := uc.userService.GetUserById(reqCtx, currentUserId.(uuid.UUID))
 	if err != nil {
 		response.
@@ -151,7 +140,6 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.GetUserResponse{
 		ID:          user.ID,
 		Email:       user.Email,
@@ -166,9 +154,7 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 		DeletedAt:   user.DeletedAt,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -191,10 +177,6 @@ func (uc *UserController) GetCurrentUser(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/users/{id} [get]
 func (uc *UserController) GetUserById(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	userId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -205,7 +187,7 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 		return
 	}
 
-	// Get a user by ID
+	reqCtx := ctx.Request.Context()
 	user, err := uc.userService.GetUserById(reqCtx, userId)
 	if err != nil {
 		response.
@@ -225,7 +207,6 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 		return
 	}
 
-	// Parse output
 	data := &dtos.GetUserResponse{
 		ID:          user.ID,
 		Email:       user.Email,
@@ -240,9 +221,7 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 		DeletedAt:   user.DeletedAt,
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(data, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -265,10 +244,6 @@ func (uc *UserController) GetUserById(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/users/{id} [patch]
 func (uc *UserController) UpdateUser(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	userId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -279,7 +254,6 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// Get the request body
 	var userRequest dtos.UpdateUserRequest
 	if err := ctx.ShouldBindJSON(&userRequest); err != nil {
 		response.
@@ -290,7 +264,6 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -301,7 +274,7 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// Update the user
+	reqCtx := ctx.Request.Context()
 	if err := uc.userService.UpdateUser(reqCtx, userId, userRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
@@ -311,9 +284,7 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
@@ -334,10 +305,6 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 //	@Failure		500	{object}	response.APIResponse
 //	@Router			/users/{id} [delete]
 func (uc *UserController) DeleteUser(ctx *gin.Context) {
-	// Get the context
-	reqCtx := ctx.Request.Context()
-
-	// Get ID from the URL
 	userId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
@@ -348,7 +315,6 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// Get the current user's ID
 	currentUserId, ok := ctx.Get("user_id")
 	if !ok {
 		response.
@@ -359,7 +325,7 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// Delete the user
+	reqCtx := ctx.Request.Context()
 	if err := uc.userService.DeleteUser(reqCtx, userId, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
@@ -369,9 +335,7 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// Set headers
 	headers := headers.NewHeaders(nil, ctx)
-
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).

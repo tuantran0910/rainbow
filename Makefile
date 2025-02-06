@@ -25,6 +25,10 @@ build: ## Build all Docker compose services
 	@echo "Building all Docker compose services..."
 	@docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) build $(filter-out $@,$(MAKECMDGOALS))
 
+ps: ## Show status of all Docker compose services
+	@echo "Showing status of all Docker compose services..."
+	@docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) ps
+
 logs: ## Show logs for all Docker compose services
 	@echo "Showing logs for all Docker compose services..."
 	@docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) logs -f $(filter-out $@,$(MAKECMDGOALS))

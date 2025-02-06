@@ -7,16 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type CreateCategoryRequest struct {
+type CreateAuthorRequest struct {
 	Name string `json:"name" binding:"required,min=1,max=255"`
 	Slug string `json:"slug" binding:"omitempty,min=1,max=255"`
 }
 
-type UpdateCategoryRequest struct {
+type UpdateAuthorRequest struct {
 	Name *string `json:"name" binding:"omitempty,min=1,max=255"`
 }
 
-type GetCategoryResponse struct {
+type GetAuthorResponse struct {
 	ID        uuid.UUID      `json:"id"`
 	Name      string         `json:"name"`
 	Slug      string         `json:"slug"`
@@ -25,6 +25,6 @@ type GetCategoryResponse struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty"`
 }
 
-type ListCategoriesResponse struct {
-	Categories []*GetCategoryResponse `json:"categories"`
+type ListAuthorsResponse struct {
+	Authors []*GetAuthorResponse `json:"authors"`
 }

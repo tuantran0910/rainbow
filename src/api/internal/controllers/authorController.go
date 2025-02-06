@@ -12,21 +12,21 @@ import (
 	"github.com/tuantran0910/rainbow/pkg/utils/response"
 )
 
-type CategoryController struct {
-	categoryService services.ICategoryService
+type AuthorController struct {
+	authorService services.IAuthorService
 }
 
-func NewCategoryController(categoryService services.ICategoryService) *CategoryController {
-	return &CategoryController{
-		categoryService: categoryService,
+func NewAuthorController(authorService services.IAuthorService) *AuthorController {
+	return &AuthorController{
+		authorService: authorService,
 	}
 }
 
-// GetCategories godoc
+// GetAuthors godoc
 //
-//	@Summary		Get a list of categories
-//	@Description	Get a list of categories
-//	@Tags			categories
+//	@Summary		Get Authors
+//	@Description	Fetch a list of authors
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
 //	@Param			page	query		int	false	"Page number"
@@ -34,8 +34,8 @@ func NewCategoryController(categoryService services.ICategoryService) *CategoryC
 //	@Success		200		{object}	response.APIResponse
 //	@Failure		400		{object}	response.APIResponse
 //	@Failure		500		{object}	response.APIResponse
-//	@Router			/categories [get]
-func (cc *CategoryController) GetCategories(ctx *gin.Context) {
+//	@Router			/authors [get]
+func (ac *AuthorController) GetAuthors(ctx *gin.Context) {
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
 		response.
@@ -58,30 +58,30 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	categories, pagination, err := cc.categoryService.GetCategories(reqCtx, page, limit)
+	authors, pagination, err := ac.authorService.GetAuthors(reqCtx, page, limit)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to get categories").
+			SetMessage("Failed to get authors").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
 	}
 
-	categoryResponses := make([]*dtos.GetCategoryResponse, 0)
-	for _, category := range categories {
-		categoryResponses = append(categoryResponses, &dtos.GetCategoryResponse{
-			ID:        category.ID,
-			Name:      category.Name,
-			Slug:      category.Slug,
-			CreatedAt: category.CreatedAt,
-			UpdatedAt: category.UpdatedAt,
-			DeletedAt: category.DeletedAt,
+	authorResponses := make([]*dtos.GetAuthorResponse, 0)
+	for _, author := range authors {
+		authorResponses = append(authorResponses, &dtos.GetAuthorResponse{
+			ID:        author.ID,
+			Name:      author.Name,
+			Slug:      author.Slug,
+			CreatedAt: author.CreatedAt,
+			UpdatedAt: author.UpdatedAt,
+			DeletedAt: author.DeletedAt,
 		})
 	}
-	data := &dtos.ListCategoriesResponse{
-		Categories: categoryResponses,
+	data := &dtos.ListAuthorsResponse{
+		Authors: authorResponses,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
@@ -89,26 +89,26 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetPagination(pagination).
-		SetMessage("Successfully retrieved categories").
+		SetMessage("Successfully retrieved authors").
 		SetData(data).
 		Respond(ctx)
 }
 
-// GetCategoryById godoc
+// GetAuthorById godoc
 //
-//	@Summary		Get a category
-//	@Description	Get a category by its ID
-//	@Tags			categories
+//	@Summary		Get Author by ID
+//	@Description	Fetch an author by ID
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Category ID"
+//	@Param			id	path		string	true	"Author ID"
 //	@Success		200	{object}	response.APIResponse
 //	@Failure		400	{object}	response.APIResponse
 //	@Failure		404	{object}	response.APIResponse
 //	@Failure		500	{object}	response.APIResponse
-//	@Router			/categories/{id} [get]
-func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
-	categoryId, err := uuid.Parse(ctx.Param("id"))
+//	@Router			/authors/{id} [get]
+func (ac *AuthorController) GetAuthorById(ctx *gin.Context) {
+	authorId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -119,118 +119,118 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	category, err := cc.categoryService.GetCategoryById(reqCtx, categoryId)
+	author, err := ac.authorService.GetAuthorById(reqCtx, authorId)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to get the category").
+			SetMessage("Failed to get the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
 	}
 
-	if category == nil {
+	if author == nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusNotFound).
-			SetMessage("Category not found").
+			SetMessage("Author not found").
 			Respond(ctx)
 		return
 	}
 
-	data := &dtos.GetCategoryResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		Slug:      category.Slug,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
-		DeletedAt: category.DeletedAt,
+	data := &dtos.GetAuthorResponse{
+		ID:        author.ID,
+		Name:      author.Name,
+		Slug:      author.Slug,
+		CreatedAt: author.CreatedAt,
+		UpdatedAt: author.UpdatedAt,
+		DeletedAt: author.DeletedAt,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully retrieved category").
+		SetMessage("Successfully retrieved author").
 		SetData(data).
 		Respond(ctx)
 }
 
-// GetCategoryBySlug godoc
+// GetAuthorBySlug godoc
 //
-//	@Summary		Get a category
-//	@Description	Get a category by its slug
-//	@Tags			categories
+//	@Summary		Get Author by Slug
+//	@Description	Fetch an author by its slug
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			slug	path		string	true	"Category slug"
+//	@Param			slug	path		string	true	"Author Slug"
 //	@Success		200		{object}	response.APIResponse
 //	@Failure		400		{object}	response.APIResponse
 //	@Failure		404		{object}	response.APIResponse
 //	@Failure		500		{object}	response.APIResponse
-//	@Router			/categories/{slug} [get]
-func (cc *CategoryController) GetCategoryBySlug(ctx *gin.Context) {
-	categorySlug := ctx.Param("slug")
+//	@Router			/authors/slug/{slug} [get]
+func (ac *AuthorController) GetAuthorBySlug(ctx *gin.Context) {
+	authorSlug := ctx.Param("slug")
 
 	reqCtx := ctx.Request.Context()
-	category, err := cc.categoryService.GetCategoryBySlug(reqCtx, categorySlug)
+	author, err := ac.authorService.GetAuthorBySlug(reqCtx, authorSlug)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to get the category").
+			SetMessage("Failed to get the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
 	}
 
-	if category == nil {
+	if author == nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusNotFound).
-			SetMessage("Category not found").
+			SetMessage("Author not found").
 			Respond(ctx)
 		return
 	}
 
-	data := &dtos.GetCategoryResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		Slug:      category.Slug,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
-		DeletedAt: category.DeletedAt,
+	data := &dtos.GetAuthorResponse{
+		ID:        author.ID,
+		Name:      author.Name,
+		Slug:      author.Slug,
+		CreatedAt: author.CreatedAt,
+		UpdatedAt: author.UpdatedAt,
+		DeletedAt: author.DeletedAt,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully retrieved category").
+		SetMessage("Successfully retrieved author").
 		SetData(data).
 		Respond(ctx)
 }
 
-// CreateCategory godoc
+// CreateAuthor godoc
 //
-//	@Summary		Create a category
-//	@Description	Create a category
-//	@Tags			categories
+//	@Summary		Create Author
+//	@Description	Create a new author
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dtos.CreateCategoryRequest	true	"Category information"
-//	@Success		201		{object}	response.APIResponse
-//	@Failure		400		{object}	response.APIResponse
-//	@Failure		500		{object}	response.APIResponse
-//	@Router			/categories [post]
-func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
-	var categoryRequest dtos.CreateCategoryRequest
-	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
+//	@Param			req	body		dtos.CreateAuthorRequest	true	"Create Author Request"
+//	@Success		201	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/authors [post]
+func (ac *AuthorController) CreateAuthor(ctx *gin.Context) {
+	var authorRequest dtos.CreateAuthorRequest
+	if err := ctx.ShouldBindJSON(&authorRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Invalid request body").
+			SetMessage("Invalid Body Request").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -247,11 +247,12 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.CreateCategory(reqCtx, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	err := ac.authorService.CreateAuthor(reqCtx, authorRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to create the category").
+			SetMessage("Failed to create the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -261,41 +262,40 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
-		SetMessage("Successfully created the category").
+		SetMessage("Successfully created author").
 		Respond(ctx)
 }
 
-// UpdateCategory godoc
+// UpdateAuthor godoc
 //
-//	@Summary		Update a category
-//	@Description	Update a category by its ID
-//	@Tags			categories
+//	@Summary		Update Author
+//	@Description	Update an author by its ID
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string						true	"Category ID"
-//	@Param			request	body		dtos.UpdateCategoryRequest	true	"Category information"
-//	@Success		200		{object}	response.APIResponse
-//	@Failure		400		{object}	response.APIResponse
-//	@Failure		500		{object}	response.APIResponse
-//	@Router			/categories/{id} [patch]
-func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
-	categoryId, err := uuid.Parse(ctx.Param("id"))
+//	@Param			id	path		string						true	"Author ID"
+//	@Param			req	body		dtos.UpdateAuthorRequest	true	"Update Author Request"
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/authors/{id} [patch]
+func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
+	authorId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).
-			Respond(ctx)
+			SetError(err.Error()).Respond(ctx)
 		return
 	}
 
-	var categoryRequest dtos.UpdateCategoryRequest
-	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
+	var authorRequest dtos.UpdateAuthorRequest
+	if err := ctx.ShouldBindJSON(&authorRequest); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Invalid request body").
+			SetMessage("Invalid Body Request").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -312,11 +312,12 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	err = ac.authorService.UpdateAuthor(reqCtx, authorId, authorRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to update the category").
+			SetMessage("Failed to update the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -326,31 +327,30 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully updated category").
+		SetMessage("Successfully updated author").
 		Respond(ctx)
 }
 
-// DeleteCategory godoc
+// DeleteAuthor godoc
 //
-//	@Summary		Delete a category
-//	@Description	Delete a category by its ID
-//	@Tags			categories
+//	@Summary		Delete Author
+//	@Description	Delete an author by its ID
+//	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Category ID"
+//	@Param			id	path		string	true	"Author ID"
 //	@Success		204	{object}	response.APIResponse
 //	@Failure		400	{object}	response.APIResponse
 //	@Failure		500	{object}	response.APIResponse
-//	@Router			/categories/{id} [delete]
-func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
-	categoryId, err := uuid.Parse(ctx.Param("id"))
+//	@Router			/authors/{id} [delete]
+func (ac *AuthorController) DeleteAuthor(ctx *gin.Context) {
+	authorId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).
-			Respond(ctx)
+			SetError(err.Error()).Respond(ctx)
 		return
 	}
 
@@ -365,11 +365,12 @@ func (cc *CategoryController) DeleteCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.DeleteCategory(reqCtx, categoryId, currentUserId.(uuid.UUID)); err != nil {
+	err = ac.authorService.DeleteAuthor(reqCtx, authorId, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to delete the category").
+			SetMessage("Failed to delete the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return

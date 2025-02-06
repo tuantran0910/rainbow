@@ -21,6 +21,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	userController, _ := wire.InitializeUserController(db)
 	sellerController, _ := wire.InitializeSellerController(db)
 	categoryController, _ := wire.InitializeCategoryController(db)
+	authorController, _ := wire.InitializeAuthorController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -71,9 +72,21 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		{
 			categories.GET("", categoryController.GetCategories)
 			categories.GET(":id", categoryController.GetCategoryById)
+			categories.GET("/slugs/:slug", categoryController.GetCategoryBySlug)
 			categories.POST("", middlewares.AuthMiddleware(), categoryController.CreateCategory)
 			categories.PATCH(":id", middlewares.AuthMiddleware(), categoryController.UpdateCategory)
 			categories.DELETE(":id", middlewares.AuthMiddleware(), categoryController.DeleteCategory)
+		}
+
+		// Author routes
+		authors := api.Group("/authors")
+		{
+			authors.GET("", authorController.GetAuthors)
+			authors.GET(":id", authorController.GetAuthorById)
+			authors.GET("/slugs/:slug", authorController.GetAuthorBySlug)
+			authors.POST("", middlewares.AuthMiddleware(), authorController.CreateAuthor)
+			authors.PATCH(":id", middlewares.AuthMiddleware(), authorController.UpdateAuthor)
+			authors.DELETE(":id", middlewares.AuthMiddleware(), authorController.DeleteAuthor)
 		}
 	}
 
