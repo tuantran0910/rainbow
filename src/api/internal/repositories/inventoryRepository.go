@@ -42,7 +42,7 @@ func (ir *inventoryRepository) GetInventoryByBookID(ctx context.Context, bookID 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to fetch inventory: %w", err)
+		return nil, fmt.Errorf("failed to fetch inventory with id %s: %w", bookID, err)
 	}
 	return &inventory, nil
 }
@@ -56,7 +56,7 @@ func (ir *inventoryRepository) CreateInventory(ctx context.Context, inventory *m
 
 func (ir *inventoryRepository) UpdateInventory(ctx context.Context, inventoryId uuid.UUID, inventory *models.Inventory) error {
 	if err := ir.db.WithContext(ctx).Model(&models.Inventory{}).Where("id = ?", inventoryId).Updates(inventory).Error; err != nil {
-		return fmt.Errorf("failed to update inventory: %w", err)
+		return fmt.Errorf("failed to update inventory with id %s: %w", inventoryId, err)
 	}
 	return nil
 }
