@@ -53,7 +53,7 @@ func (ss *sellerService) GetSellerById(ctx context.Context, sellerId uuid.UUID) 
 
 func (ss *sellerService) CreateSeller(ctx context.Context, sellerRequest dtos.CreateSellerRequest, currentUserId uuid.UUID) error {
 	return ss.withTx(ctx, func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
-		exitingSeller, err := sellerRepository.GetSellerByUserID(ctx, currentUserId)
+		exitingSeller, err := sellerRepository.GetSellerByUserId(ctx, currentUserId)
 		if err != nil {
 			if exitingSeller != nil {
 				return fmt.Errorf("seller already exists")
