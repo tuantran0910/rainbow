@@ -1,0 +1,31 @@
+[pr_description]
+generate_ai_title=true
+
+[pr_reviewer]
+extra_instructions="""\
+## General Review Instructions
+- Ensure that the code follows best practices for readability, maintainability, and efficiency.
+- Verify that the changes do not introduce security vulnerabilities.
+- Check for consistency with the existing codebase, including naming conventions, indentation, and formatting.
+- Ensure that all new or modified functions/classes have appropriate docstrings and comments.
+- Verify that error handling and logging are properly implemented.
+
+## Specific Code Review Guidelines
+- If the PR modifies database queries, check for performance implications (e.g., indexing, joins, and query optimization).
+- If the PR includes migrations, ensure that they are reversible and properly structured.
+- If the PR involves API changes, verify that input validation and error handling are correctly implemented.
+- If the PR updates dependencies, check for potential breaking changes.
+- If the PR modifies a critical component (e.g., authentication, payments, etc.), ensure that it includes appropriate test coverage.
+
+## Documentation
+- Verify that documentation (README, API docs, or internal wikis) is updated if necessary.
+
+## Linting & Code Style
+- Ensure the code adheres to the project's linting rules and style guide (e.g., PEP8 for Python, ...).
+- Check for unnecessary imports, unused variables, and redundant code.
+
+## Summary Feedback
+- Provide a summary of key issues found in the PR.
+- Suggest potential improvements or alternative approaches if needed.
+- Approve the PR if it meets all necessary criteria; otherwise, request changes with clear explanations.
+"""
