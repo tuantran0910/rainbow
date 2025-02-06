@@ -23,7 +23,7 @@ jobs:
           AI_TEMPERATURE: 0.5
 
           # Additional configurations
-          APPROVE_REVIEWS: true
+          APPROVE_REVIEWS: false
           MAX_COMMENTS: 10
           PROJECT_CONTEXT: >
             This is a backend and data engineer project that simulates a data platform.
