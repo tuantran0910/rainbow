@@ -46,7 +46,6 @@ func (us *userService) GetUserById(ctx context.Context, userId uuid.UUID) (*mode
 	return us.userRepository.GetUserById(ctx, userId)
 }
 
-//gocyclo:ignore
 func (us *userService) UpdateUser(ctx context.Context, userId uuid.UUID, userRequest dtos.UpdateUserRequest, currentUserId uuid.UUID) error {
 	return us.withTx(ctx, func(ctx context.Context, userRepository repositories.IUserRepository) error {
 		user, err := userRepository.GetUserById(ctx, userId)

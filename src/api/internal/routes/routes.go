@@ -16,7 +16,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 
 	// Define controllers
 	baseController, _ := controllers.NewBaseController()
-	productController, _ := wire.InitializeProductController(db)
+	bookController, _ := wire.InitializeBookController(db)
 	authController, _ := wire.InitializeAuthController(db)
 	userController, _ := wire.InitializeUserController(db)
 	sellerController, _ := wire.InitializeSellerController(db)
@@ -47,14 +47,14 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		// Product routes
-		products := api.Group("/products")
+		// Book routes
+		books := api.Group("/books")
 		{
-			products.GET("", productController.GetProducts)
-			products.GET(":id", productController.GetProductById)
-			products.POST("", middlewares.AuthMiddleware(), productController.CreateProduct)
-			products.PATCH(":id", middlewares.AuthMiddleware(), productController.UpdateProduct)
-			products.DELETE(":id", middlewares.AuthMiddleware(), productController.DeleteProduct)
+			books.GET("", bookController.GetBooks)
+			books.GET(":id", bookController.GetBookById)
+			books.POST("", middlewares.AuthMiddleware(), bookController.CreateBook)
+			books.PATCH(":id", middlewares.AuthMiddleware(), bookController.UpdateBook)
+			books.DELETE(":id", middlewares.AuthMiddleware(), bookController.DeleteBook)
 		}
 
 		// Seller routes

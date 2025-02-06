@@ -15,7 +15,7 @@ type ISellerRepository interface {
 	WithTX(tx *gorm.DB) ISellerRepository
 	GetSellers(ctx context.Context, page, limit int) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, sellerId uuid.UUID) (*models.Seller, error)
-	GetSellerByUserID(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
+	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
 	CreateSeller(ctx context.Context, seller *models.Seller) error
 	UpdateSeller(ctx context.Context, sellerId uuid.UUID, seller *models.Seller) error
 	DeleteSeller(ctx context.Context, sellerId uuid.UUID) error
@@ -66,7 +66,7 @@ func (sr *sellerRepository) GetSellerById(ctx context.Context, sellerId uuid.UUI
 	return &seller, nil
 }
 
-func (sr *sellerRepository) GetSellerByUserID(ctx context.Context, userId uuid.UUID) (*models.Seller, error) {
+func (sr *sellerRepository) GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error) {
 	var seller models.Seller
 	if err := sr.db.WithContext(ctx).Take(&seller, "user_id = ?", userId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
