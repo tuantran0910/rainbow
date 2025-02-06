@@ -30,7 +30,7 @@ func getZapLevel(level string) (zapcore.Level, error) {
 	}
 }
 
-func getEncoderZap(env string) zapcore.Encoder {
+func getEncoderZap() zapcore.Encoder {
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "ts",
 		LevelKey:       "level",
@@ -41,20 +41,15 @@ func getEncoderZap(env string) zapcore.Encoder {
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeTime:     zapcore.ISO8601TimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
 	}
 
-	if env == "production" {
-		encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
-		return zapcore.NewJSONEncoder(encoderConfig)
-	}
-
-	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
 func createCoreZap(env string, level zapcore.Level, enableConsole bool) (zapcore.Core, error) {
 	// Get the encoder config
-	encoder := getEncoderZap(env)
+	encoder := getEncoderZap()
 
 	var outputs []zapcore.WriteSyncer
 	if enableConsole || env == "development" {
