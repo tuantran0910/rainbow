@@ -62,7 +62,7 @@ func (pr *bookRepository) GetBookById(ctx context.Context, bookId uuid.UUID) (*m
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to fetch book: %w", err)
+		return nil, fmt.Errorf("failed to fetch book with id %s: %w", bookId, err)
 	}
 	return &book, nil
 }
@@ -76,7 +76,7 @@ func (pr *bookRepository) CreateBook(ctx context.Context, book *models.Book) err
 
 func (pr *bookRepository) AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error {
 	if err := pr.db.WithContext(ctx).Create(bookAuthor).Error; err != nil {
-		return fmt.Errorf("failed to add author to book: %w", err)
+		return fmt.Errorf("failed to add author with id %s to book with id %s: %w", bookAuthor.AuthorID, bookAuthor.BookID, err)
 	}
 	return nil
 }
@@ -84,7 +84,7 @@ func (pr *bookRepository) AddAuthorToBook(ctx context.Context, bookAuthor *model
 func (pr *bookRepository) UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error {
 	result := pr.db.WithContext(ctx).Model(&models.Book{}).Where("id = ?", bookId).Updates(book)
 	if result.Error != nil {
-		return fmt.Errorf("failed to update book: %w", result.Error)
+		return fmt.Errorf("failed to update book with id %s: %w", bookId, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
@@ -96,7 +96,7 @@ func (pr *bookRepository) UpdateBook(ctx context.Context, bookId uuid.UUID, book
 func (pr *bookRepository) DeleteBook(ctx context.Context, bookId uuid.UUID) error {
 	result := pr.db.WithContext(ctx).Unscoped().Where("id = ?", bookId).Delete(&models.Book{})
 	if result.Error != nil {
-		return fmt.Errorf("failed to delete book: %w", result.Error)
+		return fmt.Errorf("failed to delete book with id %s: %w", bookId, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
