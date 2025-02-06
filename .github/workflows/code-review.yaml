@@ -24,7 +24,7 @@ jobs:
 
           # Additional configurations
           APPROVE_REVIEWS: false
-          MAX_COMMENTS: 10
+          MAX_COMMENTS: 30
           PROJECT_CONTEXT: >
             This is a backend and data engineer project that simulates a data platform.
             We have backend API written in Golang as our application. Data is stored in a PostgreSQL database.
