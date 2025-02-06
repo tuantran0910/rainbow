@@ -125,7 +125,6 @@ func (ps *bookService) CreateBook(ctx context.Context, bookRequest dtos.CreateBo
 	})
 }
 
-//gocyclo:ignore
 func (ps *bookService) UpdateBook(ctx context.Context, bookId uuid.UUID, bookRequest dtos.UpdateBookRequest, currentUserId uuid.UUID) error {
 	return ps.withTx(ctx, func(ctx context.Context, bookRepository repositories.IBookRepository, inventoryRepository repositories.IInventoryRepository, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
 		currentUser, err := userRepository.GetUserById(ctx, currentUserId)
