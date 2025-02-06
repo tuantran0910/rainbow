@@ -27,9 +27,9 @@ func NewPaymentController(paymentService services.IPaymentService) *PaymentContr
 //	@Tags			Payment
 //	@Accept			json
 //	@Produce		json
-//	@Success		200		{object}	response.APIResponse
-//	@Failure		400		{object}	response.APIResponse
-//	@Failure		500		{object}	response.APIResponse
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
 //	@Router			/payments [get]
 func (pc *PaymentController) GetPayments(ctx *gin.Context) {
 	reqCtx := ctx.Request.Context()

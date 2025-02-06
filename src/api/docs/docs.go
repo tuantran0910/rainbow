@@ -309,6 +309,229 @@ const docTemplate = `{
                 }
             }
         },
+        "/books": {
+            "get": {
+                "description": "Fetch a list of books",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get Books",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}": {
+            "get": {
+                "description": "Fetch a book by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get Book",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a book",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Create Book",
+                "parameters": [
+                    {
+                        "description": "Create Book Request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateBookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a book by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Delete Book",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update a book by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Update Book",
+                "parameters": [
+                    {
+                        "description": "Update Book Request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateBookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "description": "Get a list of categories",
@@ -319,7 +542,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "Category"
                 ],
                 "summary": "Get a list of categories",
                 "parameters": [
@@ -366,7 +589,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "cateCategorygories"
                 ],
                 "summary": "Create a category",
                 "parameters": [
@@ -412,7 +635,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "Category"
                 ],
                 "summary": "Get a category",
                 "parameters": [
@@ -460,7 +683,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "Category"
                 ],
                 "summary": "Delete a category",
                 "parameters": [
@@ -502,7 +725,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "Category"
                 ],
                 "summary": "Update a category",
                 "parameters": [
@@ -555,7 +778,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "categories"
+                    "Category"
                 ],
                 "summary": "Get a category",
                 "parameters": [
@@ -641,9 +864,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/products": {
+        "/payments": {
             "get": {
-                "description": "Fetch a list of products",
+                "description": "Get a list of payments",
                 "consumes": [
                     "application/json"
                 ],
@@ -651,200 +874,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Product"
+                    "Payment"
                 ],
-                "summary": "Get Products",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get a list of payments",
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/{id}": {
-            "get": {
-                "description": "Fetch a product by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Get Product",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Create Product",
-                "parameters": [
-                    {
-                        "description": "Create Product Request",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtos.CreateProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a product by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Delete Product",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.APIResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update a product by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Update Product",
-                "parameters": [
-                    {
-                        "description": "Update Product Request",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtos.UpdateProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
                         "schema": {
                             "$ref": "#/definitions/response.APIResponse"
                         }
@@ -1393,6 +1428,59 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.CreateBookRequest": {
+            "type": "object",
+            "required": [
+                "author_ids",
+                "category_id",
+                "name",
+                "price",
+                "seller_id"
+            ],
+            "properties": {
+                "author_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "original_price": {
+                    "type": "number"
+                },
+                "page_count": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating_average": {
+                    "type": "number"
+                },
+                "review_count": {
+                    "type": "integer"
+                },
+                "secondary_id": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                }
+            }
+        },
         "dtos.CreateCategoryRequest": {
             "type": "object",
             "required": [
@@ -1408,23 +1496,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
-                }
-            }
-        },
-        "dtos.CreateProductRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "price"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 3
-                },
-                "price": {
-                    "type": "number"
                 }
             }
         },
@@ -1514,6 +1585,40 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.UpdateBookRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "original_price": {
+                    "type": "number"
+                },
+                "page_count": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating_average": {
+                    "type": "number"
+                },
+                "review_count": {
+                    "type": "integer"
+                },
+                "stock": {
+                    "type": "integer"
+                }
+            }
+        },
         "dtos.UpdateCategoryRequest": {
             "type": "object",
             "properties": {
@@ -1521,19 +1626,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
-                }
-            }
-        },
-        "dtos.UpdateProductRequest": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 3
-                },
-                "price": {
-                    "type": "number"
                 }
             }
         },
