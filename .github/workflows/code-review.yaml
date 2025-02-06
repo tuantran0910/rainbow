@@ -32,4 +32,4 @@ jobs:
             We are currently using ClickHouse as our data warehouse, Apache Superset as our BI tool, and Apache Airflow as our scheduler.
             The project is containerized using Docker.
           CONTEXT_FILES: README.md
-          EXCLUDE_PATTERNS: '**/*.lock,**/*.json,**/*.md'
+          EXCLUDE_PATTERNS: '**/*.lock,**/*.md'
