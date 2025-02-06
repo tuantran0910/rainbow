@@ -26,7 +26,7 @@ func NewCategoryController(categoryService services.ICategoryService) *CategoryC
 //
 //	@Summary		Get a list of categories
 //	@Description	Get a list of categories
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			page	query		int	false	"Page number"
@@ -98,7 +98,7 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 //
 //	@Summary		Get a category
 //	@Description	Get a category by its ID
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Category ID"
@@ -161,7 +161,7 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 //
 //	@Summary		Get a category
 //	@Description	Get a category by its slug
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			slug	path		string	true	"Category slug"
@@ -216,7 +216,7 @@ func (cc *CategoryController) GetCategoryBySlug(ctx *gin.Context) {
 //
 //	@Summary		Create a category
 //	@Description	Create a category
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		dtos.CreateCategoryRequest	true	"Category information"
@@ -269,7 +269,7 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 //
 //	@Summary		Update a category
 //	@Description	Update a category by its ID
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		string						true	"Category ID"
@@ -334,7 +334,7 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 //
 //	@Summary		Delete a category
 //	@Description	Delete a category by its ID
-//	@Tags			categories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Category ID"

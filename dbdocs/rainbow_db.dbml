@@ -75,9 +75,7 @@ Table book_authors {
 
 Table payments {
   id uuid [pk]
-  order_id uuid [ref: > orders.id, not null, unique]
   method varchar(20) [not null]
-  amount decimal(10,2) [not null]
   created_at timestamp [default: `current_timestamp`]
   updated_at timestamp [default: `current_timestamp`]
   deleted_at timestamp [default: null]

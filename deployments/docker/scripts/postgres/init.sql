@@ -44,3 +44,6 @@ GRANT TEMPORARY ON DATABASE rainbow TO rainbow;
 -- Switch to the rainbow database and grant schema permissions
 \c rainbow
 GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
+
+-- Create the extension for UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

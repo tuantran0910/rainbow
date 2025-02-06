@@ -62,3 +62,10 @@ func InitializeAuthorController(db *gorm.DB) (*controllers.AuthorController, err
 	authorController := controllers.NewAuthorController(iAuthorService)
 	return authorController, nil
 }
+
+func InitializePaymentController(db *gorm.DB) (*controllers.PaymentController, error) {
+	iPaymentRepository := repositories.NewPaymentRepository(db)
+	iPaymentService := services.NewPaymentService(iPaymentRepository)
+	paymentController := controllers.NewPaymentController(iPaymentService)
+	return paymentController, nil
+}
