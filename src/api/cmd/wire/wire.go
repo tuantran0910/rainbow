@@ -75,3 +75,13 @@ func InitializeAuthorController(db *gorm.DB) (*controllers.AuthorController, err
 
 	return &controllers.AuthorController{}, nil
 }
+
+func InitializePaymentController(db *gorm.DB) (*controllers.PaymentController, error) {
+	wire.Build(
+		repositories.NewPaymentRepository,
+		services.NewPaymentService,
+		controllers.NewPaymentController,
+	)
+
+	return &controllers.PaymentController{}, nil
+}

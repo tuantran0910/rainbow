@@ -22,6 +22,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	sellerController, _ := wire.InitializeSellerController(db)
 	categoryController, _ := wire.InitializeCategoryController(db)
 	authorController, _ := wire.InitializeAuthorController(db)
+	paymentController, _ := wire.InitializePaymentController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -87,6 +88,12 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 			authors.POST("", middlewares.AuthMiddleware(), authorController.CreateAuthor)
 			authors.PATCH(":id", middlewares.AuthMiddleware(), authorController.UpdateAuthor)
 			authors.DELETE(":id", middlewares.AuthMiddleware(), authorController.DeleteAuthor)
+		}
+
+		// Payment routes
+		payments := api.Group("/payments")
+		{
+			payments.GET("", paymentController.GetPayments)
 		}
 	}
 
