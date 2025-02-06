@@ -10,14 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitializeProductController(db *gorm.DB) (*controllers.ProductController, error) {
+func InitializeBookController(db *gorm.DB) (*controllers.BookController, error) {
 	wire.Build(
-		repositories.NewProductRepository,
-		services.NewProductService,
-		controllers.NewProductController,
+		repositories.NewBookRepository,
+		repositories.NewInventoryRepository,
+		repositories.NewSellerRepository,
+		repositories.NewUserRepository,
+		services.NewBookService,
+		controllers.NewBookController,
 	)
 
-	return &controllers.ProductController{}, nil
+	return &controllers.BookController{}, nil
 }
 
 func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) {

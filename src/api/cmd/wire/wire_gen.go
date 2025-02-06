@@ -15,11 +15,14 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeProductController(db *gorm.DB) (*controllers.ProductController, error) {
-	iProductRepository := repositories.NewProductRepository(db)
-	iProductService := services.NewProductService(db, iProductRepository)
-	productController := controllers.NewProductController(iProductService)
-	return productController, nil
+func InitializeBookController(db *gorm.DB) (*controllers.BookController, error) {
+	iBookRepository := repositories.NewBookRepository(db)
+	iInventoryRepository := repositories.NewInventoryRepository(db)
+	iSellerRepository := repositories.NewSellerRepository(db)
+	iUserRepository := repositories.NewUserRepository(db)
+	iBookService := services.NewBookService(db, iBookRepository, iInventoryRepository, iSellerRepository, iUserRepository)
+	bookController := controllers.NewBookController(iBookService)
+	return bookController, nil
 }
 
 func InitializeAuthController(db *gorm.DB) (*controllers.AuthController, error) {
