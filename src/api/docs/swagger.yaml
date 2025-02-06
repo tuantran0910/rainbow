@@ -606,7 +606,7 @@ paths:
             $ref: '#/definitions/response.APIResponse'
       summary: Create a category
       tags:
-        - cateCategorygories
+        - Category
   /categories/{id}:
     delete:
       consumes:

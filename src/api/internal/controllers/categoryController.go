@@ -216,7 +216,7 @@ func (cc *CategoryController) GetCategoryBySlug(ctx *gin.Context) {
 //
 //	@Summary		Create a category
 //	@Description	Create a category
-//	@Tags			cateCategorygories
+//	@Tags			Category
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		dtos.CreateCategoryRequest	true	"Category information"

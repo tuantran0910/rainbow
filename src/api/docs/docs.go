@@ -589,7 +589,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cateCategorygories"
+                    "Category"
                 ],
                 "summary": "Create a category",
                 "parameters": [
