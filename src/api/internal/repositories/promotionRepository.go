@@ -2,17 +2,17 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/models"
 	"gorm.io/gorm"
 )
 
 type IPromotionRepository interface {
 	WithTX(tx *gorm.DB) IPromotionRepository
-	GetCurrentBookPromotion(ctx context.Context, bookID uint, currentTime time.Time) (*models.Promotion, error)
+	GetCurrentBookPromotions(ctx context.Context, bookID uuid.UUID, currentTime time.Time) ([]*models.Promotion, error)
 	CreatePromotion(ctx context.Context, promotion *models.Promotion) error
 	AddBookToPromotion(ctx context.Context, promotionBook *models.PromotionBook) error
 }
@@ -36,21 +36,18 @@ func (pr *promotionRepository) WithTX(tx *gorm.DB) IPromotionRepository {
 	}
 }
 
-func (pr *promotionRepository) GetCurrentBookPromotion(ctx context.Context, bookID uint, currentTime time.Time) (*models.Promotion, error) {
-	promotion := &models.Promotion{}
+func (pr *promotionRepository) GetCurrentBookPromotions(ctx context.Context, bookID uuid.UUID, currentTime time.Time) ([]*models.Promotion, error) {
+	var promotions []*models.Promotion
 	err := pr.db.WithContext(ctx).
 		Joins("JOIN promotion_books ON promotion_books.promotion_id = promotions.id").
 		Where("promotion_books.book_id = ?", bookID).
 		Where("promotions.start_date <= ? AND promotions.end_date >= ?", currentTime, currentTime).
-		First(promotion).Error
+		Find(&promotions).Error
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to get current book promotion: %w", err)
+		return nil, fmt.Errorf("failed to fetch current book promotions: %w", err)
 	}
-	return promotion, nil
+	return promotions, nil
 }
 
 func (pr *promotionRepository) CreatePromotion(ctx context.Context, promotion *models.Promotion) error {
