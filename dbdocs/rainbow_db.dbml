@@ -158,7 +158,6 @@ Table promotion_applies_to {
   id uuid [pk]
   book_id uuid [ref: > books.id, not null]
   promotion_id uuid [ref: > promotions.id, not null]
-  apply_to_all bool [default: false]
   created_at timestamp [default: `current_timestamp`]
   updated_at timestamp [default: `current_timestamp`]
   deleted_at timestamp [default: null]
