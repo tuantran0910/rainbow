@@ -85,3 +85,14 @@ func InitializePaymentController(db *gorm.DB) (*controllers.PaymentController, e
 
 	return &controllers.PaymentController{}, nil
 }
+
+func InitializePromotionController(db *gorm.DB) (*controllers.PromotionController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		repositories.NewPromotionRepository,
+		services.NewPromotionService,
+		controllers.NewPromotionController,
+	)
+
+	return &controllers.PromotionController{}, nil
+}

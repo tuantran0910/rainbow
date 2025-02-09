@@ -90,6 +90,52 @@
       ],
       "type": "object"
     },
+    "dtos.CreatePromotionRequest": {
+      "properties": {
+        "book_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "discount_type": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/models.DiscountType"
+            }
+          ],
+          "enum": [
+            "PERCENTAGE",
+            "FIXED"
+          ]
+        },
+        "discount_value": {
+          "type": "number"
+        },
+        "end_date": {
+          "type": "string"
+        },
+        "max_uses": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "book_ids",
+        "discount_type",
+        "discount_value",
+        "end_date",
+        "max_uses",
+        "name",
+        "start_date"
+      ],
+      "type": "object"
+    },
     "dtos.CreateSellerRequest": {
       "properties": {
         "link": {
@@ -263,6 +309,17 @@
         }
       },
       "type": "object"
+    },
+    "models.DiscountType": {
+      "enum": [
+        "PERCENTAGE",
+        "FIXED"
+      ],
+      "type": "string",
+      "x-enum-varnames": [
+        "Percentage",
+        "Fixed"
+      ]
     },
     "response.APIResponse": {
       "properties": {
@@ -1169,6 +1226,52 @@
         "summary": "Get a list of payments",
         "tags": [
           "Payment"
+        ]
+      }
+    },
+    "/promotions": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Create a promotion",
+        "parameters": [
+          {
+            "description": "Create Promotion Request",
+            "in": "body",
+            "name": "req",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.CreatePromotionRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Create a promotion",
+        "tags": [
+          "Promotion"
         ]
       }
     },
