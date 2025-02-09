@@ -42,7 +42,8 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
 			SetMessage("Invalid pagination's parameter page, page must be a positive integer").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -116,7 +117,8 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -127,7 +129,8 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Failed to fetch the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -179,7 +182,8 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
 			SetMessage("Invalid request body").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -199,7 +203,8 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Failed to create a seller").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -232,7 +237,8 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -242,7 +248,8 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
 			SetMessage("Invalid request body").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -262,7 +269,8 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Failed to update the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -293,7 +301,8 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 
@@ -313,7 +322,8 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
 			SetMessage("Failed to delete the seller").
-			SetError(err.Error()).Respond(ctx)
+			SetError(err.Error()).
+			Respond(ctx)
 		return
 	}
 

@@ -23,6 +23,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	categoryController, _ := wire.InitializeCategoryController(db)
 	authorController, _ := wire.InitializeAuthorController(db)
 	paymentController, _ := wire.InitializePaymentController(db)
+	promotionController, _ := wire.InitializePromotionController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -94,6 +95,12 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		payments := api.Group("/payments")
 		{
 			payments.GET("", paymentController.GetPayments)
+		}
+
+		// Promotion routes
+		promotions := api.Group("/promotions")
+		{
+			promotions.POST("", middlewares.AuthMiddleware(), promotionController.CreatePromotion)
 		}
 	}
 

@@ -69,3 +69,11 @@ func InitializePaymentController(db *gorm.DB) (*controllers.PaymentController, e
 	paymentController := controllers.NewPaymentController(iPaymentService)
 	return paymentController, nil
 }
+
+func InitializePromotionController(db *gorm.DB) (*controllers.PromotionController, error) {
+	iPromotionRepository := repositories.NewPromotionRepository(db)
+	iUserRepository := repositories.NewUserRepository(db)
+	iPromotionService := services.NewPromotionService(db, iPromotionRepository, iUserRepository)
+	promotionController := controllers.NewPromotionController(iPromotionService)
+	return promotionController, nil
+}

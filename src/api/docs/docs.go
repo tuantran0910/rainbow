@@ -899,6 +899,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/promotions": {
+            "post": {
+                "description": "Create a promotion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Promotion"
+                ],
+                "summary": "Create a promotion",
+                "parameters": [
+                    {
+                        "description": "Create Promotion Request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreatePromotionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/register": {
             "post": {
                 "description": "Register a new user",
@@ -1499,6 +1545,52 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.CreatePromotionRequest": {
+            "type": "object",
+            "required": [
+                "book_ids",
+                "discount_type",
+                "discount_value",
+                "end_date",
+                "max_uses",
+                "name",
+                "start_date"
+            ],
+            "properties": {
+                "book_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "discount_type": {
+                    "enum": [
+                        "PERCENTAGE",
+                        "FIXED"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.DiscountType"
+                        }
+                    ]
+                },
+                "discount_value": {
+                    "type": "number"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "max_uses": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
         "dtos.CreateSellerRequest": {
             "type": "object",
             "required": [
@@ -1672,6 +1764,17 @@ const docTemplate = `{
                     ]
                 }
             }
+        },
+        "models.DiscountType": {
+            "type": "string",
+            "enum": [
+                "PERCENTAGE",
+                "FIXED"
+            ],
+            "x-enum-varnames": [
+                "Percentage",
+                "Fixed"
+            ]
         },
         "response.APIResponse": {
             "type": "object",
