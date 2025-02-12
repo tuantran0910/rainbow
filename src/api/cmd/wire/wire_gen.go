@@ -77,3 +77,14 @@ func InitializePromotionController(db *gorm.DB) (*controllers.PromotionControlle
 	promotionController := controllers.NewPromotionController(iPromotionService)
 	return promotionController, nil
 }
+
+func InitializeOrderController(db *gorm.DB) (*controllers.OrderController, error) {
+	iOrderRepository := repositories.NewOrderRepository(db)
+	iBookRepository := repositories.NewBookRepository(db)
+	iInventoryRepository := repositories.NewInventoryRepository(db)
+	iPromotionRepository := repositories.NewPromotionRepository(db)
+	iUserRepository := repositories.NewUserRepository(db)
+	iOrderService := services.NewOrderService(db, iOrderRepository, iBookRepository, iInventoryRepository, iPromotionRepository, iUserRepository)
+	orderController := controllers.NewOrderController(iOrderService)
+	return orderController, nil
+}

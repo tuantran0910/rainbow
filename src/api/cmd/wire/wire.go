@@ -96,3 +96,17 @@ func InitializePromotionController(db *gorm.DB) (*controllers.PromotionControlle
 
 	return &controllers.PromotionController{}, nil
 }
+
+func InitializeOrderController(db *gorm.DB) (*controllers.OrderController, error) {
+	wire.Build(
+		repositories.NewUserRepository,
+		repositories.NewOrderRepository,
+		repositories.NewPromotionRepository,
+		repositories.NewBookRepository,
+		repositories.NewInventoryRepository,
+		services.NewOrderService,
+		controllers.NewOrderController,
+	)
+
+	return &controllers.OrderController{}, nil
+}
