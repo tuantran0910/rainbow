@@ -13,7 +13,10 @@ import (
 
 type IAuthorRepository interface {
 	WithTX(tx *gorm.DB) IAuthorRepository
-	GetAuthors(ctx context.Context, page, limit int) ([]*models.Author, *pagination.Pagination, error)
+	GetAuthors(
+		ctx context.Context,
+		page, limit int,
+	) ([]*models.Author, *pagination.Pagination, error)
 	GetAuthorById(ctx context.Context, authorId uuid.UUID) (*models.Author, error)
 	GetAuthorBySlug(ctx context.Context, authorSlug string) (*models.Author, error)
 	CreateAuthor(ctx context.Context, author *models.Author) error
@@ -40,7 +43,10 @@ func (ar *authorRepository) WithTX(tx *gorm.DB) IAuthorRepository {
 	}
 }
 
-func (ar *authorRepository) GetAuthors(ctx context.Context, page, limit int) ([]*models.Author, *pagination.Pagination, error) {
+func (ar *authorRepository) GetAuthors(
+	ctx context.Context,
+	page, limit int,
+) ([]*models.Author, *pagination.Pagination, error) {
 	var totalAuthors int64
 	if err := ar.db.WithContext(ctx).Model(&models.Author{}).Count(&totalAuthors).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of authors: %w", err)
@@ -55,7 +61,10 @@ func (ar *authorRepository) GetAuthors(ctx context.Context, page, limit int) ([]
 	return authors, pagination, nil
 }
 
-func (ar *authorRepository) GetAuthorById(ctx context.Context, authorId uuid.UUID) (*models.Author, error) {
+func (ar *authorRepository) GetAuthorById(
+	ctx context.Context,
+	authorId uuid.UUID,
+) (*models.Author, error) {
 	var author models.Author
 	if err := ar.db.WithContext(ctx).Take(&author, "id = ?", authorId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -66,7 +75,10 @@ func (ar *authorRepository) GetAuthorById(ctx context.Context, authorId uuid.UUI
 	return &author, nil
 }
 
-func (ar *authorRepository) GetAuthorBySlug(ctx context.Context, authorSlug string) (*models.Author, error) {
+func (ar *authorRepository) GetAuthorBySlug(
+	ctx context.Context,
+	authorSlug string,
+) (*models.Author, error) {
 	var author models.Author
 	if err := ar.db.WithContext(ctx).Take(&author, "slug = ?", authorSlug).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -84,8 +96,15 @@ func (ar *authorRepository) CreateAuthor(ctx context.Context, author *models.Aut
 	return nil
 }
 
-func (ar *authorRepository) UpdateAuthor(ctx context.Context, authorId uuid.UUID, author *models.Author) error {
-	result := ar.db.WithContext(ctx).Model(&models.Author{}).Where("id = ?", authorId).Updates(author)
+func (ar *authorRepository) UpdateAuthor(
+	ctx context.Context,
+	authorId uuid.UUID,
+	author *models.Author,
+) error {
+	result := ar.db.WithContext(ctx).
+		Model(&models.Author{}).
+		Where("id = ?", authorId).
+		Updates(author)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update author: %w", result.Error)
 	}

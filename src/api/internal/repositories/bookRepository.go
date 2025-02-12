@@ -41,7 +41,10 @@ func (pr *bookRepository) WithTX(tx *gorm.DB) IBookRepository {
 	}
 }
 
-func (pr *bookRepository) GetBooks(ctx context.Context, page, limit int) ([]*models.Book, *pagination.Pagination, error) {
+func (pr *bookRepository) GetBooks(
+	ctx context.Context,
+	page, limit int,
+) ([]*models.Book, *pagination.Pagination, error) {
 	var totalBooks int64
 	if err := pr.db.WithContext(ctx).Model(&models.Book{}).Count(&totalBooks).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of books: %w", err)
@@ -74,15 +77,30 @@ func (pr *bookRepository) CreateBook(ctx context.Context, book *models.Book) err
 	return nil
 }
 
-func (pr *bookRepository) AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error {
+func (pr *bookRepository) AddAuthorToBook(
+	ctx context.Context,
+	bookAuthor *models.BookAuthor,
+) error {
 	if err := pr.db.WithContext(ctx).Create(bookAuthor).Error; err != nil {
-		return fmt.Errorf("failed to add author with id %s to book with id %s: %w", bookAuthor.AuthorID, bookAuthor.BookID, err)
+		return fmt.Errorf(
+			"failed to add author with id %s to book with id %s: %w",
+			bookAuthor.AuthorID,
+			bookAuthor.BookID,
+			err,
+		)
 	}
 	return nil
 }
 
-func (pr *bookRepository) UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error {
-	result := pr.db.WithContext(ctx).Model(&models.Book{}).Where("id = ?", bookId).Updates(book)
+func (pr *bookRepository) UpdateBook(
+	ctx context.Context,
+	bookId uuid.UUID,
+	book *models.Book,
+) error {
+	result := pr.db.WithContext(ctx).Model(&models.Book{}).
+		Where("id = ?", bookId).
+		Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
+		Updates(book)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update book with id %s: %w", bookId, result.Error)
 	}

@@ -47,7 +47,9 @@ func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
 	password := getEnv("API_DB_PASSWORD", "")
 	if password == "" {
 		if env == "production" {
-			return nil, fmt.Errorf("API_DB_PASSWORD is required in production environment but not set")
+			return nil, fmt.Errorf(
+				"API_DB_PASSWORD is required in production environment but not set",
+			)
 		} else {
 			password = "R&inb0w2024!Data"
 		}
@@ -72,8 +74,14 @@ func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
 	}
 
 	// Construct the database DSN
-	dbDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		host, user, password, dbName, dbPort)
+	dbDsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		host,
+		user,
+		password,
+		dbName,
+		dbPort,
+	)
 
 	return &DatabaseConfig{
 		DatabaseDsn:     dbDsn,
