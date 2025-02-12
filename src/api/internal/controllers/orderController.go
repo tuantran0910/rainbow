@@ -22,6 +22,19 @@ func NewOrderController(orderService services.IOrderService) *OrderController {
 	}
 }
 
+// GetOrdersByUserId godoc
+//
+//	@Summary		Get orders by user ID
+//	@Description	Get orders by user ID
+//	@Tags			orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page number"				default(1)
+//	@Param			limit	query		int	false	"Number of items per page"	default(10)
+//	@Success		200		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/orders [get]
 func (oc *OrderController) GetOrdersByUserId(ctx *gin.Context) {
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page <= 0 {
@@ -99,6 +112,19 @@ func (oc *OrderController) GetOrdersByUserId(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// GetOrderById godoc
+//
+//	@Summary		Get an order
+//	@Description	Get order by its ID
+//	@Tags			orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Order ID"
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		404	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/orders/{id} [get]
 func (oc *OrderController) GetOrderById(ctx *gin.Context) {
 	orderId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -177,6 +203,18 @@ func (oc *OrderController) GetOrderById(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// CreateOrder godoc
+//
+//	@Summary		Create order
+//	@Description	Create order
+//	@Tags			orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dtos.CreateOrderRequest	true	"Order request"
+//	@Success		201		{object}	response.APIResponse
+//	@Failure		400		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
+//	@Router			/orders [post]
 func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 	var orderRequest dtos.CreateOrderRequest
 	if err := ctx.ShouldBindJSON(&orderRequest); err != nil {
@@ -218,6 +256,18 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 		Respond(ctx)
 }
 
+// DeleteOrder godoc
+//
+//	@Summary		Delete order
+//	@Description	Delete order by its ID
+//	@Tags			orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Order ID"
+//	@Success		204	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/orders/{id} [delete]
 func (oc *OrderController) DeleteOrder(ctx *gin.Context) {
 	orderId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
