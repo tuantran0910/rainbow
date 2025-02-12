@@ -21,9 +21,10 @@ type User struct {
 	FirstName   string    `json:"first_name"`
 	LastName    string    `json:"last_name"`
 	LastLogin   time.Time `json:"last_login"`
-	IsActive    bool      `json:"is_active" gorm:"default:true"`
+	IsActive    bool      `json:"is_active"    gorm:"default:true"`
 	PhoneNumber string    `json:"phone_number"`
-	Role        Role      `json:"role" gorm:"type:enum('admin', 'user');default:'USER'"`
+	Role        Role      `json:"role"         gorm:"type:enum('admin', 'user');default:'USER'"`
+	Orders      []Order   `json:"orders"       gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) error {
