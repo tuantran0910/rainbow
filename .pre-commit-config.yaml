@@ -115,6 +115,15 @@ repos:
         args: [--mapping, '2', --sequence, '4', --offset, '2', --width, '150', --implicit_start]
         exclude: mkdocs.yaml
 
+  - repo: local
+    hooks:
+      - id: golines
+        name: golines
+        description: A golang formatter that fixes long lines.
+        entry: golines -w
+        types: [go]
+        language: golang
+
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
   autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
