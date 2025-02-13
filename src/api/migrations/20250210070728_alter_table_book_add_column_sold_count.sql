@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 ALTER TABLE books
-ADD COLUMN sold_count INT CHECK (sold_count >= 0) DEFAULT 0;
+ADD COLUMN sold_count INT NOT NULL DEFAULT 0 CHECK (sold_count >= 0);
 -- +goose StatementEnd
 
 -- +goose Down
