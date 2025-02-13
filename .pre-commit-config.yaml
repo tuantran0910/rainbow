@@ -120,7 +120,7 @@ repos:
       - id: golines
         name: golines
         description: A golang formatter that fixes long lines.
-        entry: golines -w
+        entry: golines -w .
         types: [go]
         language: golang
 
