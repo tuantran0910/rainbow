@@ -63,12 +63,36 @@ definitions:
     required:
       - name
     type: object
+  dtos.CreateOrderItemRequest:
+    properties:
+      book_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+      - book_id
+      - quantity
+    type: object
+  dtos.CreateOrderRequest:
+    properties:
+      order_items:
+        items:
+          $ref: '#/definitions/dtos.CreateOrderItemRequest'
+        type: array
+      payment_id:
+        type: string
+      promotion_id:
+        type: string
+      shipping_address:
+        type: string
+    required:
+      - order_items
+      - payment_id
+      - shipping_address
+    type: object
   dtos.CreatePromotionRequest:
     properties:
-      book_ids:
-        items:
-          type: string
-        type: array
       discount_type:
         allOf:
           - $ref: '#/definitions/models.DiscountType'
@@ -86,7 +110,6 @@ definitions:
       start_date:
         type: string
     required:
-      - book_ids
       - discount_type
       - discount_value
       - end_date
@@ -223,8 +246,8 @@ definitions:
       - FIXED
     type: string
     x-enum-varnames:
-      - Percentage
-      - Fixed
+      - DiscountPercentage
+      - DiscountFixed
   response.APIResponse:
     properties:
       data: {}
@@ -804,6 +827,130 @@ paths:
       summary: Login
       tags:
         - Auth
+  /orders:
+    get:
+      consumes:
+        - application/json
+      description: Get orders by user ID
+      parameters:
+        - default: 1
+          description: Page number
+          in: query
+          name: page
+          type: integer
+        - default: 10
+          description: Number of items per page
+          in: query
+          name: limit
+          type: integer
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Get orders by user ID
+      tags:
+        - orders
+    post:
+      consumes:
+        - application/json
+      description: Create order
+      parameters:
+        - description: Order request
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/dtos.CreateOrderRequest'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Create order
+      tags:
+        - orders
+  /orders/{id}:
+    delete:
+      consumes:
+        - application/json
+      description: Delete order by its ID
+      parameters:
+        - description: Order ID
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Delete order
+      tags:
+        - orders
+    get:
+      consumes:
+        - application/json
+      description: Get order by its ID
+      parameters:
+        - description: Order ID
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Get an order
+      tags:
+        - orders
   /payments:
     get:
       consumes:

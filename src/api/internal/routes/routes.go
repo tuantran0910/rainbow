@@ -24,6 +24,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	authorController, _ := wire.InitializeAuthorController(db)
 	paymentController, _ := wire.InitializePaymentController(db)
 	promotionController, _ := wire.InitializePromotionController(db)
+	orderController, _ := wire.InitializeOrderController(db)
 
 	// Add base routes
 	r.GET("/", baseController.HomePage)
@@ -77,7 +78,11 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 			categories.GET("/slugs/:slug", categoryController.GetCategoryBySlug)
 			categories.POST("", middlewares.AuthMiddleware(), categoryController.CreateCategory)
 			categories.PATCH(":id", middlewares.AuthMiddleware(), categoryController.UpdateCategory)
-			categories.DELETE(":id", middlewares.AuthMiddleware(), categoryController.DeleteCategory)
+			categories.DELETE(
+				":id",
+				middlewares.AuthMiddleware(),
+				categoryController.DeleteCategory,
+			)
 		}
 
 		// Author routes
@@ -101,6 +106,15 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		promotions := api.Group("/promotions")
 		{
 			promotions.POST("", middlewares.AuthMiddleware(), promotionController.CreatePromotion)
+		}
+
+		// Order routes
+		orders := api.Group("/orders")
+		{
+			orders.GET("", middlewares.AuthMiddleware(), orderController.GetOrdersByUserId)
+			orders.GET(":id", middlewares.AuthMiddleware(), orderController.GetOrderById)
+			orders.POST("", middlewares.AuthMiddleware(), orderController.CreateOrder)
+			orders.DELETE(":id", middlewares.AuthMiddleware(), orderController.DeleteOrder)
 		}
 	}
 

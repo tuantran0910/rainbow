@@ -36,7 +36,10 @@ func (ir *inventoryRepository) WithTX(tx *gorm.DB) IInventoryRepository {
 	}
 }
 
-func (ir *inventoryRepository) GetInventoryByBookID(ctx context.Context, bookID uuid.UUID) (*models.Inventory, error) {
+func (ir *inventoryRepository) GetInventoryByBookID(
+	ctx context.Context,
+	bookID uuid.UUID,
+) (*models.Inventory, error) {
 	var inventory models.Inventory
 	if err := ir.db.WithContext(ctx).Take(&inventory, "book_id = ?", bookID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -47,14 +50,21 @@ func (ir *inventoryRepository) GetInventoryByBookID(ctx context.Context, bookID 
 	return &inventory, nil
 }
 
-func (ir *inventoryRepository) CreateInventory(ctx context.Context, inventory *models.Inventory) error {
+func (ir *inventoryRepository) CreateInventory(
+	ctx context.Context,
+	inventory *models.Inventory,
+) error {
 	if err := ir.db.WithContext(ctx).Create(inventory).Error; err != nil {
 		return fmt.Errorf("failed to create inventory: %w", err)
 	}
 	return nil
 }
 
-func (ir *inventoryRepository) UpdateInventory(ctx context.Context, inventoryId uuid.UUID, inventory *models.Inventory) error {
+func (ir *inventoryRepository) UpdateInventory(
+	ctx context.Context,
+	inventoryId uuid.UUID,
+	inventory *models.Inventory,
+) error {
 	if err := ir.db.WithContext(ctx).Model(&models.Inventory{}).Where("id = ?", inventoryId).Updates(inventory).Error; err != nil {
 		return fmt.Errorf("failed to update inventory with id %s: %w", inventoryId, err)
 	}

@@ -9,12 +9,12 @@ import (
 )
 
 type UpdateUserRequest struct {
-	Email       *string `json:"email" binding:"omitempty,email"`
-	FirstName   *string `json:"first_name" binding:"omitempty,min=1,max=255"`
-	LastName    *string `json:"last_name" binding:"omitempty,min=1,max=255"`
-	IsActive    *bool   `json:"is_active" binding:"omitempty"`
+	Email       *string `json:"email"        binding:"omitempty,email"`
+	FirstName   *string `json:"first_name"   binding:"omitempty,min=1,max=255"`
+	LastName    *string `json:"last_name"    binding:"omitempty,min=1,max=255"`
+	IsActive    *bool   `json:"is_active"    binding:"omitempty"`
 	PhoneNumber *string `json:"phone_number" binding:"omitempty,len=10"`
-	Role        *string `json:"role" binding:"omitempty,oneof=ADMIN USER"`
+	Role        *string `json:"role"         binding:"omitempty,oneof=ADMIN USER"`
 }
 
 type GetUserResponse struct {

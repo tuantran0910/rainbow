@@ -13,7 +13,10 @@ import (
 
 type ISellerRepository interface {
 	WithTX(tx *gorm.DB) ISellerRepository
-	GetSellers(ctx context.Context, page, limit int) ([]*models.Seller, *pagination.Pagination, error)
+	GetSellers(
+		ctx context.Context,
+		page, limit int,
+	) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, sellerId uuid.UUID) (*models.Seller, error)
 	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
 	CreateSeller(ctx context.Context, seller *models.Seller) error
@@ -40,7 +43,10 @@ func (sr *sellerRepository) WithTX(tx *gorm.DB) ISellerRepository {
 	}
 }
 
-func (sr *sellerRepository) GetSellers(ctx context.Context, page, limit int) ([]*models.Seller, *pagination.Pagination, error) {
+func (sr *sellerRepository) GetSellers(
+	ctx context.Context,
+	page, limit int,
+) ([]*models.Seller, *pagination.Pagination, error) {
 	var totalSellers int64
 	if err := sr.db.WithContext(ctx).Model(&models.Seller{}).Count(&totalSellers).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of sellers: %w", err)
@@ -55,7 +61,10 @@ func (sr *sellerRepository) GetSellers(ctx context.Context, page, limit int) ([]
 	return sellers, pagination, nil
 }
 
-func (sr *sellerRepository) GetSellerById(ctx context.Context, sellerId uuid.UUID) (*models.Seller, error) {
+func (sr *sellerRepository) GetSellerById(
+	ctx context.Context,
+	sellerId uuid.UUID,
+) (*models.Seller, error) {
 	var seller models.Seller
 	if err := sr.db.WithContext(ctx).Take(&seller, "id = ?", sellerId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -66,7 +75,10 @@ func (sr *sellerRepository) GetSellerById(ctx context.Context, sellerId uuid.UUI
 	return &seller, nil
 }
 
-func (sr *sellerRepository) GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error) {
+func (sr *sellerRepository) GetSellerByUserId(
+	ctx context.Context,
+	userId uuid.UUID,
+) (*models.Seller, error) {
 	var seller models.Seller
 	if err := sr.db.WithContext(ctx).Take(&seller, "user_id = ?", userId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -84,8 +96,15 @@ func (sr *sellerRepository) CreateSeller(ctx context.Context, seller *models.Sel
 	return nil
 }
 
-func (sr *sellerRepository) UpdateSeller(ctx context.Context, sellerId uuid.UUID, seller *models.Seller) error {
-	result := sr.db.WithContext(ctx).Model(&models.Seller{}).Where("id = ?", sellerId).Updates(seller)
+func (sr *sellerRepository) UpdateSeller(
+	ctx context.Context,
+	sellerId uuid.UUID,
+	seller *models.Seller,
+) error {
+	result := sr.db.WithContext(ctx).
+		Model(&models.Seller{}).
+		Where("id = ?", sellerId).
+		Updates(seller)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update seller: %w", result.Error)
 	}

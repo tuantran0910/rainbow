@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/models"
@@ -12,9 +12,9 @@ import (
 
 type IPromotionRepository interface {
 	WithTX(tx *gorm.DB) IPromotionRepository
-	GetCurrentBookPromotions(ctx context.Context, bookID uuid.UUID, currentTime time.Time) ([]*models.Promotion, error)
+	GetPromotionById(ctx context.Context, promotionID uuid.UUID) (*models.Promotion, error)
 	CreatePromotion(ctx context.Context, promotion *models.Promotion) error
-	AddBookToPromotion(ctx context.Context, promotionBook *models.PromotionBook) error
+	UpdatePromotion(ctx context.Context, promotionId uuid.UUID, promotion *models.Promotion) error
 }
 
 type promotionRepository struct {
@@ -36,30 +36,47 @@ func (pr *promotionRepository) WithTX(tx *gorm.DB) IPromotionRepository {
 	}
 }
 
-func (pr *promotionRepository) GetCurrentBookPromotions(ctx context.Context, bookID uuid.UUID, currentTime time.Time) ([]*models.Promotion, error) {
-	var promotions []*models.Promotion
-	err := pr.db.WithContext(ctx).
-		Joins("JOIN promotion_books ON promotion_books.promotion_id = promotions.id").
-		Where("promotion_books.book_id = ?", bookID).
-		Where("promotions.start_date <= ? AND promotions.end_date >= ?", currentTime, currentTime).
-		Find(&promotions).Error
-
+func (pr *promotionRepository) GetPromotionById(
+	ctx context.Context,
+	promotionID uuid.UUID,
+) (*models.Promotion, error) {
+	var promotion models.Promotion
+	err := pr.db.WithContext(ctx).Take(&promotion, "id = ?", promotionID).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch current book promotions: %w", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to fetch promotion with id %s: %w", promotionID, err)
 	}
-	return promotions, nil
+	return &promotion, nil
 }
 
-func (pr *promotionRepository) CreatePromotion(ctx context.Context, promotion *models.Promotion) error {
+func (pr *promotionRepository) CreatePromotion(
+	ctx context.Context,
+	promotion *models.Promotion,
+) error {
 	if err := pr.db.WithContext(ctx).Create(promotion).Error; err != nil {
 		return fmt.Errorf("failed to create promotion: %w", err)
 	}
 	return nil
 }
 
-func (pr *promotionRepository) AddBookToPromotion(ctx context.Context, promotionBook *models.PromotionBook) error {
-	if err := pr.db.WithContext(ctx).Create(promotionBook).Error; err != nil {
-		return fmt.Errorf("failed to add book to promotion: %w", err)
+func (pr *promotionRepository) UpdatePromotion(
+	ctx context.Context, promotionID uuid.UUID, promotion *models.Promotion,
+) error {
+	result := pr.db.WithContext(ctx).
+		Model(&models.Promotion{}).
+		Where("id = ?", promotionID).
+		Select("MaxUses", "UsedCount").
+		Updates(promotion)
+
+	if result.Error != nil {
+		return fmt.Errorf("failed to update promotion with id %s: %w", promotionID, result.Error)
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("promotion with id %s does not exist", promotionID)
+	}
+
 	return nil
 }

@@ -13,7 +13,10 @@ import (
 
 type ICategoryRepository interface {
 	WithTX(tx *gorm.DB) ICategoryRepository
-	GetCategories(ctx context.Context, page, limit int) ([]*models.Category, *pagination.Pagination, error)
+	GetCategories(
+		ctx context.Context,
+		page, limit int,
+	) ([]*models.Category, *pagination.Pagination, error)
 	GetCategoryById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error)
 	GetCategoryBySlug(ctx context.Context, slug string) (*models.Category, error)
 	CreateCategory(ctx context.Context, category *models.Category) error
@@ -40,7 +43,10 @@ func (cr *categoryRepository) WithTX(tx *gorm.DB) ICategoryRepository {
 	}
 }
 
-func (cr *categoryRepository) GetCategories(ctx context.Context, page, limit int) ([]*models.Category, *pagination.Pagination, error) {
+func (cr *categoryRepository) GetCategories(
+	ctx context.Context,
+	page, limit int,
+) ([]*models.Category, *pagination.Pagination, error) {
 	var totalCategories int64
 	if err := cr.db.WithContext(ctx).Model(&models.Category{}).Count(&totalCategories).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of categories: %w", err)
@@ -55,7 +61,10 @@ func (cr *categoryRepository) GetCategories(ctx context.Context, page, limit int
 	return categories, pagination, nil
 }
 
-func (cr *categoryRepository) GetCategoryById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error) {
+func (cr *categoryRepository) GetCategoryById(
+	ctx context.Context,
+	categoryId uuid.UUID,
+) (*models.Category, error) {
 	var category models.Category
 	if err := cr.db.WithContext(ctx).Where("id = ?", categoryId).Take(&category, "id = ?", categoryId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -67,7 +76,10 @@ func (cr *categoryRepository) GetCategoryById(ctx context.Context, categoryId uu
 	return &category, nil
 }
 
-func (cr *categoryRepository) GetCategoryBySlug(ctx context.Context, slug string) (*models.Category, error) {
+func (cr *categoryRepository) GetCategoryBySlug(
+	ctx context.Context,
+	slug string,
+) (*models.Category, error) {
 	var category models.Category
 	if err := cr.db.WithContext(ctx).Take(&category, "slug = ?", slug).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -85,8 +97,15 @@ func (cr *categoryRepository) CreateCategory(ctx context.Context, category *mode
 	return nil
 }
 
-func (cr *categoryRepository) UpdateCategory(ctx context.Context, categoryId uuid.UUID, category *models.Category) error {
-	result := cr.db.WithContext(ctx).Model(&models.Category{}).Where("id = ?", categoryId).Updates(category)
+func (cr *categoryRepository) UpdateCategory(
+	ctx context.Context,
+	categoryId uuid.UUID,
+	category *models.Category,
+) error {
+	result := cr.db.WithContext(ctx).
+		Model(&models.Category{}).
+		Where("id = ?", categoryId).
+		Updates(category)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update category: %w", result.Error)
 	}
@@ -98,7 +117,10 @@ func (cr *categoryRepository) UpdateCategory(ctx context.Context, categoryId uui
 }
 
 func (cr *categoryRepository) DeleteCategory(ctx context.Context, categoryId uuid.UUID) error {
-	result := cr.db.WithContext(ctx).Unscoped().Where("id = ?", categoryId).Delete(&models.Category{})
+	result := cr.db.WithContext(ctx).
+		Unscoped().
+		Where("id = ?", categoryId).
+		Delete(&models.Category{})
 	if result.Error != nil {
 		return fmt.Errorf("failed to delete category: %w", result.Error)
 	}

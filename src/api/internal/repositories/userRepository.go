@@ -41,7 +41,10 @@ func (ur *userRepository) WithTX(tx *gorm.DB) IUserRepository {
 	}
 }
 
-func (ur *userRepository) GetUsers(ctx context.Context, page, limit int) ([]*models.User, *pagination.Pagination, error) {
+func (ur *userRepository) GetUsers(
+	ctx context.Context,
+	page, limit int,
+) ([]*models.User, *pagination.Pagination, error) {
 	var totalUsers int64
 	if err := ur.db.WithContext(ctx).Model(&models.User{}).Count(&totalUsers).Error; err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch total number of users: %w", err)
@@ -67,7 +70,10 @@ func (ur *userRepository) GetUserById(ctx context.Context, userId uuid.UUID) (*m
 	return &user, nil
 }
 
-func (ur *userRepository) GetUserByEmail(ctx context.Context, userEmail string) (*models.User, error) {
+func (ur *userRepository) GetUserByEmail(
+	ctx context.Context,
+	userEmail string,
+) (*models.User, error) {
 	var user models.User
 	if err := ur.db.WithContext(ctx).Take(&user, "email = ?", userEmail).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -78,7 +84,10 @@ func (ur *userRepository) GetUserByEmail(ctx context.Context, userEmail string) 
 	return &user, nil
 }
 
-func (ur *userRepository) GetUserByPhoneNumber(ctx context.Context, userPhoneNumber string) (*models.User, error) {
+func (ur *userRepository) GetUserByPhoneNumber(
+	ctx context.Context,
+	userPhoneNumber string,
+) (*models.User, error) {
 	var user models.User
 	if err := ur.db.WithContext(ctx).Take(&user, "phone_number = ?", userPhoneNumber).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -96,7 +105,11 @@ func (ur *userRepository) CreateUser(ctx context.Context, user *models.User) err
 	return nil
 }
 
-func (ur *userRepository) UpdateUser(ctx context.Context, userId uuid.UUID, user *models.User) error {
+func (ur *userRepository) UpdateUser(
+	ctx context.Context,
+	userId uuid.UUID,
+	user *models.User,
+) error {
 	result := ur.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userId).Updates(user)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update user: %w", result.Error)

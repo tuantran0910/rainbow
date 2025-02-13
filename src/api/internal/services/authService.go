@@ -29,14 +29,20 @@ func NewAuthService(db *gorm.DB, userRepository repositories.IUserRepository) IA
 	}
 }
 
-func (as *authService) withTx(ctx context.Context, fn func(context.Context, repositories.IUserRepository) error) error {
+func (as *authService) withTX(
+	ctx context.Context,
+	fn func(context.Context, repositories.IUserRepository) error,
+) error {
 	return as.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		userRepository := as.userRepository.WithTX(tx)
 		return fn(ctx, userRepository)
 	})
 }
 
-func (as *authService) Login(ctx context.Context, loginUserRequest dtos.LoginUserRequest) (string, error) {
+func (as *authService) Login(
+	ctx context.Context,
+	loginUserRequest dtos.LoginUserRequest,
+) (string, error) {
 	user, err := as.userRepository.GetUserByEmail(ctx, loginUserRequest.Email)
 	if err != nil {
 		return "", err
@@ -56,32 +62,44 @@ func (as *authService) Login(ctx context.Context, loginUserRequest dtos.LoginUse
 	return token, nil
 }
 
-func (as *authService) Register(ctx context.Context, registerUserRequest dtos.RegisterUserRequest) error {
-	return as.withTx(ctx, func(ctx context.Context, userRepository repositories.IUserRepository) error {
-		existingUserWithEmail, err := as.userRepository.GetUserByEmail(ctx, registerUserRequest.Email)
-		if err != nil {
-			if existingUserWithEmail != nil {
-				return fmt.Errorf("email already exists")
+func (as *authService) Register(
+	ctx context.Context,
+	registerUserRequest dtos.RegisterUserRequest,
+) error {
+	return as.withTX(
+		ctx,
+		func(ctx context.Context, userRepository repositories.IUserRepository) error {
+			existingUserWithEmail, err := as.userRepository.GetUserByEmail(
+				ctx,
+				registerUserRequest.Email,
+			)
+			if err != nil {
+				if existingUserWithEmail != nil {
+					return fmt.Errorf("email already exists")
+				}
+				return err
 			}
-			return err
-		}
 
-		existingUserWithPhoneNumber, err := as.userRepository.GetUserByPhoneNumber(ctx, registerUserRequest.PhoneNumber)
-		if err != nil {
-			if existingUserWithPhoneNumber != nil {
-				return fmt.Errorf("phone number already exists")
+			existingUserWithPhoneNumber, err := as.userRepository.GetUserByPhoneNumber(
+				ctx,
+				registerUserRequest.PhoneNumber,
+			)
+			if err != nil {
+				if existingUserWithPhoneNumber != nil {
+					return fmt.Errorf("phone number already exists")
+				}
+				return err
 			}
-			return err
-		}
 
-		user := &models.User{
-			Email:       registerUserRequest.Email,
-			Password:    registerUserRequest.Password,
-			FirstName:   registerUserRequest.FirstName,
-			LastName:    registerUserRequest.LastName,
-			PhoneNumber: registerUserRequest.PhoneNumber,
-			Role:        models.Role(registerUserRequest.Role),
-		}
-		return userRepository.CreateUser(ctx, user)
-	})
+			user := &models.User{
+				Email:       registerUserRequest.Email,
+				Password:    registerUserRequest.Password,
+				FirstName:   registerUserRequest.FirstName,
+				LastName:    registerUserRequest.LastName,
+				PhoneNumber: registerUserRequest.PhoneNumber,
+				Role:        models.Role(registerUserRequest.Role),
+			}
+			return userRepository.CreateUser(ctx, user)
+		},
+	)
 }

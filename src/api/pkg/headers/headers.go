@@ -9,7 +9,7 @@ import (
 )
 
 type Headers struct {
-	ContentType   string `json:"content-type" default:"application/json"`
+	ContentType   string `json:"content-type"   default:"application/json"`
 	ContentLength int    `json:"content-length"`
 	Date          string `json:"date"`
 	Server        string `json:"server"`
