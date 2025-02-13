@@ -6,7 +6,7 @@ CREATE TABLE orders (
     payment_id UUID NOT NULL REFERENCES payments (id) ON DELETE SET NULL,
     promotion_id UUID REFERENCES promotions (id) ON DELETE SET NULL,
     shipping_address VARCHAR NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL CHECK (total_amount >= 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
@@ -17,8 +17,8 @@ CREATE TABLE order_items (
     order_id UUID NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
     book_id UUID NOT NULL REFERENCES books (id) ON DELETE SET NULL,
     quantity INT NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10, 2) NOT NULL,
-    discount DECIMAL(10, 2) DEFAULT 0,
+    unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price >= 0),
+    discount DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (discount >= 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
