@@ -22,7 +22,10 @@ CREATE TABLE order_items (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
-)
+);
+
+CREATE INDEX order_user_id_idx ON orders (user_id);
+CREATE INDEX order_items_order_id_idx ON order_items (order_id);
 -- +goose StatementEnd
 
 -- +goose Down
