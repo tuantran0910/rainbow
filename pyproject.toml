@@ -15,21 +15,18 @@ dependencies = []
 ######################################
 # THIRD PARTY TOOLS
 ######################################
-[tool.black]
-line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312"]
 
 [tool.mypy]
-strict = true
 ignore_missing_imports = true
+disallow_subclassing_any = false
 
 [tool.ruff]
-line-length = 120
+line-length = 100
 indent-width = 4
 
 [tool.ruff.lint]
 select = ["C901", "D300", "I", "F"]
-ignore = ["F541"]
+ignore = ["F541", "I001"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -57,7 +54,7 @@ apply_dbt_builtins = true
 [tool.sqlfluff.templater.dbt]
 project_dir = "./src/dbt"
 profiles_dir = "./src/dbt"
-profile = "clickhouse-profile"
+profile = "default"
 
 [tool.sqlfluff.indentation]
 indented_ctes = true
@@ -76,7 +73,7 @@ extended_capitalisation_policy = "upper"
 
 [tool.sqlfluff.rules.references.special_chars]
 allow_space_in_identifier = true
-additional_allowed_characters = ['.','(',')','-']
+additional_allowed_characters = ['.', '(', ')', '-']
 
 [tool.sqlfluff.rules.aliasing.length]
 min_alias_length = 4
@@ -91,5 +88,7 @@ docs = [
     "mkdocs-material>=9.5.50",
 ]
 dev = [
+    "ipykernel>=6.29.5",
     "pre-commit>=4.1.0",
+    "reorder-python-imports>=3.14.0",
 ]
