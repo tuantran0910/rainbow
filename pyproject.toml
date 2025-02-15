@@ -79,7 +79,7 @@ additional_allowed_characters = ['.', '(', ')', '-']
 min_alias_length = 4
 
 [tool.uv.workspace]
-members = ["src/dbt"]
+members = ["src/airflow", "src/dbt"]
 
 [dependency-groups]
 docs = [
