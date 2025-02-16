@@ -26,6 +26,7 @@ class BaseDagBuilder(ABC, LoggingMixin):
         templates_dir (Path): The directory where DAG templates are stored. Defaults to the folder `plugins/templates`.
         templated_dags_dir (Path): The directory where templated DAGs are stored. Defaults to the folder `dags/templated`.
         dag_configs (Dict[str, Any]): Dictionary of DAG configuration parameters.
+        dag_configs_file_path: Path to the DAG configuration file.
     """
 
     def __init__(
@@ -44,7 +45,7 @@ class BaseDagBuilder(ABC, LoggingMixin):
         templates_dir = self._validate_template_dir(
             templates_dir=templates_dir, airflow_type=airflow_type
         )
-        self.template = None
+        self.template: jinja2.Template = None
         self._initialize_template(templates_dir=templates_dir, airflow_type=airflow_type)
 
         self.dag_params: dict[str, Any] = {}
@@ -82,7 +83,7 @@ class BaseDagBuilder(ABC, LoggingMixin):
         Initialize the Jinja2 template for the Airflow DAG.
 
         Args:
-            templates_dir (Path): The path to the template directory.
+            templates_dir (Path): The path to the templates directory.
             airflow_type (str): Identifier for the DAG type (e.g., 'dbt', 'spark').
 
         Raises:
