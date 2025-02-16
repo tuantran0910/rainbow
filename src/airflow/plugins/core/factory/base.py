@@ -45,7 +45,7 @@ class BaseDagFactory(ABC, LoggingMixin):
         config_file_ext (Set[str]): The set of valid config file extensions. Defaults to file with extensions `.yml` and `.yaml`.
         templates_dir (Path): The directory where DAG templates are stored. Defaults to the folder `plugins/templates`.
         templated_dags_dir (Path): The directory where templated DAGs are stored. Defaults to the folder `dags/templated`.
-        default_args (Dict[str, Any]): The default arguments for the DAGs.
+        default_args (dict[str, Any]): The default arguments for the DAGs.
     """
 
     def __init__(
@@ -126,7 +126,7 @@ class BaseDagFactory(ABC, LoggingMixin):
             config_file_path (Path): The path to the YAML config file.
 
         Returns:
-            Dict[str, Any]: The loaded and validated config.
+            dict[str, Any]: The loaded and validated config.
 
         Raises:
             DagFactoryConfigException: If the config is invalid or missing required fields.
@@ -225,7 +225,7 @@ class BaseDagFactory(ABC, LoggingMixin):
         Won't re-generate DAGs if the configs haven't changed.
 
         Args:
-            configs (List[Dict[str, Any]]): The loaded and validated configs.
+            configs (list[dict[str, Any]]): The loaded and validated configs.
 
         Returns:
             str: The hash of the configs.
@@ -238,10 +238,10 @@ class BaseDagFactory(ABC, LoggingMixin):
         Determine if the DAGs need to be rebuilt based on the hash of the configs.
 
         Args:
-            configs (List[Dict[str, Any]]): The loaded and validated configs.
+            configs (list[dict[str, Any]]): The loaded and validated configs.
 
         Returns:
-            Tuple[str, bool]: The hash of the configs and whether the DAGs need rebuilding
+            tuple[str, bool]: The hash of the configs and whether the DAGs need rebuilding
         """
         configs_hash = self._calculate_configs_hash(configs=configs)
         last_configs_hash = Variable.get(key=self.hash_key, default_var="")

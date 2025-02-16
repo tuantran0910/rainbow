@@ -42,7 +42,7 @@ def dbt_factory_dag() -> None:
         Task to generate dbt DAGs dynamically.
 
         Args:
-            params (Dict[str, Any]): Task parameters.
+            params (dict[str, Any]): Task parameters.
         """
         factory = DbtDagFactory(full_refresh=params["full_refresh"])
         factory.build_dags()

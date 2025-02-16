@@ -27,7 +27,7 @@ class BaseDagBuilder(ABC, LoggingMixin):
             Defaults to the folder `plugins/templates`.
         templated_dags_dir (Path): The directory where templated DAGs are stored.
             Defaults to the folder `dags/templated`.
-        dag_configs (Dict[str, Any]): Dictionary of DAG configuration parameters.
+        dag_configs (dict[str, Any]): Dictionary of DAG configuration parameters.
         dag_configs_file_path: Path to the DAG configuration file.
     """
 

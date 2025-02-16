@@ -83,7 +83,7 @@ class DagParams(BaseModel):
         catchup (bool): Whether to backfill historical DAG runs for the schedule interval.
         max_active_runs (int): The maximum number of active DAG runs allowed.
         default_args (dict[str, Any], optional): The default arguments for tasks within the DAG.
-        tags (List[str], optional): A list of tags to categorize the DAG.
+        tags (list[str], optional): A list of tags to categorize the DAG.
     """
 
     dag_id: str
@@ -127,8 +127,8 @@ class DbtParams(BaseModel):
         project_dir (str): The path to the dbt project root directory.
         profile_name (str): The name of the dbt profile to use.
         profile_target (str): The target profile within the dbt profile to use.
-        select (List[str]): A list of dbt models to include in the DAG.
-        exclude (List[str]): A list of dbt models to exclude from the DAG.
+        select (list[str]): A list of dbt models to include in the DAG.
+        exclude (list[str]): A list of dbt models to exclude from the DAG.
     """
 
     project_dir: str | Path = DBT_PROJECT_DIR

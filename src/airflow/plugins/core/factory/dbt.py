@@ -20,6 +20,6 @@ class DbtDagFactory(BaseDagFactory):
         Get the builder class for dbt Airflow DAGs.
 
         Returns:
-            Type[DbtDagBuilder]: The builder class for dbt Airflow DAGs.
+            type[DbtDagBuilder]: The builder class for dbt Airflow DAGs.
         """
         return DbtDagBuilder
