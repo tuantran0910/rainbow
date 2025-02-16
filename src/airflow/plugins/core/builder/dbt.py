@@ -113,6 +113,6 @@ class DbtDagBuilder(BaseDagBuilder):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(rendered_dag)
         except jinja2.TemplateError as e:
-            raise DagBuilderTemplateException(f"Template rendering failed: {str(e)}") from e
+            raise DagBuilderTemplateException("Template rendering failed while building DAG") from e
         except OSError as e:
-            raise DagBuilderException(f"File operation failed: {str(e)}") from e
+            raise DagBuilderException("File operation failed while building DAG") from e

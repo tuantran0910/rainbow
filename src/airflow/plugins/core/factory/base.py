@@ -178,7 +178,7 @@ class BaseDagFactory(ABC, LoggingMixin):
         configs = dict()
         for config_file_path in config_file_paths:
             try:
-                self.log.info(f"Loading config from {config_file_path}")
+                self.log.info(f"Loading config from path {config_file_path}")
                 config = self._load_config(config_file_path=config_file_path)
                 configs[str(config_file_path)] = config
             except DagFactoryConfigException as e:
@@ -217,7 +217,6 @@ class BaseDagFactory(ABC, LoggingMixin):
                 f"Successfully deployed {len(list(target_dir.glob('*')))} DAGs to {target_dir}"
             )
         except Exception as e:
-            self.log.error(f"Failed to deploy DAGs: {str(e)}")
             raise DagFactoryException("DAG deployment failed") from e
 
     def _calculate_configs_hash(self, configs: list[dict[str, Any]]) -> str:
@@ -271,7 +270,6 @@ class BaseDagFactory(ABC, LoggingMixin):
         """
         Build Airflow DAGs from configs and deploy to target directory.
         """
-        self.log.info(f"Running in {self.full_refresh} full refresh mode")
         # Load all configs for the current airflow type
         dags_configs = self._load_configs()
         configs_hash, need_rebuilding = self._determine_if_dags_need_rebuilding(
