@@ -24,15 +24,12 @@ class DbtDagBuilder(BaseDagBuilder):
         self.dbt_params: dict[str, Any] = {}
         self._initialize_template_dbt_params()
 
-    def _validate_dbt_root(self, dbt_project_path: Path) -> Path:
+    def _validate_dbt_root(self, dbt_project_path: Path) -> None:
         """
         Validate dbt project root directory.
 
         Args:
             dbt_project_path (Path): Path to the dbt project root directory.
-
-        Returns:
-            Path: Validated dbt project root directory.
 
         Raises:
             DagBuilderException: If the directory does not exist.
@@ -41,8 +38,6 @@ class DbtDagBuilder(BaseDagBuilder):
             raise DagBuilderException(
                 f"Dbt project directory not found: {dbt_project_path}. Verify the path exists."
             )
-
-        return dbt_project_path
 
     def _initialize_template_dbt_params(self) -> None:
         """
@@ -55,7 +50,9 @@ class DbtDagBuilder(BaseDagBuilder):
         if not dbt_configs:
             raise DagBuilderException("Dbt configurations are required.")
 
-        self.dbt_params = DbtParams(**dbt_configs).model_dump()
+        dbt_params = DbtParams(**dbt_configs)
+        self._validate_dbt_root(dbt_project_path=dbt_params.project_dir)
+        self.dbt_params = dbt_params.model_dump()
 
     def _get_dbt_docs_url(self) -> str:
         """
@@ -98,20 +95,15 @@ class DbtDagBuilder(BaseDagBuilder):
         """
         return super()._generate_doc_md() + "\n\n" + self._generate_dbt_doc()
 
-    def build_dag(self) -> Path:
+    def build_dag(self) -> None:
         """
         Render the DAG template and write to the output path.
-
-        Returns:
-            Path: Path to the generated DAG file.
 
         Raises:
             DagBuilderTemplateException: If template rendering fails.
             DagBuilderException: If file operations fail.
         """
         try:
-            print(self.dbt_params)
-            print(self.dag_params)
             rendered_dag = self.template.render(
                 **self.dag_params, **self.dbt_params, doc_md=self._generate_doc_md()
             )
@@ -120,7 +112,6 @@ class DbtDagBuilder(BaseDagBuilder):
             self.log.info(f"Generating Airflow DAG file at {output_path}")
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(rendered_dag)
-            return output_path
         except jinja2.TemplateError as e:
             raise DagBuilderTemplateException(f"Template rendering failed: {str(e)}") from e
         except OSError as e:
