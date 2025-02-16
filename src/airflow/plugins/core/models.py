@@ -3,10 +3,11 @@ from typing import Any
 from typing import Optional
 
 import pendulum
-from core.constants import DBT_PROJECT_DIR
-from core.utils import get_environment
 from pydantic import BaseModel
 from pydantic import field_serializer
+
+from core.constants import DBT_PROJECT_DIR
+from core.utils import get_environment
 
 
 class DefaultArgs(BaseModel):

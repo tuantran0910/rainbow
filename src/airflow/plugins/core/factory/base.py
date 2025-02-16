@@ -11,6 +11,8 @@ from typing import Any
 import yaml
 from airflow.models import Variable
 from airflow.utils.log.logging_mixin import LoggingMixin
+from pydantic import ValidationError
+
 from core.builder.base import BaseDagBuilder
 from core.constants import CONFIG_FILE_EXT
 from core.constants import CONFIGS_DIR
@@ -20,7 +22,6 @@ from core.constants import TEMPLATES_DIR
 from core.factory.exceptions import DagFactoryConfigException
 from core.factory.exceptions import DagFactoryException
 from core.models import DefaultArgs
-from pydantic import ValidationError
 
 
 class BaseDagFactory(ABC, LoggingMixin):
