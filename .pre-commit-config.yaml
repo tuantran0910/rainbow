@@ -67,6 +67,7 @@ repos:
     rev: v3.14.0
     hooks:
       - id: reorder-python-imports
+        args: [--application-directories=./src/airflow, --unclassifiable-application-module=core, --py312-plus]
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
@@ -115,6 +116,7 @@ repos:
         description: A golang formatter that fixes long lines.
         entry: golines -w .
         types: [go]
+        files: \.go$
         language: golang
 
 ci:
