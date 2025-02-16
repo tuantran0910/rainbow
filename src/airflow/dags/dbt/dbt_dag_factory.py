@@ -8,6 +8,7 @@ from typing import Any
 from airflow.decorators import dag
 from airflow.decorators import task
 from airflow.models import Param
+
 from core.factory import DbtDagFactory
 from core.models import DagParams
 from core.models import DefaultArgs
