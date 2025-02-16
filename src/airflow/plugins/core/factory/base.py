@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import tempfile
+import time
 from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
@@ -247,6 +248,25 @@ class BaseDagFactory(ABC, LoggingMixin):
         last_configs_hash = Variable.get(key=self.hash_key, default_var="")
         return configs_hash, configs_hash != last_configs_hash
 
+    def _generate_build_report(self, total_success: int, total_failed: int) -> str:
+        """
+        Generate a report of the DAG building process.
+
+        Args:
+            total_success (int): The total number of successful DAG builds.
+            total_failed (int): The total number of failed DAG builds.
+
+        Returns:
+            str: The report of the DAG building process.
+        """
+        report = f"""
+        DAG building report:
+        - Total DAGs built: {total_success + total_failed}
+        - Successful DAGs: {total_success}
+        - Failed DAGs: {total_failed}
+        """
+        return report
+
     def build_dags(self) -> None:
         """
         Build Airflow DAGs from configs and deploy to target directory.
@@ -262,6 +282,8 @@ class BaseDagFactory(ABC, LoggingMixin):
             return
 
         with tempfile.TemporaryDirectory() as tmp_dir:
+            total_success = 0
+            total_failed = 0
             for dag_configs_file_path, dag_configs in dags_configs.items():
                 self.log.info(f"Building Airflow DAG: {dag_configs['airflow']['dag_id']}")
                 try:
@@ -274,15 +296,29 @@ class BaseDagFactory(ABC, LoggingMixin):
                         dag_configs_file_path=dag_configs_file_path,
                     )
                     builder.build_dag()
+                    total_success += 1
                 except Exception as e:
-                    self.log.exception(f"Failed to build DAG: {e}")
+                    self.log.exception(f"An unexpected error occurred while building DAG: {str(e)}")
+                    total_failed += 1
                     continue
+
+            built_report = self._generate_build_report(
+                total_success=total_success, total_failed=total_failed
+            )
+            self.log.info(built_report)
 
             # Move generated DAGs to the templated DAGs directory
             self._deploy_dags(tmp_dir=tmp_dir)
 
         # Update the configs hash in the Airflow Variables
-        Variable.set(key=self.hash_key, value=configs_hash)
+        if total_failed != 0:
+            self.log.warning("Some DAGs failed to build. Skipping configs hash update...")
+        else:
+            Variable.set(
+                key=self.hash_key,
+                value=configs_hash,
+                description=f"Configs hash generated on {time.ctime()}",
+            )
 
     @abstractmethod
     def _get_builder(self) -> type[BaseDagBuilder]:
