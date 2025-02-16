@@ -178,6 +178,10 @@ cython_debug/
 
 # Airflow
 logs/
+templated/
 
 # Golang
 tmp/
+
+# Visual Studio Code
+.vscode/

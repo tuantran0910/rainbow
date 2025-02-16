@@ -55,12 +55,6 @@ repos:
       - id: ruff-format
         types_or: [python, pyi]
 
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        args: [--config, ./pyproject.toml]
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.1
     hooks:
@@ -73,7 +67,7 @@ repos:
     rev: v3.14.0
     hooks:
       - id: reorder-python-imports
-        args: [--unclassifiable-application-module=src, --py311-plus]
+        args: [--application-directories=./src/airflow, --unclassifiable-application-module=core, --py312-plus]
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
@@ -122,6 +116,7 @@ repos:
         description: A golang formatter that fixes long lines.
         entry: golines -w .
         types: [go]
+        files: \.go$
         language: golang
 
 ci:

@@ -1,0 +1,80 @@
+import datetime
+import pendulum
+from pathlib import Path
+
+from airflow.decorators import dag
+from airflow.models.param import Param
+from airflow.operators.empty import EmptyOperator
+from cosmos import DbtTaskGroup
+from cosmos import ExecutionConfig
+from cosmos import ProjectConfig
+from cosmos import ProfileConfig
+from cosmos import RenderConfig
+from cosmos.constants import ExecutionMode
+
+from core.constants import DBT_TASK_GROUP_ID
+
+
+DBT_PROJECT_DIR = Path("{{ project_dir }}")
+
+# Project configuration allows you to specify information about the dbt project.
+project_config = ProjectConfig(dbt_project_path=DBT_PROJECT_DIR)
+
+# Profile configuration specifies the profile and target to use for dbt.
+profile_config = ProfileConfig(
+    profile_name="{{ profile_name }}",
+    target_name="{{ profile_target }}",
+    profiles_yml_filepath=DBT_PROJECT_DIR / "profiles.yml",
+)
+
+# Render configuration gives control over how your dbt project is rendered as an Airflow DAG.
+render_config = RenderConfig(
+    select={{ select | tojson }},
+    exclude={{ exclude | tojson }},
+)
+
+# Execution configuration allows you to specify how dbt should be executed.
+execution_config = ExecutionConfig(execution_mode=ExecutionMode.LOCAL)
+
+@dag(
+    dag_id="{{ dag_id }}",
+    description="{{ description }}",
+    schedule_interval="{{ schedule_interval }}",
+    start_date=pendulum.parse("{{ start_date }}").in_timezone("{{ timezone }}"),
+    catchup={{ catchup }},
+    max_active_runs={{ max_active_runs }},
+    default_args={{ default_args }},
+    tags={{ tags | tojson }},
+    doc_md={{ doc_md | tojson }},
+    params={
+        "full_refresh": Param(
+            title="Full Refresh",
+            default=False,
+            type="boolean",
+            description="Whether to perform a full refresh of the data.",
+        ),
+    },
+)
+def {{ dag_id }}_dag() -> None:
+    """
+    DAG for running dbt models.
+    """
+    pre_dbt_workflow = EmptyOperator(task_id="pre_dbt_operations")
+
+    jaffle_shop = DbtTaskGroup(
+        group_id=DBT_TASK_GROUP_ID,
+        project_config=project_config,
+        profile_config=profile_config,
+        render_config=render_config,
+        execution_config=execution_config,
+        operator_args={
+            "install_deps": True,
+            "full_refresh": {% raw %}"{{ params.full_refresh }}"{% endraw %}
+        },
+    )
+
+    post_dbt_workflow = EmptyOperator(task_id="post_dbt_workflow")
+
+    pre_dbt_workflow >> jaffle_shop >> post_dbt_workflow
+
+{{ dag_id }}_dag()
