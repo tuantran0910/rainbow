@@ -1,3 +1,4 @@
+import datetime
 import pendulum
 from pathlib import Path
 
@@ -28,8 +29,8 @@ profile_config = ProfileConfig(
 
 # Render configuration gives control over how your dbt project is rendered as an Airflow DAG.
 render_config = RenderConfig(
-    select={{ select }},
-    exclude={{ exclude }},
+    select={{ select | tojson }},
+    exclude={{ exclude | tojson }},
 )
 
 # Execution configuration allows you to specify how dbt should be executed.
@@ -43,7 +44,7 @@ execution_config = ExecutionConfig(execution_mode=ExecutionMode.LOCAL)
     catchup={{ catchup }},
     max_active_runs={{ max_active_runs }},
     default_args={{ default_args }},
-    tags={{ tags }},
+    tags={{ tags | tojson }},
     doc_md={{ doc_md | tojson }},
     params={
         "full_refresh": Param(
