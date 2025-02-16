@@ -23,8 +23,10 @@ class BaseDagBuilder(ABC, LoggingMixin):
 
     Args:
         airflow_type (str): Identifier for the DAG type (e.g., 'dbt', 'spark').
-        templates_dir (Path): The directory where DAG templates are stored. Defaults to the folder `plugins/templates`.
-        templated_dags_dir (Path): The directory where templated DAGs are stored. Defaults to the folder `dags/templated`.
+        templates_dir (Path): The directory where DAG templates are stored.
+            Defaults to the folder `plugins/templates`.
+        templated_dags_dir (Path): The directory where templated DAGs are stored.
+            Defaults to the folder `dags/templated`.
         dag_configs (Dict[str, Any]): Dictionary of DAG configuration parameters.
         dag_configs_file_path: Path to the DAG configuration file.
     """
