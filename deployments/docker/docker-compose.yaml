@@ -369,9 +369,41 @@ services:
     networks:
       - kafka-network
 
+  metabase:
+    image: metabase/metabase:v0.53.5.4
+    container_name: metabase
+    hostname: metabase
+    ports:
+      - ${METABASE_PORT:-3000}:3000
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: ${METABASE_DB_NAME}
+      MB_DB_PORT: ${DB_PORT}
+      MB_DB_USER: ${METABASE_DB_USER}
+      MB_DB_PASS: ${METABASE_DB_PASSWORD}
+      MB_DB_HOST: ${DB_HOST}
+    env_file:
+      - ./.env
+    volumes:
+      - /dev/urandom:/dev/random:ro
+      - metabase-data:/metabase-data
+    healthcheck:
+      test: [CMD, curl, --fail, -I, http://localhost:3000/api/health]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - metabase-network
+      - postgres-network
+
 volumes:
   postgres_data:
   clickhouse_data:
+  metabase-data:
 
 networks:
   airflow-network:
@@ -383,4 +415,6 @@ networks:
   clickhouse-network:
     driver: bridge
   kafka-network:
+    driver: bridge
+  metabase-network:
     driver: bridge

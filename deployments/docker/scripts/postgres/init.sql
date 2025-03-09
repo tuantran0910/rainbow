@@ -70,3 +70,22 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO cdc;
 -- Set the default privileges for future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO cdc;
+
+---------------------------------------------------------------------
+--                      Metabase                                   --
+---------------------------------------------------------------------
+
+-- Initialize the necessary resources for the Metabase
+CREATE DATABASE metabase;
+
+-- Create the user with a password
+CREATE ROLE metabase WITH LOGIN PASSWORD 'Metabase2024!Data';
+
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE metabase TO metabase;
+GRANT TEMPORARY ON DATABASE metabase TO metabase;
+
+-- Switch to the metabase database and grant schema permissions
+\c metabase
+GRANT CREATE ON DATABASE metabase TO metabase;
+GRANT USAGE, CREATE ON SCHEMA public TO metabase;
