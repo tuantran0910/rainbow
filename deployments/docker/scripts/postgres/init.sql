@@ -47,3 +47,26 @@ GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
 
 -- Create the extension for UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+---------------------------------------------------------------------
+--                      CDC                                        --
+---------------------------------------------------------------------
+
+-- Create the user with a password
+CREATE ROLE cdc WITH REPLICATION LOGIN PASSWORD 'Cdc2024!Data';
+
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE rainbow TO cdc;
+GRANT TEMPORARY ON DATABASE rainbow TO cdc;
+
+-- Create the extension for logical replication
+CREATE PUBLICATION cdc_publication FOR ALL TABLES;
+
+-- Grant schema and table privileges
+\c rainbow
+GRANT USAGE ON SCHEMA public TO cdc;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO cdc;
+
+-- Set the default privileges for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT ON TABLES TO cdc;
