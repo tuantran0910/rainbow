@@ -3,7 +3,7 @@ PROJECT_NAME = rainbow
 DOCKER_COMPOSE_FILE = ./deployments/docker/docker-compose.yaml
 
 # Define targets
-.PHONY: up api clickhouse cdc cdc_connectors down build logs clean help
+.PHONY: up api clickhouse cdc cdc_connectors metabase down build logs clean help
 
 up: ## Start all Docker compose services
 	@echo "Starting all Docker compose services..."
@@ -17,14 +17,18 @@ clickhouse: ## Start Clickhouse service
 	@echo "Starting Clickhouse service..."
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d clickhouse
 
-cdc:
+cdc: ## Start CDC services
 	@echo "Starting CDC service..."
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres clickhouse zookeeper kafka-broker kafka-schema-registry kafka-connect kafka-ui
 
-cdc_connectors: ## Start CDC service with connectors
+cdc_connectors: ## Initialize CDC connectors
 	@echo "Starting Connectors..."
 	@chmod +x src/kafka/connectors/start.sh
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d kafka-init-connectors
+
+metabase: ## Start Metabase service
+	@echo "Starting Metabase service..."
+	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres metabase
 
 down: ## Stop all Docker compose services
 	@echo "Stopping all Docker compose services..."
