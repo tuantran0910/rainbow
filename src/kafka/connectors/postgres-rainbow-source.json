@@ -1,0 +1,33 @@
+{
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.dbname": "rainbow",
+    "database.hostname": "${env:DB_HOST}",
+    "database.password": "${env:CDC_DB_PASSWORD}",
+    "database.port": "${env:DB_PORT}",
+    "database.server.id": "184055",
+    "database.user": "${env:CDC_DB_USER}",
+    "decimal.handling.mode": "double",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://schema-registry:8081",
+    "key.converter.schemas.enable": "true",
+    "plugin.name": "pgoutput",
+    "publication.name": "cdc_publication",
+    "schema.history.internal.kafka.bootstrap.servers": "broker:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.postgres",
+    "schema.include.list": "public",
+    "table.include.list": "public.users",
+    "tasks.max": "1",
+    "time.precision.mode": "adaptive",
+    "topic.prefix": "postgres",
+    "transforms": "unwrap,router",
+    "transforms.router.topic.regex": "postgres.public.(.*)",
+    "transforms.router.topic.replacement": "cdc__$1",
+    "transforms.router.type": "io.debezium.transforms.ByLogicalTableRouter",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.schemas.enable": "true"
+  },
+  "name": "postgres-rainbow-connector"
+}
