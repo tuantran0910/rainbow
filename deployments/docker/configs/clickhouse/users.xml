@@ -35,6 +35,17 @@
                 <database>analytics</database>
             </allow_databases>
         </superset>
+
+        <cdc>
+            <password from_env="CLICKHOUSE_CDC_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <allow_databases>
+                <database>raw</database>
+            </allow_databases>
+        </cdc>
     </users>
 
     <!-- Profiles -->

@@ -33,13 +33,15 @@ services:
     image: postgres:16-alpine
     container_name: postgres
     hostname: ${DB_HOST}
+    command: postgres -c config_file=/etc/postgresql.conf
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - ${DB_PORT}:5432
+      - ${DB_PORT:-5432}:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./configs/postgres/postgresql.conf:/etc/postgresql.conf
       - ./scripts/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ./.env
@@ -50,6 +52,7 @@ services:
       start_period: 10s
     restart: always
     networks:
+      - postgres-network
       - airflow-network
 
   api:
@@ -59,7 +62,7 @@ services:
     container_name: api
     hostname: api
     ports:
-      - ${SERVER_PORT}:${SERVER_PORT}
+      - ${SERVER_PORT:-5000}:${SERVER_PORT}
     volumes:
       - ../../src/api/migrations:/migrations
     env_file:
@@ -74,7 +77,8 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - airflow-network
+      - postgres-network
+      - api-network
 
   airflow-webserver:
     <<: *airflow-common
@@ -95,6 +99,7 @@ services:
         condition: service_completed_successfully
     networks:
       - airflow-network
+      - postgres-network
 
   airflow-scheduler:
     <<: *airflow-common
@@ -121,6 +126,7 @@ services:
           cpus: '0.25'
     networks:
       - airflow-network
+      - postgres-network
 
   airflow-init:
     <<: *airflow-common
@@ -155,6 +161,7 @@ services:
     restart: on-failure
     networks:
       - airflow-network
+      - postgres-network
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.12
@@ -176,7 +183,7 @@ services:
     env_file:
       - ./.env
     healthcheck:
-      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://127.0.0.1:8123/ping  || exit 1]
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://127.0.0.1:8123/ping]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -186,6 +193,182 @@ services:
       - airflow-network
       - clickhouse-network
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.9.0
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888
+    ports:
+      - 2181:2181
+    healthcheck:
+      test: [CMD, sh, -c, echo ruok | nc localhost 2181]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    networks:
+      - kafka-network
+
+  kafka-broker:
+    image: confluentinc/cp-kafka:7.9.0
+    container_name: broker
+    hostname: broker
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: true
+    ports:
+      - 9092:9092
+      - 29092:29092
+      - 9999:9999
+    healthcheck:
+      test: [CMD, sh, -c, nc -z localhost 9092]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - zookeeper
+    restart: always
+    networks:
+      - kafka-network
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:7.9.0
+    container_name: schema-registry
+    hostname: schema-registry
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://broker:29092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - 8081:8081
+    depends_on:
+      - zookeeper
+      - kafka-broker
+    restart: always
+    healthcheck:
+      test: [CMD, timeout, '1', curl, --silent, --fail, http://schema-registry:8081/subjects]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - kafka-network
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.9.0
+    container_name: connect
+    hostname: connect
+    command:
+      - bash
+      - -c
+      - |
+        confluent-hub install --no-prompt debezium/debezium-connector-postgresql:2.5.4
+        confluent-hub install --no-prompt clickhouse/clickhouse-kafka-connect:v1.2.6
+        /etc/confluent/docker/run
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: broker:29092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: connect-cluster
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars,/usr/share/confluent-hub-components
+      CONNECT_CONFIG_PROVIDERS: env
+      CONNECT_CONFIG_PROVIDERS_ENV_CLASS: org.apache.kafka.common.config.provider.EnvVarConfigProvider
+    env_file:
+      - ./.env
+    ports:
+      - 8083:8083
+    volumes:
+      - ./connectors:/etc/kafka-connect/jars/
+    depends_on:
+      - zookeeper
+      - kafka-broker
+      - kafka-schema-registry
+    restart: always
+    healthcheck:
+      test: [CMD, curl, --fail, http://connect:8083/]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - postgres-network
+      - kafka-network
+      - clickhouse-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    hostname: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local-connect
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://connect:8083
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - 8082:8080
+    depends_on:
+      - zookeeper
+      - kafka-broker
+      - kafka-schema-registry
+      - kafka-connect
+    restart: always
+    healthcheck:
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://localhost:8080/actuator/health]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - kafka-network
+
+  kafka-init-connectors:
+    image: ellerbrock/alpine-bash-curl-ssl
+    container_name: kafka-init-connectors
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    volumes:
+      - ${KAFKA_PROJ_DIR:-../../src/kafka}/connectors:/connectors
+    entrypoint: bash -c '/connectors/start.sh'
+    networks:
+      - kafka-network
+
 volumes:
   postgres_data:
   clickhouse_data:
@@ -193,5 +376,11 @@ volumes:
 networks:
   airflow-network:
     driver: bridge
+  postgres-network:
+    driver: bridge
+  api-network:
+    driver: bridge
   clickhouse-network:
+    driver: bridge
+  kafka-network:
     driver: bridge
