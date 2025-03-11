@@ -372,7 +372,7 @@ services:
   metabase:
     image: metabase/metabase:v0.53.5.4
     container_name: metabase
-    hostname: metabase
+    hostname: ${METABASE_HOST}
     ports:
       - ${METABASE_PORT:-3000}:3000
     environment:
@@ -399,11 +399,103 @@ services:
     networks:
       - metabase-network
       - postgres-network
+      - cube-network
+
+  cubestore_worker:
+    image: cubejs/cubestore:v1.2.19
+    container_name: cubestore_worker
+    hostname: cubestore_worker
+    environment:
+      CUBESTORE_WORKERS: cubestore_worker:10000
+      CUBESTORE_SERVER_NAME: cubestore_worker:10000
+      CUBESTORE_WORKER_PORT: 10000
+      CUBESTORE_REMOTE_DIR: /cube/data
+      CUBESTORE_META_ADDR: cubestore_router:9999
+    volumes:
+      - cubestore:/cube/data
+    depends_on:
+      - cubestore_router
+    restart: always
+    networks:
+      - cube-network
+      - clickhouse-network
+
+  cubestore_router:
+    image: cubejs/cubestore:v1.2.19
+    container_name: cubestore_router
+    hostname: cubestore_router
+    environment:
+      CUBESTORE_WORKERS: cubestore_worker:10000
+      CUBESTORE_REMOTE_DIR: /cube/data
+      CUBESTORE_META_PORT: 9999
+      CUBESTORE_SERVER_NAME: cubestore_router:9999
+    volumes:
+      - cubestore:/cube/data
+    restart: always
+    networks:
+      - cube-network
+      - clickhouse-network
+
+  cube_refresh_worker:
+    image: cubejs/cube:v1.2.19
+    container_name: cube_refresh_worker
+    hostname: cube_refresh_worker
+    environment:
+      CUBEJS_DB_TYPE: clickhouse
+      CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
+      CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
+      CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+      CUBEJS_PG_SQL_PORT: 15432
+      CUBEJS_SQL_USER: ${CUBEJS_SQL_USER}
+      CUBEJS_SQL_PASS: ${CUBEJS_SQL_PASSWORD}
+      CUBEJS_CUBESTORE_HOST: cubestore_router
+      CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
+      CUBEJS_REFRESH_WORKER: true
+    volumes:
+      - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+    restart: always
+    networks:
+      - cube-network
+      - clickhouse-network
+
+  cube_api:
+    image: cubejs/cube:v1.2.19
+    container_name: cube_api
+    hostname: cube_api
+    ports:
+      - ${CUBE_API_PORT:-4000}:4000
+      - ${CUBE_SQL_API_PORT:-15432}:15432
+    environment:
+      CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
+      CUBEJS_DB_TYPE: clickhouse
+      CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
+      CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
+      CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+      CUBEJS_PG_SQL_PORT: 15432
+      CUBEJS_SQL_USER: ${CUBEJS_SQL_USER}
+      CUBEJS_SQL_PASS: ${CUBEJS_SQL_PASSWORD}
+      CUBEJS_CUBESTORE_HOST: cubestore_router
+      CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
+    volumes:
+      - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+    depends_on:
+      - cube_refresh_worker
+      - cubestore_router
+      - cubestore_worker
+    restart: always
+    networks:
+      - cube-network
+      - clickhouse-network
 
 volumes:
   postgres_data:
   clickhouse_data:
   metabase-data:
+  cubestore:
 
 networks:
   airflow-network:
@@ -417,4 +509,6 @@ networks:
   kafka-network:
     driver: bridge
   metabase-network:
+    driver: bridge
+  cube-network:
     driver: bridge
