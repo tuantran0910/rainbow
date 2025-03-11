@@ -36,7 +36,6 @@ cubejs: ## Start Cube.js service
 init: ## Initialize all necessary permissions
 	@echo "Initializing permissions..."
 	@chmod +x src/kafka/connectors/start.sh
-	@chmod +x deployments/docker/scripts/metabase/create_users.sh
 
 down: ## Stop all Docker compose services
 	@echo "Stopping all Docker compose services..."
