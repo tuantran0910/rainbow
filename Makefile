@@ -23,12 +23,19 @@ cdc: ## Start CDC services
 
 cdc_connectors: ## Initialize CDC connectors
 	@echo "Starting Connectors..."
-	@chmod +x src/kafka/connectors/start.sh
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d kafka-init-connectors
 
 metabase: ## Start Metabase service
 	@echo "Starting Metabase service..."
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres metabase
+
+cubejs: ## Start Cube.js service
+	@echo "Starting Cube.js service..."
+	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d cube_api cube_refresh_worker cubestore_router cubestore_worker
+
+init: ## Initialize all necessary permissions
+	@echo "Initializing permissions..."
+	@chmod +x src/kafka/connectors/start.sh
 
 down: ## Stop all Docker compose services
 	@echo "Stopping all Docker compose services..."

@@ -25,17 +25,6 @@
             </allow_databases>
         </dbt>
 
-        <superset>
-            <password from_env="CLICKHOUSE_SUPERSET_PASSWORD" />
-            <networks>
-                <ip>::/0</ip>
-            </networks>
-            <profile>readonly</profile>
-            <allow_databases>
-                <database>analytics</database>
-            </allow_databases>
-        </superset>
-
         <cdc>
             <password from_env="CLICKHOUSE_CDC_PASSWORD" />
             <networks>
@@ -46,6 +35,17 @@
                 <database>raw</database>
             </allow_databases>
         </cdc>
+
+        <cubejs>
+            <password from_env="CLICKHOUSE_CUBEJS_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>readonly</profile>
+            <allow_databases>
+                <database>analytics</database>
+            </allow_databases>
+        </cubejs>
     </users>
 
     <!-- Profiles -->
@@ -58,6 +58,7 @@
         </admin_profile>
         <readonly>
             <readonly>1</readonly>
+            <join_use_nulls>1</join_use_nulls>
         </readonly>
     </profiles>
 
