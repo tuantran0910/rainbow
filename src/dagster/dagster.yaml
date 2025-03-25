@@ -1,0 +1,76 @@
+storage:
+  postgres:
+    postgres_db:
+      hostname:
+        env: DB_HOST
+      port:
+        env: DB_PORT
+      username:
+        env: DAGSTER_DB_USER
+      password:
+        env: DAGSTER_DB_PASSWORD
+      db_name:
+        env: DAGSTER_DB_NAME
+
+compute_logs:
+  module: dagster_aws.s3.compute_log_manager
+  class: S3ComputeLogManager
+  config:
+    show_url_only: true
+    bucket:
+      env: DAGSTER_COMPUTE_LOGS_BUCKET
+    access_key_id:
+      env: DAGSTER_COMPUTE_LOGS_ACCESS_KEY_ID
+    secret_access_key:
+      env: DAGSTER_COMPUTE_LOGS_SECRET_ACCESS_KEY
+    endpoint_url:
+      env: DAGSTER_COMPUTE_LOGS_ENDPOINT_URL
+    use_ssl: false
+    verify: false
+    upload_interval: 30
+
+scheduler:
+  module: dagster.core.scheduler
+  class: DagsterDaemonScheduler
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 5
+
+run_launcher:
+  module: dagster.core.launcher
+  class: DefaultRunLauncher
+
+telemetry:
+  enabled: false
+
+run_monitoring:
+  enabled: true
+  poll_interval_seconds: 60
+
+run_retries:
+  enabled: true
+  max_retries: 3
+  retry_on_asset_or_op_failure: true
+
+code_servers:
+  local_startup_timeout: 360
+
+retention:
+  schedule:
+    purge_after_days: 90
+  sensor:
+    purge_after_days:
+      skipped: 7
+      failure: 30
+      success: -1
+
+sensors:
+  use_threads: true
+  num_workers: 8
+
+schedules:
+  use_threads: true
+  num_workers: 8

@@ -79,7 +79,7 @@ additional_allowed_characters = ['.', '(', ')', '-']
 min_alias_length = 4
 
 [tool.uv.workspace]
-members = ["src/airflow", "src/dbt"]
+members = ["src/airflow", "src/dbt", "src/dagster", "src/dagster_workspace"]
 
 [dependency-groups]
 docs = [

@@ -28,6 +28,34 @@ GRANT USAGE, CREATE ON SCHEMA public TO airflow;
 
 
 ---------------------------------------------------------------------
+--                      Dagster                                    --
+---------------------------------------------------------------------
+
+-- Initialize the necessary resources for the Dagster.
+CREATE DATABASE dagster;
+
+-- Drop the user if it already exists
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT FROM pg_catalog.pg_roles WHERE rolname = 'dagster'
+    ) THEN
+        DROP ROLE dagster;
+    END IF;
+END $$;
+
+-- Create the user with a password
+CREATE ROLE dagster WITH LOGIN PASSWORD 'dagster';
+
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE dagster TO dagster;
+GRANT TEMPORARY ON DATABASE dagster TO dagster;
+
+-- Switch to the dagster database and grant schema permissions
+\c dagster
+GRANT USAGE, CREATE ON SCHEMA public TO dagster;
+
+---------------------------------------------------------------------
 --                      API                                        --
 ---------------------------------------------------------------------
 
