@@ -117,7 +117,7 @@ services:
     environment:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
     volumes:
-      - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}/definitions.py:/opt/dagster/app/definitions.py
+      - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
     env_file:
       - ./.env
     networks:
