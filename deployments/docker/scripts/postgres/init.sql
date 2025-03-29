@@ -1,31 +1,30 @@
 ---------------------------------------------------------------------
---                      Apache Airflow                             --
+--                      Dagster                                    --
 ---------------------------------------------------------------------
 
--- Initialize the necessary resources for the Apache Airflow.
-CREATE DATABASE airflow;
+-- Initialize the necessary resources for the Dagster.
+CREATE DATABASE dagster;
 
 -- Drop the user if it already exists
 DO $$
 BEGIN
     IF EXISTS (
-        SELECT FROM pg_catalog.pg_roles WHERE rolname = 'airflow'
+        SELECT FROM pg_catalog.pg_roles WHERE rolname = 'dagster'
     ) THEN
-        DROP ROLE airflow;
+        DROP ROLE dagster;
     END IF;
 END $$;
 
 -- Create the user with a password
-CREATE ROLE airflow WITH LOGIN PASSWORD 'airflow';
+CREATE ROLE dagster WITH LOGIN PASSWORD 'dagster';
 
 -- Grant necessary privileges to the user
-GRANT CONNECT ON DATABASE airflow TO airflow;
-GRANT TEMPORARY ON DATABASE airflow TO airflow;
+GRANT CONNECT ON DATABASE dagster TO dagster;
+GRANT TEMPORARY ON DATABASE dagster TO dagster;
 
--- Switch to the airflow database and grant schema permissions
-\c airflow
-GRANT USAGE, CREATE ON SCHEMA public TO airflow;
-
+-- Switch to the dagster database and grant schema permissions
+\c dagster
+GRANT USAGE, CREATE ON SCHEMA public TO dagster;
 
 ---------------------------------------------------------------------
 --                      API                                        --

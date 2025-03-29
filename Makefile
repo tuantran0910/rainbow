@@ -3,7 +3,7 @@ PROJECT_NAME = rainbow
 DOCKER_COMPOSE_FILE = ./deployments/docker/docker-compose.yaml
 
 # Define targets
-.PHONY: up api clickhouse cdc cdc_connectors metabase down build logs clean help
+.PHONY: up api clickhouse cdc cdc_connectors metabase dagster minio init down build logs clean help
 
 up: ## Start all Docker compose services
 	@echo "Starting all Docker compose services..."
@@ -33,9 +33,18 @@ cubejs: ## Start Cube.js service
 	@echo "Starting Cube.js service..."
 	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d cube_api cube_refresh_worker cubestore_router cubestore_worker
 
+dagster: ## Start Dagster services
+	@echo "Starting Dagster services..."
+	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres dagster-webserver dagster-daemon dagster-workspace
+
+minio: ## Start Minio service
+	@echo "Starting Minio service..."
+	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d minio minio-client
+
 init: ## Initialize all necessary permissions
 	@echo "Initializing permissions..."
 	@chmod +x src/kafka/connectors/start.sh
+	@chmod +x deployments/docker/scripts/minio/init.sh
 
 down: ## Stop all Docker compose services
 	@echo "Stopping all Docker compose services..."

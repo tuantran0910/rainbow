@@ -1,32 +1,15 @@
-x-airflow-common: &airflow-common
+x-dagster-common: &dagster-common
   build:
-    context: ${AIRFLOW_PROJ_DIR:-../../src/airflow}
+    context: ${DAGSTER_PROJ_DIR:-../../src/dagster}
     dockerfile: Dockerfile
-  environment: &airflow-common-env
-    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 60
-    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
-    AIRFLOW__CORE__EXECUTOR: LocalExecutor
-    AIRFLOW__CORE__FERNET_KEY: ''
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__CORE__LOGGING_LEVEL: INFO
-    AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${AIRFLOW_DB_NAME}
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30
-    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-  volumes:
-    - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/dags:/opt/airflow/dags
-    - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/configs:/opt/airflow/configs
-    - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/logs:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR:-../../src/airflow}/plugins:/opt/airflow/plugins
-    - ${DBT_PROJ_DIR:-../../src/dbt}:/opt/airflow/dbt
   env_file:
     - ./.env
-  user: ${AIRFLOW_UID:-50000}:0
-  depends_on: &airflow-common-depends-on
+  depends_on: &dagster-common-depends-on
     postgres:
       condition: service_healthy
+  restart: always
   networks:
-    - airflow-network
+    - dagster-network
 
 services:
   postgres:
@@ -53,7 +36,7 @@ services:
     restart: always
     networks:
       - postgres-network
-      - airflow-network
+      - dagster-network
 
   api:
     build:
@@ -80,88 +63,66 @@ services:
       - postgres-network
       - api-network
 
-  airflow-webserver:
-    <<: *airflow-common
-    container_name: airflow-webserver
-    command: webserver
+  dagster-webserver:
+    <<: *dagster-common
+    container_name: dagster-webserver
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - 0.0.0.0
+      - -p
+      - '3000'
+      - -w
+      - workspace.yaml
     ports:
-      - 8080:8080
+      - 3001:3000
     healthcheck:
-      test: [CMD, curl, --fail, http://localhost:8080/health]
+      test: [CMD, curl, --fail, http://localhost:3000/health]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
     depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+      <<: *dagster-common-depends-on
     networks:
-      - airflow-network
+      - dagster-network
       - postgres-network
+      - minio-network
 
-  airflow-scheduler:
-    <<: *airflow-common
-    container_name: airflow-scheduler
-    command: scheduler
+  dagster-daemon:
+    <<: *dagster-common
+    container_name: dagster-daemon
+    entrypoint:
+      - dagster-daemon
+      - run
     healthcheck:
       test: [CMD, curl, --fail, http://localhost:8974/health]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
     depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
-        reservations:
-          memory: 512M
-          cpus: '0.25'
+      <<: *dagster-common-depends-on
     networks:
-      - airflow-network
+      - dagster-network
       - postgres-network
+      - minio-network
 
-  airflow-init:
-    <<: *airflow-common
-    container_name: airflow-init
-    entrypoint: /bin/bash
-    command:
-      - -c
-      - |
-        airflow db init
-        if [[ -z "${AIRFLOW_UID}" ]]; then
-          echo
-          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
-          echo "If you are on Linux, you SHOULD follow the instructions below to set "
-          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
-          echo "For other operating systems you can get rid of the warning with manually created .env file:"
-          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
-          echo
-        fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-        exec /entrypoint airflow version
-    user: 0:0
+  dagster-workspace:
+    build:
+      context: ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}
+      dockerfile: Dockerfile
+    container_name: dagster-workspace
+    image: dagster-workspace
     environment:
-      <<: *airflow-common-env
-      _AIRFLOW_DB_MIGRATE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER:-airflow}
-      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: ''
+      DAGSTER_CURRENT_IMAGE: dagster-workspace
     volumes:
-      - ${AIRFLOW_PROJ_DIR:-.}:/sources
-    restart: on-failure
+      - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}/definitions.py:/opt/dagster/app/definitions.py
+    env_file:
+      - ./.env
     networks:
-      - airflow-network
-      - postgres-network
+      - dagster-network
+      - minio-network
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.12
@@ -190,7 +151,7 @@ services:
       start_period: 30s
     restart: always
     networks:
-      - airflow-network
+      - dagster-network
       - clickhouse-network
 
   zookeeper:
@@ -491,14 +452,57 @@ services:
       - cube-network
       - clickhouse-network
 
+  minio:
+    image: minio/minio:RELEASE.2025-03-12T18-04-18Z
+    container_name: minio
+    hostname: ${MINIO_HOST}
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    env_file:
+      - ./.env
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    healthcheck:
+      test: [CMD, curl, -f, http://localhost:9000/minio/health/live]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+    restart: always
+    networks:
+      - minio-network
+
+  minio-client:
+    image: minio/mc:RELEASE.2025-03-12T17-29-24Z
+    container_name: minio-client
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    env_file:
+      - ./.env
+    volumes:
+      - ./scripts/minio/init.sh:/init.sh
+    entrypoint: [/bin/bash, /init.sh]
+    networks:
+      - minio-network
+
 volumes:
   postgres_data:
   clickhouse_data:
   metabase-data:
   cubestore:
+  minio_data:
 
 networks:
-  airflow-network:
+  dagster-network:
     driver: bridge
   postgres-network:
     driver: bridge
@@ -511,4 +515,6 @@ networks:
   metabase-network:
     driver: bridge
   cube-network:
+    driver: bridge
+  minio-network:
     driver: bridge

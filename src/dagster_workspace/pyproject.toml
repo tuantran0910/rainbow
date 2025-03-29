@@ -1,0 +1,11 @@
+[project]
+name = "dagster-workspace"
+version = "0.1.0"
+description = "Rainbow Dagster Workspace"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dagster==1.10.6",
+    "dagster-postgres>=0.26.6",
+    "dagster-obstore>=0.2.1",
+]
