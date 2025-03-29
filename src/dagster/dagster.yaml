@@ -13,21 +13,27 @@ storage:
         env: DAGSTER_DB_NAME
 
 compute_logs:
-  module: dagster_aws.s3.compute_log_manager
+  module: dagster_obstore.s3.compute_log_manager
   class: S3ComputeLogManager
   config:
-    show_url_only: true
     bucket:
       env: DAGSTER_COMPUTE_LOGS_BUCKET
     access_key_id:
       env: DAGSTER_COMPUTE_LOGS_ACCESS_KEY_ID
     secret_access_key:
       env: DAGSTER_COMPUTE_LOGS_SECRET_ACCESS_KEY
-    endpoint_url:
+    local_dir: /tmp/dagster-compute-logs
+    endpoint:
       env: DAGSTER_COMPUTE_LOGS_ENDPOINT_URL
-    use_ssl: false
-    verify: false
-    upload_interval: 30
+    region: us-west-1
+    timeout: 60s
+    allow_http: true
+
+local_artifact_storage:
+  module: dagster.core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /tmp/dagster-artifacts
 
 scheduler:
   module: dagster.core.scheduler

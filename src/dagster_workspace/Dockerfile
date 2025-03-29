@@ -1,6 +1,5 @@
 # Define the base image
 ARG PYTHON_VERSION=3.12
-ARG UV_VERSION=0.6.9
 FROM python:${PYTHON_VERSION}-slim
 
 # Label the image
@@ -23,7 +22,7 @@ RUN apt-get update && apt-get install -y libpq-dev gcc \
 ENV VIRTUAL_ENV=/opt/venv
 
 # Copy the dependency file and install dependencies
-COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 COPY pyproject.toml .
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -33,7 +32,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 
 # Post cleanup
-USER root
 RUN apt-get remove -y gcc && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
