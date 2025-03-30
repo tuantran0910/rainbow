@@ -8,10 +8,14 @@ LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DAGSTER_WORKSPACE=/opt/dagster/app
+    DAGSTER_WORKSPACE=/opt/dagster/app \
+    DAGSTER_DBT_WORKSPACE=/opt/dagster/dbt
 
 # Set working directory
 WORKDIR $DAGSTER_WORKSPACE
+
+# Create a directory for dbt
+RUN mkdir -p $DAGSTER_DBT_WORKSPACE
 
 # Install additional system dependencies
 USER root
