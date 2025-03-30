@@ -9,7 +9,7 @@
     "key.converter.schema.registry.url": "http://schema-registry:8081",
     "key.converter.schemas.enable": "true",
     "password": "${env:CLICKHOUSE_CDC_PASSWORD}",
-    "port": "${env:CLICKHOUSE_PORT}",
+    "port": "${env:CLICKHOUSE_HTTP_PORT}",
     "ssl": "false",
     "tasks.max": "1",
     "topics": "cdc__users",

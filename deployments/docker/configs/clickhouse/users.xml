@@ -31,6 +31,7 @@
                 <ip>::/0</ip>
             </networks>
             <profile>default</profile>
+            <access_management>1</access_management>
             <allow_databases>
                 <database>raw</database>
             </allow_databases>
@@ -42,10 +43,23 @@
                 <ip>::/0</ip>
             </networks>
             <profile>readonly</profile>
+            <access_management>1</access_management>
             <allow_databases>
                 <database>analytics</database>
             </allow_databases>
         </cubejs>
+
+        <el>
+            <password from_env="CLICKHOUSE_EL_PASSWORD" />
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <grants>
+                <query>GRANT ALL ON raw.*</query>
+                <query>GRANT SELECT ON INFORMATION_SCHEMA.COLUMNS</query>
+            </grants>
+        </el>
     </users>
 
     <!-- Profiles -->

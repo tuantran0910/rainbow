@@ -1,6 +1,6 @@
 x-dagster-common: &dagster-common
   build:
-    context: ${DAGSTER_PROJ_DIR:-../../src/dagster}
+    context: ${DAGSTER_PROJ_DIR:-../../src/dagster_core}
     dockerfile: Dockerfile
   env_file:
     - ./.env
@@ -76,12 +76,6 @@ services:
       - workspace.yaml
     ports:
       - 3001:3000
-    healthcheck:
-      test: [CMD, curl, --fail, http://localhost:3000/health]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
     depends_on:
       <<: *dagster-common-depends-on
     networks:
@@ -95,12 +89,6 @@ services:
     entrypoint:
       - dagster-daemon
       - run
-    healthcheck:
-      test: [CMD, curl, --fail, http://localhost:8974/health]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
     depends_on:
       <<: *dagster-common-depends-on
     networks:
@@ -117,9 +105,14 @@ services:
     environment:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
     volumes:
-      - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}/definitions.py:/opt/dagster/app/definitions.py
+      - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
+      - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/app/dbt
     env_file:
       - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
     networks:
       - dagster-network
       - minio-network
@@ -133,7 +126,7 @@ services:
         soft: 262144
         hard: 262144
     ports:
-      - ${CLICKHOUSE_PORT}:8123
+      - ${CLICKHOUSE_HTTP_PORT}:8123
       - 9000:9000
       - 9009:9009
     volumes:
@@ -404,7 +397,7 @@ services:
     environment:
       CUBEJS_DB_TYPE: clickhouse
       CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
       CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
       CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
       CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
@@ -432,7 +425,7 @@ services:
       CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
       CUBEJS_DB_TYPE: clickhouse
       CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
       CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
       CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
       CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
@@ -462,7 +455,7 @@ services:
     env_file:
       - ./.env
     ports:
-      - 9000:9000
+      - 9002:9000
       - 9001:9001
     volumes:
       - minio_data:/data
