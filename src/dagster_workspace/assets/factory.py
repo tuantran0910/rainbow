@@ -37,9 +37,8 @@ def build_dlt_pipelines() -> dg.Definitions:
     dlt_sources, destination_type = make_dlt_resources(
         dlt_resources_config=assets_configs.get("resources", {}),
     )
-    for dlt_source in dlt_sources:
-        asset_name = f"{base_asset_name}__{dlt_source.name}"
-        logger.info(f"Creating asset: {asset_name}")
+    for table_name, dlt_source in dlt_sources.items():
+        asset_name = f"{base_asset_name}__{table_name}"
 
         @dlt_assets(
             dlt_source=dlt_source,
@@ -62,4 +61,7 @@ def build_dlt_pipelines() -> dg.Definitions:
 
     return dg.Definitions(
         assets=assets,
+        resources={
+            "dlt": DagsterDltResource(),
+        },
     )

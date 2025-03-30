@@ -1,6 +1,6 @@
 x-dagster-common: &dagster-common
   build:
-    context: ${DAGSTER_PROJ_DIR:-../../src/dagster}
+    context: ${DAGSTER_PROJ_DIR:-../../src/dagster_core}
     dockerfile: Dockerfile
   env_file:
     - ./.env

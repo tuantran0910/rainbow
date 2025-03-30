@@ -28,6 +28,7 @@ compute_logs:
     region: us-west-1
     timeout: 60s
     allow_http: true
+    upload_interval: 30
 
 local_artifact_storage:
   module: dagster.core.storage.root

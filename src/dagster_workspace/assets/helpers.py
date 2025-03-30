@@ -5,26 +5,13 @@ from typing import Any
 
 import dlt
 import yaml
-from dagster import AssetKey
-from dagster import AssetSpec
-from dagster_dlt import DagsterDltTranslator
-from dagster_dlt.translator import DltResourceTranslatorData
-from dlt.sources.sql_database import sql_table
+from dlt.extract.source import DltSource
+from dlt.sources.sql_database import sql_database
 
 from constants import DAGSTER_ASSETS_CONFIG_DIR
 
 
 logger = logging.getLogger(__name__)
-
-
-class CustomDagsterDltTranslator(DagsterDltTranslator):
-    def get_asset_spec(self, data: DltResourceTranslatorData) -> AssetSpec:
-        """
-        Overrides asset spec to:
-            - Override asset key to be the dlt resource name.
-        """
-        default_spec = super().get_asset_spec(data)
-        return default_spec.replace_attributes(key=AssetKey(f"{data.resource.name}"))
 
 
 def load_assets_configs(
@@ -48,7 +35,8 @@ def load_assets_configs(
         raise FileNotFoundError(f"Assets configurations directory '{config_dir}' does not exist.")
 
     loaded_configs = {}
-    for yaml_file in config_dir.glob("*.yaml"):
+    # Look for files with both .yaml and .yml extensions
+    for yaml_file in config_dir.glob("*.y*ml"):
         try:
             with open(yaml_file, encoding="utf-8") as file:
                 file_configs = yaml.safe_load(file)
@@ -61,7 +49,7 @@ def load_assets_configs(
     return loaded_configs if loaded_configs else None
 
 
-def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_table], str]:
+def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, DltSource], str]:
     """
     Initializes dlt resources (including general configs, sources, and destinations).
 
@@ -69,9 +57,7 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_t
         dlt_resources_config (dict[str, Any]): A dictionary containing dlt resources configuration.
 
     Returns:
-        tuple[list[sql_table], str]: A tuple containing a list of dlt sources and the destination type.
-        The list of dlt sources is a list of sql_table objects, and the destination type is a string.
-        The destination type is the type of the dlt destination (e.g., "bigquery", "postgres", etc.).
+        tuple[dict[str, DltSource], str]: A tuple containing the table source's name and the DltSource object.
 
     Raises:
         ValueError: If no dlt sources or destinations are provided.
@@ -81,7 +67,8 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_t
     if config:
         set_dlt_object(dlt.config, config)
 
-    secrets: dict[str, Any] = {}
+    source_secrets: dict[str, Any] = {}
+    destination_secrets: dict[str, Any] = {}
 
     # Configure dlt source
     source: dict[str, Any] = dlt_resources_config.get("source", {})
@@ -90,15 +77,17 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_t
 
     source_type = source.get("type")
     if not source_type:
-        raise KeyError("The type of source is missing. Currently supported types are: 'sql_table'")
+        raise KeyError(
+            "The type of source is missing. Currently supported types are: 'sql_database'"
+        )
 
     # Configure credentials and configs for the source
-    source_secrets = secrets.setdefault("sources", {})
     source_credentials = {
         "credentials": source.get("credentials"),
     }
-    source_secrets.setdefault(source_type, {}).update(source_credentials)
-    source_secrets[source_type].update(source.get("configs", {}))
+    source_secrets.setdefault("sources", {}).setdefault(source_type, {}).update(source_credentials)
+    source_secrets["sources"][source_type].update(source.get("configs", {}))
+    set_dlt_object(dlt.secrets, source_secrets)
 
     # Configure the source tables
     schema: dict[str, Any] = source.get("schema", {})
@@ -109,27 +98,27 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_t
     if not tables:
         raise ValueError("No tables defined in schema")
 
-    dlt_sources = []
+    dlt_sources: dict[str, DltSource] = {}
     for table in tables:
         table_name = table["name"]
+        columns = table.get("columns")
         incremental_field = table.get("incremental_field")
         initial_value = table.get("initial_value")
-        chunk_size = table.get("chunk_size")
-        included_columns = table.get("columns")
+        chunk_size = int(table.get("chunk_size", "50000"))
         write_disposition = table.get("write_disposition", "append")
-        dlt_sources.append(
-            sql_table(
-                table=table_name,
-                schema=schema_name,
-                included_columns=included_columns,
+        dlt_source = sql_database(schema=schema_name, chunk_size=chunk_size).with_resources(
+            table_name
+        )
+        if incremental_field:
+            table_dlt_source = getattr(dlt_source, table_name)
+            table_dlt_source.apply_hints(
+                columns=columns,
                 incremental=dlt.sources.incremental(
-                    cursor_path=incremental_field,
-                    initial_value=initial_value,
+                    cursor_path=incremental_field, initial_value=initial_value
                 ),
-                chunk_size=chunk_size,
                 write_disposition=write_disposition,
             )
-        )
+        dlt_sources[table_name] = dlt_source
 
     # Configure the dlt destination
     destination: dict[str, Any] = dlt_resources_config.get("destination", {})
@@ -141,42 +130,45 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[list[sql_t
         raise KeyError("Destination 'type' is missing")
 
     # Configure credentials and configs for the destination
-    destination_secrets = secrets.setdefault("destination", {})
     destination_credentials = {
         "credentials": destination.get("credentials"),
     }
-    destination_secrets.setdefault(destination_type, {}).update(destination_credentials)
-    destination_secrets[destination_type].update(destination.get("configs", {}))
-
-    # Set secrets for sources and destination
-    set_dlt_object(dlt.secrets, secrets)
+    destination_secrets.setdefault("destination", {}).setdefault(destination_type, {}).update(
+        destination_credentials
+    )
+    destination_secrets["destination"][destination_type].update(destination.get("configs", {}))
+    set_dlt_object(dlt.secrets, destination_secrets)
 
     return dlt_sources, destination_type
 
 
-def set_dlt_object(dlt_object: object, config: dict[str, Any], *, prefix: str = "") -> None:
+def set_dlt_object(dlt_object: dict[str, Any], config: dict[str, Any], *, prefix: str = "") -> None:
     """
     Recursively sets attributes on a DLT object from a configuration dictionary.
 
     Supports resolving environment variables for values prefixed with 'env:'.
 
     Args:
-        dlt_object (object): The DLT object on which to set attributes.
+        dlt_object (dict[str, Any]): The DLT object on which to set attributes.
         config (dict[str, Any]): Configuration dictionary containing values.
         prefix (str, optional): Prefix for nested attributes (default: "").
     """
-    for key, value in config.items():
-        full_key = f"{prefix}.{key}" if prefix else key
+    try:
+        for key, value in config.items():
+            full_key = f"{prefix}.{key}" if prefix else key
 
-        if isinstance(value, dict):
-            set_dlt_object(dlt_object, value, prefix=full_key)
-            continue
+            if isinstance(value, dict):
+                set_dlt_object(dlt_object, value, prefix=full_key)
+                continue
 
-        if isinstance(value, str) and value.startswith("env:"):
-            env_var_name = value[4:]
-            env_var = os.getenv(env_var_name)
-            if env_var is None:
-                logger.warning(f"Environment variable {env_var_name} not found")
-            value = env_var if env_var is not None else value
+            if isinstance(value, str) and value.startswith("env:"):
+                env_var_name = value[4:]
+                env_var = os.getenv(env_var_name)
+                if env_var is None:
+                    logger.warning(f"Environment variable {env_var_name} not found")
+                value = env_var if env_var is not None else value
 
-        setattr(dlt_object, full_key, value)
+            dlt_object[full_key] = value
+    except Exception as e:
+        logger.error(f"Error setting attribute {full_key}: {e}")
+        raise

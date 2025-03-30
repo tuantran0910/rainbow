@@ -37,7 +37,7 @@ RUN apt-get remove -y gcc && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Copy Dagster instance YAML
-COPY definitions.py .
+COPY . .
 
 # Switch back to non-root user
 USER 1000
@@ -46,4 +46,4 @@ USER 1000
 EXPOSE 4000
 
 # Run the Dagster GRPC server
-CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4000", "-f", "definitions.py"]
+CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]

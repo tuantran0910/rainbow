@@ -1,0 +1,32 @@
+name: dlt_dagster
+group_name: dagster
+resources:
+  source:
+    type: sql_database
+    credentials:
+      drivername: postgresql+psycopg2
+      host: env:DB_HOST
+      port: env:DB_PORT
+      username: env:EL_DB_USER
+      password: env:EL_DB_PASSWORD
+      database: dagster
+    schema:
+      name: public
+      tables:
+        - name: runs
+          incremental_field: update_timestamp
+        - name: jobs
+  destination:
+    type: clickhouse
+    credentials:
+      drivername: clickhouse
+      host: env:CLICKHOUSE_HOST
+      port: 9000
+      username: env:CLICKHOUSE_EL_USER
+      password: env:CLICKHOUSE_EL_PASSWORD
+      database: default
+      http_port: env:CLICKHOUSE_HTTP_PORT
+      secure: 0
+    configs:
+      dataset_name: raw
+      dataset_table_separator: ___
