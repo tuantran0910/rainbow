@@ -1,5 +1,21 @@
 name: dlt_dagster
 group_name: dagster
+job:
+  name: dlt_dagster_job
+  description: Job to run dlt pipeline
+  metadata:
+    owner: tntuan0910@gmail.com
+  tags:
+    team: data_engineering
+schedule:
+  name: dlt_dagster_schedule
+  description: Schedule to run dlt pipeline
+  cron_schedule: 0 0 * * *
+  execution_timezone: UTC
+  metadata:
+    owner: tntuan0910@gmail.com
+  tags:
+    team: data_engineering
 resources:
   source:
     type: sql_database
