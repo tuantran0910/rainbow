@@ -31,6 +31,7 @@
                 <ip>::/0</ip>
             </networks>
             <profile>default</profile>
+            <access_management>1</access_management>
             <allow_databases>
                 <database>raw</database>
             </allow_databases>
@@ -42,6 +43,7 @@
                 <ip>::/0</ip>
             </networks>
             <profile>readonly</profile>
+            <access_management>1</access_management>
             <allow_databases>
                 <database>analytics</database>
             </allow_databases>
@@ -53,9 +55,11 @@
                 <ip>::/0</ip>
             </networks>
             <profile>default</profile>
-            <allow_databases>
-                <database>raw</database>
-            </allow_databases>
+            <grants>
+                <query>GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON default.*</query>
+                <query>GRANT ALL ON raw.*</query>
+                <query>GRANT SELECT ON INFORMATION_SCHEMA.COLUMNS</query>
+            </grants>
         </el>
     </users>
 

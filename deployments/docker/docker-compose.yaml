@@ -121,6 +121,10 @@ services:
       - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/app/dbt
     env_file:
       - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
     networks:
       - dagster-network
       - minio-network
