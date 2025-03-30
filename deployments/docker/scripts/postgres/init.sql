@@ -16,7 +16,7 @@ BEGIN
 END $$;
 
 -- Create the user with a password
-CREATE ROLE dagster WITH LOGIN PASSWORD 'dagster';
+CREATE ROLE dagster WITH LOGIN PASSWORD 'Dagster2024!Data';
 
 -- Grant necessary privileges to the user
 GRANT CONNECT ON DATABASE dagster TO dagster;
@@ -88,3 +88,22 @@ GRANT TEMPORARY ON DATABASE metabase TO metabase;
 \c metabase
 GRANT CREATE ON DATABASE metabase TO metabase;
 GRANT USAGE, CREATE ON SCHEMA public TO metabase;
+
+---------------------------------------------------------------------
+--                      EL                                         --
+---------------------------------------------------------------------
+
+-- Create the user with a password
+CREATE ROLE el WITH LOGIN PASSWORD 'El2024!Data';
+
+-- TODO: switch to database rainbow
+-- Grant necessary privileges to the user
+GRANT CONNECT ON DATABASE dagster TO el;
+
+-- Grant schema and table privileges
+\c dagster
+GRANT USAGE ON SCHEMA public TO el;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO jerry;
+
+-- Ensure future tables are also accessible
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO el;

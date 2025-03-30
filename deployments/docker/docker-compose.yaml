@@ -118,6 +118,7 @@ services:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
+      - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/app/dbt
     env_file:
       - ./.env
     networks:
@@ -133,7 +134,7 @@ services:
         soft: 262144
         hard: 262144
     ports:
-      - ${CLICKHOUSE_PORT}:8123
+      - ${CLICKHOUSE_HTTP_PORT}:8123
       - 9000:9000
       - 9009:9009
     volumes:
@@ -404,7 +405,7 @@ services:
     environment:
       CUBEJS_DB_TYPE: clickhouse
       CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
       CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
       CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
       CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
@@ -432,7 +433,7 @@ services:
       CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
       CUBEJS_DB_TYPE: clickhouse
       CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_PORT}
+      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
       CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
       CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
       CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
@@ -462,7 +463,7 @@ services:
     env_file:
       - ./.env
     ports:
-      - 9000:9000
+      - 9002:9000
       - 9001:9001
     volumes:
       - minio_data:/data
