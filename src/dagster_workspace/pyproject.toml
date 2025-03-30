@@ -10,4 +10,7 @@ dependencies = [
     "dagster-obstore>=0.2.1",
     "dagster-dlt>=0.26.6",
     "dlt[clickhouse,postgres]>=1.9.0",
+    "dagster-dbt>=0.26.6",
+    "dbt-clickhouse>=1.8.9",
+    "dbt-core>=1.8.9",
 ]

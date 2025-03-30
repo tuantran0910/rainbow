@@ -106,7 +106,7 @@ services:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
-      - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/app/dbt
+      - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/dbt
     env_file:
       - ./.env
     depends_on:
