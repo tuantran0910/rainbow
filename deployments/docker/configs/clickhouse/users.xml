@@ -56,7 +56,6 @@
             </networks>
             <profile>default</profile>
             <grants>
-                <query>GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON default.*</query>
                 <query>GRANT ALL ON raw.*</query>
                 <query>GRANT SELECT ON INFORMATION_SCHEMA.COLUMNS</query>
             </grants>

@@ -24,9 +24,6 @@ resources:
       port: 9000
       username: env:CLICKHOUSE_EL_USER
       password: env:CLICKHOUSE_EL_PASSWORD
-      database: default
+      database: raw
       http_port: env:CLICKHOUSE_HTTP_PORT
       secure: 0
-    configs:
-      dataset_name: raw
-      dataset_table_separator: ___
