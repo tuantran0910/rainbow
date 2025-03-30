@@ -18,11 +18,11 @@
             </networks>
             <profile>default</profile>
             <quota>default</quota>
-            <access_management>1</access_management>
-            <allow_databases>
-                <database>raw</database>
-                <database>warehouse</database>
-            </allow_databases>
+            <grants>
+                <query>GRANT SELECT ON raw.*</query>
+                <query>GRANT ALL ON warehouse.*</query>
+                <query>GRANT ALL ON analytics.*</query>
+            </grants>
         </dbt>
 
         <cdc>
@@ -31,10 +31,9 @@
                 <ip>::/0</ip>
             </networks>
             <profile>default</profile>
-            <access_management>1</access_management>
-            <allow_databases>
-                <database>raw</database>
-            </allow_databases>
+            <grants>
+                <query>GRANT ALL ON raw.*</query>
+            </grants>
         </cdc>
 
         <cubejs>
@@ -43,10 +42,9 @@
                 <ip>::/0</ip>
             </networks>
             <profile>readonly</profile>
-            <access_management>1</access_management>
-            <allow_databases>
-                <database>analytics</database>
-            </allow_databases>
+            <grants>
+                <query>GRANT SELECT ON analytics.*</query>
+            </grants>
         </cubejs>
 
         <el>
@@ -68,7 +66,7 @@
             <max_memory_usage>1073741824</max_memory_usage> <!-- 1GB -->
         </default>
         <admin_profile>
-            <max_memory_usage>2147483648</max_memory_usage> <!-- 2 GB -->
+            <max_memory_usage>2147483648</max_memory_usage> <!-- 2GB -->
         </admin_profile>
         <readonly>
             <readonly>1</readonly>
