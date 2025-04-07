@@ -259,36 +259,28 @@ func (pc *BookController) CreateBook(ctx *gin.Context) {
 // UpdateBook godoc
 //
 //	@Summary		Update Book
-//	@Description	Update a book by its ID or secondary ID
+//	@Description	Update a book by its ID
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		string					true	"Book ID or Secondary ID"
-//	@Param			secondary	query		bool					false	"Use secondary ID"
-//	@Param			req			body		dtos.UpdateBookRequest	true	"Update Book Request"
-//	@Success		204			{object}	response.APIResponse
-//	@Failure		400			{object}	response.APIResponse
-//	@Failure		500			{object}	response.APIResponse
+//	@Param			id	path		string					true	"Book ID"
+//	@Param			req	body		dtos.UpdateBookRequest	true	"Update Book Request"
+//	@Success		204	{object}	response.APIResponse
+//	@Failure		400	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
 //	@Router			/books/{id} [patch]
 func (pc *BookController) UpdateBook(ctx *gin.Context) {
 	id := ctx.Param("id")
-	isSecondary := ctx.Query("secondary") == "true"
 
-	var bookId interface{}
-	var err error
-	if !isSecondary {
-		bookId, err = uuid.Parse(id)
-		if err != nil {
-			response.
-				NewAPIResponse().
-				SetStatusCode(http.StatusInternalServerError).
-				SetMessage("Cannot parse the ID into UUID type").
-				SetError(err.Error()).
-				Respond(ctx)
-			return
-		}
-	} else {
-		bookId = id
+	bookId, err := uuid.Parse(id)
+	if err != nil {
+		response.
+			NewAPIResponse().
+			SetStatusCode(http.StatusInternalServerError).
+			SetMessage("Cannot parse the ID into UUID type").
+			SetError(err.Error()).
+			Respond(ctx)
+		return
 	}
 
 	var bookRequest dtos.UpdateBookRequest
@@ -313,7 +305,7 @@ func (pc *BookController) UpdateBook(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
+	if err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID)); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).

@@ -168,7 +168,7 @@ const docTemplate = `{
         },
         "/authors/{id}": {
             "get": {
-                "description": "Fetch an author by ID",
+                "description": "Get an author by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -178,14 +178,20 @@ const docTemplate = `{
                 "tags": [
                     "Author"
                 ],
-                "summary": "Get Author by ID",
+                "summary": "Get an author",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Author ID",
+                        "description": "Author ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -258,7 +264,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update an author by its ID",
+                "description": "Update an author by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -272,10 +278,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Author ID",
+                        "description": "Author ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     },
                     {
                         "description": "Update Author Request",
@@ -296,6 +308,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/response.APIResponse"
                         }
@@ -494,7 +512,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update a book by its ID or secondary ID",
+                "description": "Update a book by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -508,16 +526,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Book ID or Secondary ID",
+                        "description": "Book ID",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Use secondary ID",
-                        "name": "secondary",
-                        "in": "query"
                     },
                     {
                         "description": "Update Book Request",
@@ -646,7 +658,7 @@ const docTemplate = `{
         },
         "/categories/{id}": {
             "get": {
-                "description": "Get a category by its ID",
+                "description": "Get a category by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -660,10 +672,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Category ID",
+                        "description": "Category ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1316,7 +1334,7 @@ const docTemplate = `{
         },
         "/sellers/{id}": {
             "get": {
-                "description": "Get a seller by its ID",
+                "description": "Get a seller by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -1330,10 +1348,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Seller ID",
+                        "description": "Seller ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1406,7 +1430,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update a seller by its ID",
+                "description": "Update a seller by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -1420,10 +1444,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Seller ID",
+                        "description": "Seller ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     },
                     {
                         "description": "Update Seller Request",

@@ -19,14 +19,15 @@ type UpdateSellerRequest struct {
 }
 
 type GetSellerResponse struct {
-	ID        uuid.UUID      `json:"id"`
-	UserID    uuid.UUID      `json:"user_id"`
-	Name      string         `json:"name"`
-	Link      string         `json:"link"`
-	Logo      string         `json:"logo"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty"`
+	ID          uuid.UUID      `json:"id"`
+	SecondaryID string         `json:"secondary_id"`
+	UserID      uuid.UUID      `json:"user_id"`
+	Name        string         `json:"name"`
+	Link        string         `json:"link"`
+	Logo        string         `json:"logo"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at,omitempty"`
 }
 
 type ListSellersResponse struct {

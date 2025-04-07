@@ -96,35 +96,46 @@ func (ac *AuthorController) GetAuthors(ctx *gin.Context) {
 
 // GetAuthorById godoc
 //
-//	@Summary		Get Author by ID
-//	@Description	Fetch an author by ID
+//	@Summary		Get an author
+//	@Description	Get an author by its ID or secondary ID
 //	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Author ID"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string	true	"Author ID or Secondary ID"
+//	@Param			secondary	query		bool	false	"Use secondary ID"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/authors/{id} [get]
 func (ac *AuthorController) GetAuthorById(ctx *gin.Context) {
-	authorId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var authorId interface{}
+	var err error
+	if !isSecondary {
+		authorId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		authorId = id
 	}
 
 	reqCtx := ctx.Request.Context()
-	author, err := ac.authorService.GetAuthorById(reqCtx, authorId)
+	author, err := ac.authorService.GetAuthorById(reqCtx, authorId, isSecondary)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to get the author").
+			SetMessage("Failed to fetch the author").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -140,12 +151,13 @@ func (ac *AuthorController) GetAuthorById(ctx *gin.Context) {
 	}
 
 	data := &dtos.GetAuthorResponse{
-		ID:        author.ID,
-		Name:      author.Name,
-		Slug:      author.Slug,
-		CreatedAt: author.CreatedAt,
-		UpdatedAt: author.UpdatedAt,
-		DeletedAt: author.DeletedAt,
+		ID:          author.ID,
+		SecondaryID: author.SecondaryID,
+		Name:        author.Name,
+		Slug:        author.Slug,
+		CreatedAt:   author.CreatedAt,
+		UpdatedAt:   author.UpdatedAt,
+		DeletedAt:   author.DeletedAt,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
@@ -269,25 +281,37 @@ func (ac *AuthorController) CreateAuthor(ctx *gin.Context) {
 // UpdateAuthor godoc
 //
 //	@Summary		Update Author
-//	@Description	Update an author by its ID
+//	@Description	Update an author by its ID or secondary ID
 //	@Tags			Author
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string						true	"Author ID"
-//	@Param			req	body		dtos.UpdateAuthorRequest	true	"Update Author Request"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string						true	"Author ID or Secondary ID"
+//	@Param			secondary	query		bool						false	"Use secondary ID"
+//	@Param			req			body		dtos.UpdateAuthorRequest	true	"Update Author Request"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/authors/{id} [patch]
 func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
-	authorId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var authorId interface{}
+	var err error
+	if !isSecondary {
+		authorId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		authorId = id
 	}
 
 	var authorRequest dtos.UpdateAuthorRequest
@@ -295,7 +319,7 @@ func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
-			SetMessage("Invalid Body Request").
+			SetMessage("Invalid request body").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -312,8 +336,7 @@ func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	err = ac.authorService.UpdateAuthor(reqCtx, authorId, authorRequest, currentUserId.(uuid.UUID))
-	if err != nil {
+	if err := ac.authorService.UpdateAuthor(reqCtx, authorId, authorRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -327,7 +350,7 @@ func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
-		SetMessage("Successfully updated author").
+		SetMessage("Successfully updated the author").
 		Respond(ctx)
 }
 

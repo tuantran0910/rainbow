@@ -17,10 +17,10 @@ type ISellerRepository interface {
 		ctx context.Context,
 		page, limit int,
 	) ([]*models.Seller, *pagination.Pagination, error)
-	GetSellerById(ctx context.Context, sellerId uuid.UUID) (*models.Seller, error)
+	GetSellerById(ctx context.Context, id interface{}, isSecondary bool) (*models.Seller, error)
 	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
 	CreateSeller(ctx context.Context, seller *models.Seller) error
-	UpdateSeller(ctx context.Context, sellerId uuid.UUID, seller *models.Seller) error
+	UpdateSeller(ctx context.Context, id interface{}, seller *models.Seller, isSecondary bool) error
 	DeleteSeller(ctx context.Context, sellerId uuid.UUID) error
 }
 
@@ -63,14 +63,26 @@ func (sr *sellerRepository) GetSellers(
 
 func (sr *sellerRepository) GetSellerById(
 	ctx context.Context,
-	sellerId uuid.UUID,
+	id interface{},
+	isSecondary bool,
 ) (*models.Seller, error) {
 	var seller models.Seller
-	if err := sr.db.WithContext(ctx).Take(&seller, "id = ?", sellerId).Error; err != nil {
+	query := sr.db.WithContext(ctx)
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	if err := query.Take(&seller).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to get seller: %w", err)
+		idStr := fmt.Sprintf("%v", id)
+		return nil, fmt.Errorf("failed to get seller with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, err)
 	}
 	return &seller, nil
 }
@@ -98,19 +110,31 @@ func (sr *sellerRepository) CreateSeller(ctx context.Context, seller *models.Sel
 
 func (sr *sellerRepository) UpdateSeller(
 	ctx context.Context,
-	sellerId uuid.UUID,
+	id interface{},
 	seller *models.Seller,
+	isSecondary bool,
 ) error {
-	result := sr.db.WithContext(ctx).
-		Model(&models.Seller{}).
-		Where("id = ?", sellerId).
-		Updates(seller)
+	query := sr.db.WithContext(ctx).Model(&models.Seller{})
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	result := query.Updates(seller)
 	if result.Error != nil {
-		return fmt.Errorf("failed to update seller: %w", result.Error)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("failed to update seller with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("seller with id %s not found", sellerId)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("seller with %s %s not found",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr)
 	}
 	return nil
 }

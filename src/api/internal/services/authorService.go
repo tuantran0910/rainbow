@@ -18,8 +18,8 @@ type IAuthorService interface {
 		ctx context.Context,
 		page, limit int,
 	) ([]*models.Author, *pagination.Pagination, error)
-	GetAuthorById(ctx context.Context, authorId uuid.UUID) (*models.Author, error)
-	GetAuthorBySlug(ctx context.Context, authorSlug string) (*models.Author, error)
+	GetAuthorById(ctx context.Context, id interface{}, isSecondary bool) (*models.Author, error)
+	GetAuthorBySlug(ctx context.Context, slug string) (*models.Author, error)
 	CreateAuthor(
 		ctx context.Context,
 		authorRequest dtos.CreateAuthorRequest,
@@ -27,9 +27,10 @@ type IAuthorService interface {
 	) error
 	UpdateAuthor(
 		ctx context.Context,
-		authorId uuid.UUID,
+		id interface{},
 		authorRequest dtos.UpdateAuthorRequest,
 		currentUserId uuid.UUID,
+		isSecondary bool,
 	) error
 	DeleteAuthor(ctx context.Context, authorId uuid.UUID, currentUserId uuid.UUID) error
 }
@@ -72,9 +73,10 @@ func (as *authorService) GetAuthors(
 
 func (as *authorService) GetAuthorById(
 	ctx context.Context,
-	authorId uuid.UUID,
+	id interface{},
+	isSecondary bool,
 ) (*models.Author, error) {
-	return as.authorRepository.GetAuthorById(ctx, authorId)
+	return as.authorRepository.GetAuthorById(ctx, id, isSecondary)
 }
 
 func (as *authorService) GetAuthorBySlug(
@@ -128,9 +130,10 @@ func (as *authorService) CreateAuthor(
 
 func (as *authorService) UpdateAuthor(
 	ctx context.Context,
-	authorId uuid.UUID,
+	id interface{},
 	authorRequest dtos.UpdateAuthorRequest,
 	currentUserId uuid.UUID,
+	isSecondary bool,
 ) error {
 	return as.withTX(
 		ctx,
@@ -147,18 +150,33 @@ func (as *authorService) UpdateAuthor(
 				return fmt.Errorf("current user does not have permission to update author")
 			}
 
-			author, err := authorRepository.GetAuthorById(ctx, authorId)
+			author, err := authorRepository.GetAuthorById(ctx, id, isSecondary)
 			if err != nil {
 				return err
 			}
 			if author == nil {
-				return fmt.Errorf("author with id %s not found", authorId)
+				idStr := fmt.Sprintf("%v", id)
+				return fmt.Errorf("author with %s %s not found",
+					map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+					idStr)
 			}
 
+			var updatedAuthor models.Author
 			if authorRequest.Name != nil && *authorRequest.Name != author.Name {
-				author.Name = *authorRequest.Name
+				updatedAuthor.Name = *authorRequest.Name
+				slugStr := slug.Make(*authorRequest.Name)
+				if slugStr != author.Slug {
+					existingAuthor, err := authorRepository.GetAuthorBySlug(ctx, slugStr)
+					if err != nil {
+						if existingAuthor != nil {
+							return fmt.Errorf("author with slug %s already exists", slugStr)
+						}
+						return err
+					}
+					updatedAuthor.Slug = slugStr
+				}
 			}
-			return authorRepository.UpdateAuthor(ctx, authorId, author)
+			return authorRepository.UpdateAuthor(ctx, id, &updatedAuthor, isSecondary)
 		},
 	)
 }
