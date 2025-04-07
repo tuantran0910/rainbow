@@ -1087,6 +1087,30 @@ const docTemplate = `{
             }
         },
         "/promotions": {
+            "get": {
+                "description": "Get all promotions that are currently active (within their start and end date range)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Promotion"
+                ],
+                "summary": "Get all active promotions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a promotion",
                 "consumes": [
