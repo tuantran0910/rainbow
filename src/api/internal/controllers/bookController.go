@@ -105,28 +105,38 @@ func (pc *BookController) GetBooks(ctx *gin.Context) {
 // GetBookById godoc
 //
 //	@Summary		Get Book
-//	@Description	Fetch a book by its ID
+//	@Description	Fetch a book by its ID or secondary ID
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Book ID"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string	true	"Book ID or Secondary ID"
+//	@Param			secondary	query		bool	false	"Use secondary ID"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/books/{id} [get]
 func (pc *BookController) GetBookById(ctx *gin.Context) {
-	bookId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var bookId interface{}
+	var err error
+	if !isSecondary {
+		bookId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).Respond(ctx)
+			return
+		}
+	} else {
+		bookId = id
 	}
 
 	reqCtx := ctx.Request.Context()
-	book, err := pc.bookService.GetBookById(reqCtx, bookId)
+	book, err := pc.bookService.GetBookById(reqCtx, bookId, isSecondary)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -249,25 +259,36 @@ func (pc *BookController) CreateBook(ctx *gin.Context) {
 // UpdateBook godoc
 //
 //	@Summary		Update Book
-//	@Description	Update a book by its ID
+//	@Description	Update a book by its ID or secondary ID
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			req	body		dtos.UpdateBookRequest	true	"Update Book Request"
-//	@Success		204	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string					true	"Book ID or Secondary ID"
+//	@Param			secondary	query		bool					false	"Use secondary ID"
+//	@Param			req			body		dtos.UpdateBookRequest	true	"Update Book Request"
+//	@Success		204			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/books/{id} [patch]
 func (pc *BookController) UpdateBook(ctx *gin.Context) {
-	bookId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).
-			Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var bookId interface{}
+	var err error
+	if !isSecondary {
+		bookId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		bookId = id
 	}
 
 	var bookRequest dtos.UpdateBookRequest
@@ -292,7 +313,7 @@ func (pc *BookController) UpdateBook(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID)); err != nil {
+	if err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).

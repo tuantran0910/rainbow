@@ -525,13 +525,17 @@ paths:
     get:
       consumes:
         - application/json
-      description: Fetch a book by its ID
+      description: Fetch a book by its ID or secondary ID
       parameters:
-        - description: Book ID
+        - description: Book ID or Secondary ID
           in: path
           name: id
           required: true
-          type: integer
+          type: string
+        - description: Use secondary ID
+          in: query
+          name: secondary
+          type: boolean
       produces:
         - application/json
       responses:
@@ -553,8 +557,17 @@ paths:
     patch:
       consumes:
         - application/json
-      description: Update a book by its ID
+      description: Update a book by its ID or secondary ID
       parameters:
+        - description: Book ID or Secondary ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Use secondary ID
+          in: query
+          name: secondary
+          type: boolean
         - description: Update Book Request
           in: body
           name: req

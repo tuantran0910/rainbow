@@ -15,7 +15,7 @@ import (
 
 type IBookService interface {
 	GetBooks(ctx context.Context, page, limit int) ([]*models.Book, *pagination.Pagination, error)
-	GetBookById(ctx context.Context, bookId uuid.UUID) (*models.Book, error)
+	GetBookById(ctx context.Context, id interface{}, isSecondary bool) (*models.Book, error)
 	CreateBook(
 		ctx context.Context,
 		bookRequest dtos.CreateBookRequest,
@@ -23,9 +23,10 @@ type IBookService interface {
 	) error
 	UpdateBook(
 		ctx context.Context,
-		bookId uuid.UUID,
+		id interface{},
 		bookRequest dtos.UpdateBookRequest,
 		currentUserId uuid.UUID,
+		isSecondary bool,
 	) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID, currentUserId uuid.UUID) error
 }
@@ -74,8 +75,12 @@ func (ps *bookService) GetBooks(
 	return ps.bookRepository.GetBooks(ctx, page, limit)
 }
 
-func (ps *bookService) GetBookById(ctx context.Context, bookId uuid.UUID) (*models.Book, error) {
-	return ps.bookRepository.GetBookById(ctx, bookId)
+func (ps *bookService) GetBookById(
+	ctx context.Context,
+	id interface{},
+	isSecondary bool,
+) (*models.Book, error) {
+	return ps.bookRepository.GetBookById(ctx, id, isSecondary)
 }
 
 func (ps *bookService) CreateBook(
@@ -155,9 +160,10 @@ func (ps *bookService) CreateBook(
 
 func (ps *bookService) UpdateBook(
 	ctx context.Context,
-	bookId uuid.UUID,
+	id interface{},
 	bookRequest dtos.UpdateBookRequest,
 	currentUserId uuid.UUID,
+	isSecondary bool,
 ) error {
 	return ps.withTX(
 		ctx,
@@ -178,12 +184,15 @@ func (ps *bookService) UpdateBook(
 				return fmt.Errorf("seller not found")
 			}
 
-			book, err := ps.bookRepository.GetBookById(ctx, bookId)
+			book, err := ps.bookRepository.GetBookById(ctx, id, isSecondary)
 			if err != nil {
 				return err
 			}
 			if book == nil {
-				return fmt.Errorf("book with id %s not found", bookId)
+				idStr := fmt.Sprintf("%v", id)
+				return fmt.Errorf("book with %s %s not found",
+					map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+					idStr)
 			}
 
 			if book.SellerID != seller.ID {
@@ -220,17 +229,20 @@ func (ps *bookService) UpdateBook(
 			if bookRequest.PageCount != nil && *bookRequest.PageCount != book.PageCount {
 				book.PageCount = *bookRequest.PageCount
 			}
-			if err := bookRepository.UpdateBook(ctx, bookId, book); err != nil {
+			if err := bookRepository.UpdateBook(ctx, id, book, isSecondary); err != nil {
 				return err
 			}
 
 			if bookRequest.Stock != nil {
-				bookInventory, err := inventoryRepository.GetInventoryByBookID(ctx, bookId)
+				bookInventory, err := inventoryRepository.GetInventoryByBookID(ctx, book.ID)
 				if err != nil {
 					return err
 				}
 				if bookInventory == nil {
-					return fmt.Errorf("inventory for book with id %s not found", bookId)
+					idStr := fmt.Sprintf("%v", id)
+					return fmt.Errorf("inventory for book with %s %s not found",
+						map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+						idStr)
 				}
 
 				if *bookRequest.Stock > bookInventory.Stock {
@@ -269,7 +281,7 @@ func (ps *bookService) DeleteBook(
 				return fmt.Errorf("seller not found")
 			}
 
-			book, err := ps.bookRepository.GetBookById(ctx, bookId)
+			book, err := ps.bookRepository.GetBookById(ctx, bookId, false)
 			if err != nil {
 				return err
 			}
