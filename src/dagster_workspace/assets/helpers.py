@@ -2,8 +2,10 @@ import logging
 import os
 from pathlib import Path
 from typing import Any
+from typing import Optional
 
 import dlt
+import requests
 import yaml
 from dlt.extract.source import DltSource
 from dlt.sources.sql_database import sql_database
@@ -172,3 +174,45 @@ def set_dlt_object(dlt_object: dict[str, Any], config: dict[str, Any], *, prefix
     except Exception as e:
         logger.error(f"Error setting attribute {full_key}: {e}")
         raise
+
+
+def make_http_request(
+    url: str,
+    method: str = "GET",
+    params: Optional[dict[str, Any]] = None,
+    headers: Optional[dict[str, Any]] = None,
+    timeout: int = 30,
+) -> Optional[dict[str, Any]]:
+    """
+    Makes an HTTP request to the provided URL with the given method, params, and headers.
+
+    Args:
+        url (str): The URL to make the request to.
+        method (str, optional): The HTTP method to use (default: "GET").
+        params (dict[str, Any], optional): The parameters to send with the request.
+        headers (dict[str, Any], optional): The headers to send with the request.
+        timeout (int): The timeout for the request (default: 30 seconds).
+
+    Returns:
+        Optional[dict[str, Any]]: The response from the request, or None if an error occurs.
+    """
+    try:
+        if method == "GET":
+            response = requests.get(url, params=params, headers=headers, timeout=timeout)
+        elif method == "POST":
+            response = requests.post(url, json=params, headers=headers, timeout=timeout)
+        else:
+            raise ValueError(f"Unsupported method: {method}")
+
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.Timeout:
+        logger.error(f"Request timed out: {url}")
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP Error: {e.response.status_code} for URL: {url}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error making request to {url}: {e}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred during request to {url}: {e}")
+
+    return None
