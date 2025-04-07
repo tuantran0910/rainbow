@@ -12,6 +12,7 @@ import (
 )
 
 type IPromotionService interface {
+	GetAllPromotions(ctx context.Context) ([]*models.Promotion, error)
 	CreatePromotion(
 		ctx context.Context,
 		promotionRequest dtos.CreatePromotionRequest,
@@ -46,6 +47,10 @@ func (ps *promotionService) withTX(
 		userRepository := ps.userRepository.WithTX(tx)
 		return fn(ctx, promotionRepository, userRepository)
 	})
+}
+
+func (ps *promotionService) GetAllPromotions(ctx context.Context) ([]*models.Promotion, error) {
+	return ps.promotionRepository.GetAllPromotions(ctx)
 }
 
 func (pc *promotionService) CreatePromotion(

@@ -975,6 +975,22 @@ paths:
       tags:
         - Payment
   /promotions:
+    get:
+      description: Get all promotions that are currently active (within their start and end date range)
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.APIResponse'
+      summary: Get all active promotions
+      tags:
+        - Promotion
     post:
       consumes:
         - application/json
