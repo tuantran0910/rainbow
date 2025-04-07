@@ -360,7 +360,7 @@ const docTemplate = `{
         },
         "/books/{id}": {
             "get": {
-                "description": "Fetch a book by its ID",
+                "description": "Fetch a book by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -373,11 +373,17 @@ const docTemplate = `{
                 "summary": "Get Book",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Book ID",
+                        "type": "string",
+                        "description": "Book ID or Secondary ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -488,7 +494,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update a book by its ID",
+                "description": "Update a book by its ID or secondary ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -500,6 +506,19 @@ const docTemplate = `{
                 ],
                 "summary": "Update Book",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID or Secondary ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use secondary ID",
+                        "name": "secondary",
+                        "in": "query"
+                    },
                     {
                         "description": "Update Book Request",
                         "name": "req",

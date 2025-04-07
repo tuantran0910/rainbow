@@ -130,7 +130,7 @@ func (os *orderService) CreateOrder(
 
 		bookTotalAmount := 0.0
 		for _, orderItem := range orderRequest.OrderItems {
-			book, err := bookRepository.GetBookById(ctx, orderItem.BookId)
+			book, err := bookRepository.GetBookById(ctx, orderItem.BookId, false)
 			if err != nil {
 				return err
 			}
@@ -161,7 +161,7 @@ func (os *orderService) CreateOrder(
 			}
 
 			book.SoldCount += orderItem.Quantity
-			if err = bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
+			if err = bookRepository.UpdateBook(ctx, book.ID, book, false); err != nil {
 				return err
 			}
 		}
@@ -226,7 +226,7 @@ func (os *orderService) DeleteOrder(
 		}
 
 		for _, orderItem := range order.OrderItems {
-			book, err := bookRepository.GetBookById(ctx, orderItem.BookID)
+			book, err := bookRepository.GetBookById(ctx, orderItem.BookID, false)
 			if err != nil {
 				return err
 			}
@@ -240,7 +240,7 @@ func (os *orderService) DeleteOrder(
 			}
 
 			book.SoldCount -= orderItem.Quantity
-			if err := bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
+			if err := bookRepository.UpdateBook(ctx, book.ID, book, false); err != nil {
 				return err
 			}
 		}

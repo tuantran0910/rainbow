@@ -14,10 +14,10 @@ import (
 type IBookRepository interface {
 	WithTX(tx *gorm.DB) IBookRepository
 	GetBooks(ctx context.Context, page, limit int) ([]*models.Book, *pagination.Pagination, error)
-	GetBookById(ctx context.Context, bookId uuid.UUID) (*models.Book, error)
+	GetBookById(ctx context.Context, id interface{}, isSecondary bool) (*models.Book, error)
 	CreateBook(ctx context.Context, book *models.Book) error
 	AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error
-	UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error
+	UpdateBook(ctx context.Context, id interface{}, book *models.Book, isSecondary bool) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID) error
 }
 
@@ -59,13 +59,28 @@ func (pr *bookRepository) GetBooks(
 	return books, pagination, nil
 }
 
-func (pr *bookRepository) GetBookById(ctx context.Context, bookId uuid.UUID) (*models.Book, error) {
+func (pr *bookRepository) GetBookById(
+	ctx context.Context,
+	id interface{},
+	isSecondary bool,
+) (*models.Book, error) {
 	var book models.Book
-	if err := pr.db.WithContext(ctx).Preload("Inventory").Preload("Authors").Take(&book, "id = ?", bookId).Error; err != nil {
+	query := pr.db.WithContext(ctx).Preload("Inventory").Preload("Authors")
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	if err := query.Take(&book).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to fetch book with id %s: %w", bookId, err)
+		idStr := fmt.Sprintf("%v", id)
+		return nil, fmt.Errorf("failed to fetch book with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, err)
 	}
 	return &book, nil
 }
@@ -94,19 +109,33 @@ func (pr *bookRepository) AddAuthorToBook(
 
 func (pr *bookRepository) UpdateBook(
 	ctx context.Context,
-	bookId uuid.UUID,
+	id interface{},
 	book *models.Book,
+	isSecondary bool,
 ) error {
-	result := pr.db.WithContext(ctx).Model(&models.Book{}).
-		Where("id = ?", bookId).
-		Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
+	query := pr.db.WithContext(ctx).Model(&models.Book{})
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	result := query.Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
 		Updates(book)
+
 	if result.Error != nil {
-		return fmt.Errorf("failed to update book with id %s: %w", bookId, result.Error)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("failed to update book with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("book with id %s not found", bookId)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("book with %s %s not found",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr)
 	}
 	return nil
 }
