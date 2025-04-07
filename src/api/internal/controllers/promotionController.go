@@ -21,6 +21,39 @@ func NewPromotionController(promotionService services.IPromotionService) *Promot
 	}
 }
 
+// GetAllPromotions godoc
+//
+//	@Summary		Get all active promotions
+//	@Description	Get all promotions that are currently active (within their start and end date range)
+//	@Tags			Promotion
+//	@Produce		json
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/promotions [get]
+func (pc *PromotionController) GetAllPromotions(ctx *gin.Context) {
+	responseHeaders := headers.NewHeaders(nil, ctx)
+
+	promotions, err := pc.promotionService.GetAllPromotions(ctx.Request.Context())
+	if err != nil {
+		response.
+			NewAPIResponse().
+			SetHeaders(responseHeaders).
+			SetStatusCode(http.StatusInternalServerError).
+			SetMessage("Failed to fetch promotions").
+			SetError(err.Error()).
+			Respond(ctx)
+		return
+	}
+
+	response.
+		NewAPIResponse().
+		SetHeaders(responseHeaders).
+		SetStatusCode(http.StatusOK).
+		SetMessage("Successfully fetched promotions").
+		SetData(promotions).
+		Respond(ctx)
+}
+
 // CreatePromotion godoc
 //
 //	@Summary		Create a promotion

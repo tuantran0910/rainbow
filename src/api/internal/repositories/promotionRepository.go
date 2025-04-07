@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/models"
@@ -12,6 +13,7 @@ import (
 
 type IPromotionRepository interface {
 	WithTX(tx *gorm.DB) IPromotionRepository
+	GetAllPromotions(ctx context.Context) ([]*models.Promotion, error)
 	GetPromotionById(ctx context.Context, promotionID uuid.UUID) (*models.Promotion, error)
 	CreatePromotion(ctx context.Context, promotion *models.Promotion) error
 	UpdatePromotion(ctx context.Context, promotionId uuid.UUID, promotion *models.Promotion) error
@@ -34,6 +36,18 @@ func (pr *promotionRepository) WithTX(tx *gorm.DB) IPromotionRepository {
 	return &promotionRepository{
 		db: tx,
 	}
+}
+
+func (pr *promotionRepository) GetAllPromotions(ctx context.Context) ([]*models.Promotion, error) {
+	var promotions []*models.Promotion
+	now := time.Now()
+	err := pr.db.WithContext(ctx).
+		Where("start_date <= ? AND end_date >= ?", now, now).
+		Find(&promotions).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch promotions: %w", err)
+	}
+	return promotions, nil
 }
 
 func (pr *promotionRepository) GetPromotionById(
