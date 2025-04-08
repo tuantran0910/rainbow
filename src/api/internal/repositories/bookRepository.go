@@ -115,7 +115,7 @@ func (pr *bookRepository) UpdateBook(
 	result := pr.db.WithContext(ctx).
 		Model(&models.Book{}).
 		Where("id = ?", bookId).
-		Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
+		Select("SecondaryID", "CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
 		Updates(book)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update book with id %s: %w", bookId, result.Error)

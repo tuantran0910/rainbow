@@ -23,6 +23,7 @@ type CreateBookRequest struct {
 }
 
 type UpdateBookRequest struct {
+	SecondaryID   *string    `json:"secondary_id"   binding:"omitempty"`
 	CategoryID    *uuid.UUID `json:"category_id"    binding:"omitempty"`
 	Name          *string    `json:"name"           binding:"omitempty,min=1,max=255"`
 	Description   *string    `json:"description"    binding:"omitempty"`

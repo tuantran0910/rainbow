@@ -238,7 +238,8 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := oc.orderService.CreateOrder(reqCtx, orderRequest, currentUserId.(uuid.UUID)); err != nil {
+	order, err := oc.orderService.CreateOrder(reqCtx, orderRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -248,11 +249,39 @@ func (oc *OrderController) CreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	orderItems := make([]*dtos.GetOrderItemResponse, 0, len(order.OrderItems))
+	for _, orderItem := range order.OrderItems {
+		orderItems = append(orderItems, &dtos.GetOrderItemResponse{
+			ID:        orderItem.ID,
+			OrderID:   orderItem.OrderID,
+			BookID:    orderItem.BookID,
+			Quantity:  orderItem.Quantity,
+			UnitPrice: orderItem.UnitPrice,
+			Discount:  orderItem.Discount,
+			CreatedAt: orderItem.CreatedAt,
+			UpdatedAt: orderItem.UpdatedAt,
+			DeletedAt: orderItem.DeletedAt,
+		})
+	}
+
+	data := &dtos.GetOrderResponse{
+		ID:              order.ID,
+		UserID:          order.UserID,
+		PaymentID:       order.PaymentID,
+		ShippingAddress: order.ShippingAddress,
+		TotalAmount:     order.TotalAmount,
+		CreatedAt:       order.CreatedAt,
+		UpdatedAt:       order.UpdatedAt,
+		DeletedAt:       order.DeletedAt,
+		OrderItems:      &orderItems,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created order").
+		SetData(data).
 		Respond(ctx)
 }
 

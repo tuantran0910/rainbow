@@ -8,14 +8,16 @@ import (
 )
 
 type CreateSellerRequest struct {
-	Name string `json:"name" binding:"required,min=1,max=255"`
-	Link string `json:"link"`
-	Logo string `json:"logo"`
+	SecondaryID string `json:"secondary_id" binding:"omitempty"`
+	Name        string `json:"name"         binding:"required,min=1,max=255"`
+	Link        string `json:"link"`
+	Logo        string `json:"logo"`
 }
 
 type UpdateSellerRequest struct {
-	Name *string `json:"name" binding:"omitempty,min=1,max=255"`
-	Logo *string `json:"logo" binding:"omitempty"`
+	SecondaryID *string `json:"secondary_id" binding:"omitempty"`
+	Name        *string `json:"name"         binding:"omitempty,min=1,max=255"`
+	Logo        *string `json:"logo"         binding:"omitempty"`
 }
 
 type GetSellerResponse struct {

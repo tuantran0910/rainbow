@@ -27,7 +27,7 @@ type IOrderService interface {
 		ctx context.Context,
 		orderRequest dtos.CreateOrderRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Order, error)
 	DeleteOrder(ctx context.Context, orderId uuid.UUID, currentUserId uuid.UUID) error
 }
 
@@ -106,8 +106,9 @@ func (os *orderService) CreateOrder(
 	ctx context.Context,
 	orderRequest dtos.CreateOrderRequest,
 	currentUserId uuid.UUID,
-) error {
-	return os.withTX(ctx, func(
+) (*models.Order, error) {
+	var createdOrder *models.Order
+	err := os.withTX(ctx, func(
 		ctx context.Context,
 		orderRepository repositories.IOrderRepository,
 		bookRepository repositories.IBookRepository,
@@ -200,8 +201,12 @@ func (os *orderService) CreateOrder(
 		if err = orderRepository.UpdateOrder(ctx, order); err != nil {
 			return err
 		}
-		return nil
+
+		// Get the created order with all fields populated
+		createdOrder, err = orderRepository.GetOrderById(ctx, order.ID, currentUserId)
+		return err
 	})
+	return createdOrder, err
 }
 
 func (os *orderService) DeleteOrder(

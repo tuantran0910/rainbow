@@ -259,7 +259,7 @@ func (ac *AuthorController) CreateAuthor(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	err := ac.authorService.CreateAuthor(reqCtx, authorRequest, currentUserId.(uuid.UUID))
+	author, err := ac.authorService.CreateAuthor(reqCtx, authorRequest, currentUserId.(uuid.UUID))
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -270,11 +270,22 @@ func (ac *AuthorController) CreateAuthor(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetAuthorResponse{
+		ID:          author.ID,
+		SecondaryID: author.SecondaryID,
+		Name:        author.Name,
+		Slug:        author.Slug,
+		CreatedAt:   author.CreatedAt,
+		UpdatedAt:   author.UpdatedAt,
+		DeletedAt:   author.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created author").
+		SetData(data).
 		Respond(ctx)
 }
 
@@ -336,7 +347,14 @@ func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := ac.authorService.UpdateAuthor(reqCtx, authorId, authorRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
+	author, err := ac.authorService.UpdateAuthor(
+		reqCtx,
+		authorId,
+		authorRequest,
+		currentUserId.(uuid.UUID),
+		isSecondary,
+	)
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -346,11 +364,22 @@ func (ac *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetAuthorResponse{
+		ID:          author.ID,
+		SecondaryID: author.SecondaryID,
+		Name:        author.Name,
+		Slug:        author.Slug,
+		CreatedAt:   author.CreatedAt,
+		UpdatedAt:   author.UpdatedAt,
+		DeletedAt:   author.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetMessage("Successfully updated the author").
+		SetData(data).
 		Respond(ctx)
 }
 

@@ -19,19 +19,19 @@ type ICategoryService interface {
 		page, limit int,
 	) ([]*models.Category, *pagination.Pagination, error)
 	GetCategoryById(ctx context.Context, id interface{}, isSecondary bool) (*models.Category, error)
-	GetCategoryBySlug(ctx context.Context, categorySlug string) (*models.Category, error)
+	GetCategoryBySlug(ctx context.Context, slug string) (*models.Category, error)
 	CreateCategory(
 		ctx context.Context,
 		categoryRequest dtos.CreateCategoryRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Category, error)
 	UpdateCategory(
 		ctx context.Context,
 		id interface{},
 		categoryRequest dtos.UpdateCategoryRequest,
 		currentUserId uuid.UUID,
 		isSecondary bool,
-	) error
+	) (*models.Category, error)
 	DeleteCategory(ctx context.Context, categoryId uuid.UUID, currentUserId uuid.UUID) error
 }
 
@@ -90,8 +90,9 @@ func (cs *categoryService) CreateCategory(
 	ctx context.Context,
 	categoryRequest dtos.CreateCategoryRequest,
 	currentUserId uuid.UUID,
-) error {
-	return cs.withTX(
+) (*models.Category, error) {
+	var createdCategory *models.Category
+	err := cs.withTX(
 		ctx,
 		func(ctx context.Context, categoryRepository repositories.ICategoryRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -120,12 +121,20 @@ func (cs *categoryService) CreateCategory(
 			}
 
 			category := &models.Category{
-				Name: categoryRequest.Name,
-				Slug: categorySlug,
+				SecondaryID: categoryRequest.SecondaryID,
+				Name:        categoryRequest.Name,
+				Slug:        categorySlug,
 			}
-			return categoryRepository.CreateCategory(ctx, category)
+			if err := categoryRepository.CreateCategory(ctx, category); err != nil {
+				return err
+			}
+
+			// Get the created category with all fields populated
+			createdCategory, err = categoryRepository.GetCategoryById(ctx, category.ID, false)
+			return err
 		},
 	)
+	return createdCategory, err
 }
 
 func (cs *categoryService) UpdateCategory(
@@ -134,8 +143,9 @@ func (cs *categoryService) UpdateCategory(
 	categoryRequest dtos.UpdateCategoryRequest,
 	currentUserId uuid.UUID,
 	isSecondary bool,
-) error {
-	return cs.withTX(
+) (*models.Category, error) {
+	var updatedCategory *models.Category
+	err := cs.withTX(
 		ctx,
 		func(ctx context.Context, categoryRepository repositories.ICategoryRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -161,13 +171,23 @@ func (cs *categoryService) UpdateCategory(
 					idStr)
 			}
 
-			var updatedCategory models.Category
-			if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
-				updatedCategory.Name = *categoryRequest.Name
+			var categoryToUpdate models.Category
+			if categoryRequest.SecondaryID != nil {
+				categoryToUpdate.SecondaryID = *categoryRequest.SecondaryID
 			}
-			return categoryRepository.UpdateCategory(ctx, id, &updatedCategory, isSecondary)
+			if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
+				categoryToUpdate.Name = *categoryRequest.Name
+			}
+			if err := categoryRepository.UpdateCategory(ctx, id, &categoryToUpdate, isSecondary); err != nil {
+				return err
+			}
+
+			// Get the updated category
+			updatedCategory, err = categoryRepository.GetCategoryById(ctx, id, isSecondary)
+			return err
 		},
 	)
+	return updatedCategory, err
 }
 
 func (cs *categoryService) DeleteCategory(

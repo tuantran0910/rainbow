@@ -16,7 +16,7 @@ INSERT INTO users (
     GEN_RANDOM_UUID(),
     'admin@example.com',
     -- The password is 'Admin123!' - this will be hashed properly
-    '$2a$10$UUE7wP9Cz8qVYYZfX2OXxOdwLYS4UOZPzUSo0UHsQqopcW7UYIcpC',
+    '$2b$12$JWWHao5ZdvnuyfjARp7tBOeV3vNy3Y1zAQZiYVwPn19F4Zq06Zdwm',
     'Admin',
     'User',
     '1234567890',

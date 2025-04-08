@@ -209,7 +209,8 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := sc.sellerService.CreateSeller(reqCtx, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
+	seller, err := sc.sellerService.CreateSeller(reqCtx, sellerRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -219,11 +220,24 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetSellerResponse{
+		ID:          seller.ID,
+		SecondaryID: seller.SecondaryID,
+		UserID:      seller.UserID,
+		Name:        seller.Name,
+		Link:        seller.Link,
+		Logo:        seller.Logo,
+		CreatedAt:   seller.CreatedAt,
+		UpdatedAt:   seller.UpdatedAt,
+		DeletedAt:   seller.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created a seller").
+		SetData(data).
 		Respond(ctx)
 }
 
@@ -285,7 +299,14 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
+	seller, err := sc.sellerService.UpdateSeller(
+		reqCtx,
+		sellerId,
+		sellerRequest,
+		currentUserId.(uuid.UUID),
+		isSecondary,
+	)
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -295,11 +316,24 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetSellerResponse{
+		ID:          seller.ID,
+		SecondaryID: seller.SecondaryID,
+		UserID:      seller.UserID,
+		Name:        seller.Name,
+		Link:        seller.Link,
+		Logo:        seller.Logo,
+		CreatedAt:   seller.CreatedAt,
+		UpdatedAt:   seller.UpdatedAt,
+		DeletedAt:   seller.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetMessage("Successfully updated the seller").
+		SetData(data).
 		Respond(ctx)
 }
 

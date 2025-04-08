@@ -8,12 +8,14 @@ import (
 )
 
 type CreateCategoryRequest struct {
-	Name string `json:"name" binding:"required,min=1,max=255"`
-	Slug string `json:"slug" binding:"omitempty,min=1,max=255"`
+	SecondaryID string `json:"secondary_id" binding:"omitempty"`
+	Name        string `json:"name"         binding:"required,min=1,max=255"`
+	Slug        string `json:"slug"         binding:"omitempty,min=1,max=255"`
 }
 
 type UpdateCategoryRequest struct {
-	Name *string `json:"name" binding:"omitempty,min=1,max=255"`
+	SecondaryID *string `json:"secondary_id" binding:"omitempty"`
+	Name        *string `json:"name"         binding:"omitempty,min=1,max=255"`
 }
 
 type GetCategoryResponse struct {

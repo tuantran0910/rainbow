@@ -238,7 +238,8 @@ func (pc *BookController) CreateBook(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := pc.bookService.CreateBook(reqCtx, bookRequest, currentUserId.(uuid.UUID)); err != nil {
+	book, err := pc.bookService.CreateBook(reqCtx, bookRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
@@ -248,11 +249,53 @@ func (pc *BookController) CreateBook(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	bookAuthors := make([]*dtos.GetAuthorResponse, 0)
+	for _, author := range book.Authors {
+		bookAuthors = append(bookAuthors, &dtos.GetAuthorResponse{
+			ID:          author.ID,
+			SecondaryID: author.SecondaryID,
+			Name:        author.Name,
+			Slug:        author.Slug,
+			CreatedAt:   author.CreatedAt,
+			UpdatedAt:   author.UpdatedAt,
+			DeletedAt:   author.DeletedAt,
+		})
+	}
+
+	data := &dtos.GetBookResponse{
+		ID:            book.ID,
+		SecondaryID:   book.SecondaryID,
+		CategoryID:    book.CategoryID,
+		SellerID:      book.SellerID,
+		Name:          book.Name,
+		Description:   book.Description,
+		Price:         book.Price,
+		OriginalPrice: book.OriginalPrice,
+		RatingAverage: book.RatingAverage,
+		ReviewCount:   book.ReviewCount,
+		PageCount:     book.PageCount,
+		SoldCount:     book.SoldCount,
+		CreatedAt:     book.CreatedAt,
+		UpdatedAt:     book.UpdatedAt,
+		DeletedAt:     book.DeletedAt,
+		Stock: &dtos.GetInventoryResponse{
+			ID:              book.Inventory.ID,
+			BookID:          book.Inventory.BookID,
+			Stock:           book.Inventory.Stock,
+			LastRestockedAt: book.Inventory.LastRestockedAt,
+			CreatedAt:       book.Inventory.CreatedAt,
+			UpdatedAt:       book.Inventory.UpdatedAt,
+			DeletedAt:       book.Inventory.DeletedAt,
+		},
+		Authors: bookAuthors,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created book").
+		SetData(data).
 		Respond(ctx)
 }
 
@@ -305,7 +348,8 @@ func (pc *BookController) UpdateBook(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID)); err != nil {
+	book, err := pc.bookService.UpdateBook(reqCtx, bookId, bookRequest, currentUserId.(uuid.UUID))
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusBadRequest).
@@ -315,11 +359,53 @@ func (pc *BookController) UpdateBook(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	bookAuthors := make([]*dtos.GetAuthorResponse, 0)
+	for _, author := range book.Authors {
+		bookAuthors = append(bookAuthors, &dtos.GetAuthorResponse{
+			ID:          author.ID,
+			SecondaryID: author.SecondaryID,
+			Name:        author.Name,
+			Slug:        author.Slug,
+			CreatedAt:   author.CreatedAt,
+			UpdatedAt:   author.UpdatedAt,
+			DeletedAt:   author.DeletedAt,
+		})
+	}
+
+	data := &dtos.GetBookResponse{
+		ID:            book.ID,
+		SecondaryID:   book.SecondaryID,
+		CategoryID:    book.CategoryID,
+		SellerID:      book.SellerID,
+		Name:          book.Name,
+		Description:   book.Description,
+		Price:         book.Price,
+		OriginalPrice: book.OriginalPrice,
+		RatingAverage: book.RatingAverage,
+		ReviewCount:   book.ReviewCount,
+		PageCount:     book.PageCount,
+		SoldCount:     book.SoldCount,
+		CreatedAt:     book.CreatedAt,
+		UpdatedAt:     book.UpdatedAt,
+		DeletedAt:     book.DeletedAt,
+		Stock: &dtos.GetInventoryResponse{
+			ID:              book.Inventory.ID,
+			BookID:          book.Inventory.BookID,
+			Stock:           book.Inventory.Stock,
+			LastRestockedAt: book.Inventory.LastRestockedAt,
+			CreatedAt:       book.Inventory.CreatedAt,
+			UpdatedAt:       book.Inventory.UpdatedAt,
+			DeletedAt:       book.Inventory.DeletedAt,
+		},
+		Authors: bookAuthors,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetMessage("Successfully updated book").
+		SetData(data).
 		Respond(ctx)
 }
 

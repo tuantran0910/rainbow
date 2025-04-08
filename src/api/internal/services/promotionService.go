@@ -17,7 +17,7 @@ type IPromotionService interface {
 		ctx context.Context,
 		promotionRequest dtos.CreatePromotionRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Promotion, error)
 }
 
 type promotionService struct {
@@ -57,8 +57,9 @@ func (pc *promotionService) CreatePromotion(
 	ctx context.Context,
 	promotionRequest dtos.CreatePromotionRequest,
 	currentUserId uuid.UUID,
-) error {
-	return pc.withTX(
+) (*models.Promotion, error) {
+	var createdPromotion *models.Promotion
+	err := pc.withTX(
 		ctx,
 		func(ctx context.Context, promotionRepository repositories.IPromotionRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -81,7 +82,14 @@ func (pc *promotionService) CreatePromotion(
 				EndDate:       promotionRequest.EndDate,
 				MaxUses:       promotionRequest.MaxUses,
 			}
-			return promotionRepository.CreatePromotion(ctx, promotion)
+			if err := promotionRepository.CreatePromotion(ctx, promotion); err != nil {
+				return err
+			}
+
+			// Get the created promotion
+			createdPromotion = promotion
+			return nil
 		},
 	)
+	return createdPromotion, err
 }
