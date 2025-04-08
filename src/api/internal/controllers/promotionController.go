@@ -92,7 +92,12 @@ func (pc *PromotionController) CreatePromotion(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := pc.promotionService.CreatePromotion(reqCtx, promotionRequest, currentUserId.(uuid.UUID)); err != nil {
+	promotion, err := pc.promotionService.CreatePromotion(
+		reqCtx,
+		promotionRequest,
+		currentUserId.(uuid.UUID),
+	)
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetHeaders(responseHeaders).
@@ -103,9 +108,24 @@ func (pc *PromotionController) CreatePromotion(ctx *gin.Context) {
 		return
 	}
 
+	data := &dtos.GetPromotionResponse{
+		ID:            promotion.ID,
+		Name:          promotion.Name,
+		DiscountType:  promotion.DiscountType,
+		DiscountValue: promotion.DiscountValue,
+		StartDate:     promotion.StartDate,
+		EndDate:       promotion.EndDate,
+		MaxUses:       promotion.MaxUses,
+		UsedCount:     promotion.UsedCount,
+		CreatedAt:     promotion.CreatedAt,
+		UpdatedAt:     promotion.UpdatedAt,
+	}
+
+	responseHeaders = headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(responseHeaders).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created a promotion").
+		SetData(data).
 		Respond(ctx)
 }

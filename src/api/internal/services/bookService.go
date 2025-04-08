@@ -20,13 +20,13 @@ type IBookService interface {
 		ctx context.Context,
 		bookRequest dtos.CreateBookRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Book, error)
 	UpdateBook(
 		ctx context.Context,
 		bookId uuid.UUID,
 		bookRequest dtos.UpdateBookRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Book, error)
 	DeleteBook(ctx context.Context, bookId uuid.UUID, currentUserId uuid.UUID) error
 }
 
@@ -86,8 +86,9 @@ func (ps *bookService) CreateBook(
 	ctx context.Context,
 	bookRequest dtos.CreateBookRequest,
 	currentUserId uuid.UUID,
-) error {
-	return ps.withTX(
+) (*models.Book, error) {
+	var createdBook *models.Book
+	err := ps.withTX(
 		ctx,
 		func(ctx context.Context, bookRepository repositories.IBookRepository, inventoryRepository repositories.IInventoryRepository, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -106,18 +107,10 @@ func (ps *bookService) CreateBook(
 				return fmt.Errorf("seller not found")
 			}
 
-			if bookRequest.SellerID != seller.ID {
-				return fmt.Errorf(
-					"seller id %s does not match with current user seller id %s",
-					bookRequest.SellerID,
-					seller.ID,
-				)
-			}
-
 			book := &models.Book{
 				SecondaryID:   bookRequest.SecondaryID,
 				CategoryID:    bookRequest.CategoryID,
-				SellerID:      bookRequest.SellerID,
+				SellerID:      seller.ID,
 				Name:          bookRequest.Name,
 				Description:   bookRequest.Description,
 				Price:         bookRequest.Price,
@@ -125,36 +118,37 @@ func (ps *bookService) CreateBook(
 				RatingAverage: bookRequest.RatingAverage,
 				ReviewCount:   bookRequest.ReviewCount,
 				PageCount:     bookRequest.PageCount,
+				SoldCount:     0,
 			}
 			if err := bookRepository.CreateBook(ctx, book); err != nil {
 				return err
 			}
 
-			bookStock := bookRequest.Stock
-			if bookStock == 0 {
-				bookStock = 100
-			}
-			inventory := &models.Inventory{
+			bookInventory := &models.Inventory{
 				BookID:          book.ID,
-				Stock:           bookStock,
+				Stock:           bookRequest.Stock,
 				LastRestockedAt: time.Now(),
 			}
-			if err := inventoryRepository.CreateInventory(ctx, inventory); err != nil {
+			if err := inventoryRepository.CreateInventory(ctx, bookInventory); err != nil {
 				return err
 			}
 
-			for _, authorID := range bookRequest.AuthorIds {
+			for _, authorId := range bookRequest.AuthorIds {
 				bookAuthor := &models.BookAuthor{
 					BookID:   book.ID,
-					AuthorID: authorID,
+					AuthorID: authorId,
 				}
 				if err := bookRepository.AddAuthorToBook(ctx, bookAuthor); err != nil {
 					return err
 				}
 			}
-			return nil
+
+			// Get the created book with all fields populated
+			createdBook, err = bookRepository.GetBookById(ctx, book.ID, false)
+			return err
 		},
 	)
+	return createdBook, err
 }
 
 func (ps *bookService) UpdateBook(
@@ -162,8 +156,9 @@ func (ps *bookService) UpdateBook(
 	bookId uuid.UUID,
 	bookRequest dtos.UpdateBookRequest,
 	currentUserId uuid.UUID,
-) error {
-	return ps.withTX(
+) (*models.Book, error) {
+	var updatedBook *models.Book
+	err := ps.withTX(
 		ctx,
 		func(ctx context.Context, bookRepository repositories.IBookRepository, inventoryRepository repositories.IInventoryRepository, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -198,6 +193,9 @@ func (ps *bookService) UpdateBook(
 				)
 			}
 
+			if bookRequest.SecondaryID != nil {
+				book.SecondaryID = *bookRequest.SecondaryID
+			}
 			if bookRequest.CategoryID != nil && *bookRequest.CategoryID != book.CategoryID {
 				book.CategoryID = *bookRequest.CategoryID
 			}
@@ -242,11 +240,17 @@ func (ps *bookService) UpdateBook(
 				}
 
 				bookInventory.Stock = *bookRequest.Stock
-				return inventoryRepository.UpdateInventory(ctx, bookInventory.ID, bookInventory)
+				if err := inventoryRepository.UpdateInventory(ctx, bookInventory.ID, bookInventory); err != nil {
+					return err
+				}
 			}
-			return nil
+
+			// Get the updated book with all fields populated
+			updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
+			return err
 		},
 	)
+	return updatedBook, err
 }
 
 func (ps *bookService) DeleteBook(

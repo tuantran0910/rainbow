@@ -24,14 +24,14 @@ type IAuthorService interface {
 		ctx context.Context,
 		authorRequest dtos.CreateAuthorRequest,
 		currentUserId uuid.UUID,
-	) error
+	) (*models.Author, error)
 	UpdateAuthor(
 		ctx context.Context,
 		id interface{},
 		authorRequest dtos.UpdateAuthorRequest,
 		currentUserId uuid.UUID,
 		isSecondary bool,
-	) error
+	) (*models.Author, error)
 	DeleteAuthor(ctx context.Context, authorId uuid.UUID, currentUserId uuid.UUID) error
 }
 
@@ -90,8 +90,9 @@ func (as *authorService) CreateAuthor(
 	ctx context.Context,
 	authorRequest dtos.CreateAuthorRequest,
 	currentUserId uuid.UUID,
-) error {
-	return as.withTX(
+) (*models.Author, error) {
+	var createdAuthor *models.Author
+	err := as.withTX(
 		ctx,
 		func(ctx context.Context, authorRepository repositories.IAuthorRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -120,12 +121,20 @@ func (as *authorService) CreateAuthor(
 			}
 
 			author := &models.Author{
-				Name: authorRequest.Name,
-				Slug: authorSlug,
+				SecondaryID: authorRequest.SecondaryID,
+				Name:        authorRequest.Name,
+				Slug:        authorSlug,
 			}
-			return authorRepository.CreateAuthor(ctx, author)
+			if err := authorRepository.CreateAuthor(ctx, author); err != nil {
+				return err
+			}
+
+			// Get the created author with all fields populated
+			createdAuthor, err = authorRepository.GetAuthorById(ctx, author.ID, false)
+			return err
 		},
 	)
+	return createdAuthor, err
 }
 
 func (as *authorService) UpdateAuthor(
@@ -134,8 +143,9 @@ func (as *authorService) UpdateAuthor(
 	authorRequest dtos.UpdateAuthorRequest,
 	currentUserId uuid.UUID,
 	isSecondary bool,
-) error {
-	return as.withTX(
+) (*models.Author, error) {
+	var updatedAuthor *models.Author
+	err := as.withTX(
 		ctx,
 		func(ctx context.Context, authorRepository repositories.IAuthorRepository, userRepository repositories.IUserRepository) error {
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
@@ -161,9 +171,12 @@ func (as *authorService) UpdateAuthor(
 					idStr)
 			}
 
-			var updatedAuthor models.Author
+			var authorToUpdate models.Author
+			if authorRequest.SecondaryID != nil {
+				authorToUpdate.SecondaryID = *authorRequest.SecondaryID
+			}
 			if authorRequest.Name != nil && *authorRequest.Name != author.Name {
-				updatedAuthor.Name = *authorRequest.Name
+				authorToUpdate.Name = *authorRequest.Name
 				slugStr := slug.Make(*authorRequest.Name)
 				if slugStr != author.Slug {
 					existingAuthor, err := authorRepository.GetAuthorBySlug(ctx, slugStr)
@@ -173,12 +186,19 @@ func (as *authorService) UpdateAuthor(
 						}
 						return err
 					}
-					updatedAuthor.Slug = slugStr
+					authorToUpdate.Slug = slugStr
 				}
 			}
-			return authorRepository.UpdateAuthor(ctx, id, &updatedAuthor, isSecondary)
+			if err := authorRepository.UpdateAuthor(ctx, id, &authorToUpdate, isSecondary); err != nil {
+				return err
+			}
+
+			// Get the updated author
+			updatedAuthor, err = authorRepository.GetAuthorById(ctx, id, isSecondary)
+			return err
 		},
 	)
+	return updatedAuthor, err
 }
 
 func (as *authorService) DeleteAuthor(

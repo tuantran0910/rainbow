@@ -259,7 +259,12 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.CreateCategory(reqCtx, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	category, err := cc.categoryService.CreateCategory(
+		reqCtx,
+		categoryRequest,
+		currentUserId.(uuid.UUID),
+	)
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -269,11 +274,22 @@ func (cc *CategoryController) CreateCategory(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetCategoryResponse{
+		ID:          category.ID,
+		SecondaryID: category.SecondaryID,
+		Name:        category.Name,
+		Slug:        category.Slug,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+		DeletedAt:   category.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusCreated).
 		SetMessage("Successfully created the category").
+		SetData(data).
 		Respond(ctx)
 }
 
@@ -324,7 +340,14 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID), false); err != nil {
+	category, err := cc.categoryService.UpdateCategory(
+		reqCtx,
+		categoryId,
+		categoryRequest,
+		currentUserId.(uuid.UUID),
+		false,
+	)
+	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -334,11 +357,22 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
+	data := &dtos.GetCategoryResponse{
+		ID:          category.ID,
+		SecondaryID: category.SecondaryID,
+		Name:        category.Name,
+		Slug:        category.Slug,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+		DeletedAt:   category.DeletedAt,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
 	response.NewAPIResponse().
 		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetMessage("Successfully updated category").
+		SetData(data).
 		Respond(ctx)
 }
 

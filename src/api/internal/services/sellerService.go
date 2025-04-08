@@ -20,14 +20,18 @@ type ISellerService interface {
 	) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, id interface{}, isSecondary bool) (*models.Seller, error)
 	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
-	CreateSeller(ctx context.Context, sellerReq dtos.CreateSellerRequest, userId uuid.UUID) error
+	CreateSeller(
+		ctx context.Context,
+		sellerReq dtos.CreateSellerRequest,
+		userId uuid.UUID,
+	) (*models.Seller, error)
 	UpdateSeller(
 		ctx context.Context,
 		id interface{},
 		sellerReq dtos.UpdateSellerRequest,
 		userId uuid.UUID,
 		isSecondary bool,
-	) error
+	) (*models.Seller, error)
 	DeleteSeller(ctx context.Context, sellerId uuid.UUID, userId uuid.UUID) error
 }
 
@@ -86,8 +90,9 @@ func (ss *sellerService) CreateSeller(
 	ctx context.Context,
 	sellerReq dtos.CreateSellerRequest,
 	userId uuid.UUID,
-) error {
-	return ss.withTX(
+) (*models.Seller, error) {
+	var createdSeller *models.Seller
+	err := ss.withTX(
 		ctx,
 		func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
 			exitingSeller, err := sellerRepository.GetSellerByUserId(ctx, userId)
@@ -107,14 +112,22 @@ func (ss *sellerService) CreateSeller(
 			}
 
 			seller := &models.Seller{
-				UserID: userId,
-				Name:   sellerReq.Name,
-				Link:   sellerReq.Link,
-				Logo:   sellerReq.Logo,
+				SecondaryID: sellerReq.SecondaryID,
+				UserID:      userId,
+				Name:        sellerReq.Name,
+				Link:        sellerReq.Link,
+				Logo:        sellerReq.Logo,
 			}
-			return sellerRepository.CreateSeller(ctx, seller)
+			if err := sellerRepository.CreateSeller(ctx, seller); err != nil {
+				return err
+			}
+
+			// Get the created seller with all fields populated
+			createdSeller, err = sellerRepository.GetSellerById(ctx, seller.ID, false)
+			return err
 		},
 	)
+	return createdSeller, err
 }
 
 func (ss *sellerService) UpdateSeller(
@@ -123,8 +136,9 @@ func (ss *sellerService) UpdateSeller(
 	sellerReq dtos.UpdateSellerRequest,
 	userId uuid.UUID,
 	isSecondary bool,
-) error {
-	return ss.withTX(
+) (*models.Seller, error) {
+	var updatedSeller *models.Seller
+	err := ss.withTX(
 		ctx,
 		func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
 			seller, err := sellerRepository.GetSellerById(ctx, id, isSecondary)
@@ -150,21 +164,31 @@ func (ss *sellerService) UpdateSeller(
 				return fmt.Errorf("only admin can update other seller's information")
 			}
 
-			var updatedSeller models.Seller
+			var sellerToUpdate models.Seller
+			if sellerReq.SecondaryID != nil {
+				sellerToUpdate.SecondaryID = *sellerReq.SecondaryID
+			}
 			if sellerReq.Name != nil && *sellerReq.Name != seller.Name {
-				updatedSeller.Name = *sellerReq.Name
-				updatedSeller.Link = fmt.Sprintf(
+				sellerToUpdate.Name = *sellerReq.Name
+				sellerToUpdate.Link = fmt.Sprintf(
 					"https://rainbow.tuantrann.work/sellers/%s-%s",
 					slug.Make(*sellerReq.Name),
 					uuid.New().String()[:8],
 				)
 			}
 			if sellerReq.Logo != nil && *sellerReq.Logo != seller.Logo {
-				updatedSeller.Logo = *sellerReq.Logo
+				sellerToUpdate.Logo = *sellerReq.Logo
 			}
-			return sellerRepository.UpdateSeller(ctx, id, &updatedSeller, isSecondary)
+			if err := sellerRepository.UpdateSeller(ctx, id, &sellerToUpdate, isSecondary); err != nil {
+				return err
+			}
+
+			// Get the updated seller
+			updatedSeller, err = sellerRepository.GetSellerById(ctx, id, isSecondary)
+			return err
 		},
 	)
+	return updatedSeller, err
 }
 
 func (ss *sellerService) DeleteSeller(

@@ -1727,6 +1727,9 @@ const docTemplate = `{
                     "maxLength": 255,
                     "minLength": 1
                 },
+                "secondary_id": {
+                    "type": "string"
+                },
                 "slug": {
                     "type": "string",
                     "maxLength": 255,
@@ -1797,6 +1800,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
+                },
+                "secondary_id": {
+                    "type": "string"
                 },
                 "slug": {
                     "type": "string",
@@ -1901,6 +1907,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
+                },
+                "secondary_id": {
+                    "type": "string"
                 }
             }
         },
@@ -1968,6 +1977,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
+                },
+                "secondary_id": {
+                    "type": "string"
                 }
             }
         },
@@ -2000,6 +2012,9 @@ const docTemplate = `{
                 "review_count": {
                     "type": "integer"
                 },
+                "secondary_id": {
+                    "type": "string"
+                },
                 "stock": {
                     "type": "integer"
                 }
@@ -2012,6 +2027,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
+                },
+                "secondary_id": {
+                    "type": "string"
                 }
             }
         },
@@ -2025,6 +2043,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 1
+                },
+                "secondary_id": {
+                    "type": "string"
                 }
             }
         },
