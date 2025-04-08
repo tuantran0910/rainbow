@@ -17,10 +17,10 @@ type IAuthorRepository interface {
 		ctx context.Context,
 		page, limit int,
 	) ([]*models.Author, *pagination.Pagination, error)
-	GetAuthorById(ctx context.Context, authorId uuid.UUID) (*models.Author, error)
-	GetAuthorBySlug(ctx context.Context, authorSlug string) (*models.Author, error)
+	GetAuthorById(ctx context.Context, id interface{}, isSecondary bool) (*models.Author, error)
+	GetAuthorBySlug(ctx context.Context, slug string) (*models.Author, error)
 	CreateAuthor(ctx context.Context, author *models.Author) error
-	UpdateAuthor(ctx context.Context, authorId uuid.UUID, author *models.Author) error
+	UpdateAuthor(ctx context.Context, id interface{}, author *models.Author, isSecondary bool) error
 	DeleteAuthor(ctx context.Context, authorId uuid.UUID) error
 }
 
@@ -63,28 +63,40 @@ func (ar *authorRepository) GetAuthors(
 
 func (ar *authorRepository) GetAuthorById(
 	ctx context.Context,
-	authorId uuid.UUID,
+	id interface{},
+	isSecondary bool,
 ) (*models.Author, error) {
 	var author models.Author
-	if err := ar.db.WithContext(ctx).Take(&author, "id = ?", authorId).Error; err != nil {
+	query := ar.db.WithContext(ctx)
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	if err := query.Take(&author).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		idStr := fmt.Sprintf("%v", id)
+		return nil, fmt.Errorf("failed to get author with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, err)
 	}
 	return &author, nil
 }
 
 func (ar *authorRepository) GetAuthorBySlug(
 	ctx context.Context,
-	authorSlug string,
+	slug string,
 ) (*models.Author, error) {
 	var author models.Author
-	if err := ar.db.WithContext(ctx).Take(&author, "slug = ?", authorSlug).Error; err != nil {
+	if err := ar.db.WithContext(ctx).Take(&author, "slug = ?", slug).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get author: %w", err)
 	}
 	return &author, nil
 }
@@ -98,19 +110,31 @@ func (ar *authorRepository) CreateAuthor(ctx context.Context, author *models.Aut
 
 func (ar *authorRepository) UpdateAuthor(
 	ctx context.Context,
-	authorId uuid.UUID,
+	id interface{},
 	author *models.Author,
+	isSecondary bool,
 ) error {
-	result := ar.db.WithContext(ctx).
-		Model(&models.Author{}).
-		Where("id = ?", authorId).
-		Updates(author)
+	query := ar.db.WithContext(ctx).Model(&models.Author{})
+
+	if isSecondary {
+		query = query.Where("secondary_id = ?", id)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	result := query.Updates(author)
 	if result.Error != nil {
-		return fmt.Errorf("failed to update author: %w", result.Error)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("failed to update author with %s %s: %w",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("author with id %s not found", authorId)
+		idStr := fmt.Sprintf("%v", id)
+		return fmt.Errorf("author with %s %s not found",
+			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+			idStr)
 	}
 	return nil
 }
@@ -118,7 +142,7 @@ func (ar *authorRepository) UpdateAuthor(
 func (ar *authorRepository) DeleteAuthor(ctx context.Context, authorId uuid.UUID) error {
 	result := ar.db.WithContext(ctx).Unscoped().Where("id = ?", authorId).Delete(&models.Author{})
 	if result.Error != nil {
-		return fmt.Errorf("failed to delete author: %w", result.Error)
+		return fmt.Errorf("failed to delete author with id %s: %w", authorId, result.Error)
 	}
 
 	if result.RowsAffected == 0 {

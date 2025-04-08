@@ -18,7 +18,7 @@ type ICategoryService interface {
 		ctx context.Context,
 		page, limit int,
 	) ([]*models.Category, *pagination.Pagination, error)
-	GetCategoryById(ctx context.Context, categoryId uuid.UUID) (*models.Category, error)
+	GetCategoryById(ctx context.Context, id interface{}, isSecondary bool) (*models.Category, error)
 	GetCategoryBySlug(ctx context.Context, categorySlug string) (*models.Category, error)
 	CreateCategory(
 		ctx context.Context,
@@ -27,9 +27,10 @@ type ICategoryService interface {
 	) error
 	UpdateCategory(
 		ctx context.Context,
-		categoryId uuid.UUID,
+		id interface{},
 		categoryRequest dtos.UpdateCategoryRequest,
 		currentUserId uuid.UUID,
+		isSecondary bool,
 	) error
 	DeleteCategory(ctx context.Context, categoryId uuid.UUID, currentUserId uuid.UUID) error
 }
@@ -72,9 +73,10 @@ func (cs *categoryService) GetCategories(
 
 func (cs *categoryService) GetCategoryById(
 	ctx context.Context,
-	categoryId uuid.UUID,
+	id interface{},
+	isSecondary bool,
 ) (*models.Category, error) {
-	return cs.categoryRepository.GetCategoryById(ctx, categoryId)
+	return cs.categoryRepository.GetCategoryById(ctx, id, isSecondary)
 }
 
 func (cs *categoryService) GetCategoryBySlug(
@@ -128,9 +130,10 @@ func (cs *categoryService) CreateCategory(
 
 func (cs *categoryService) UpdateCategory(
 	ctx context.Context,
-	categoryId uuid.UUID,
+	id interface{},
 	categoryRequest dtos.UpdateCategoryRequest,
 	currentUserId uuid.UUID,
+	isSecondary bool,
 ) error {
 	return cs.withTX(
 		ctx,
@@ -144,21 +147,25 @@ func (cs *categoryService) UpdateCategory(
 			}
 
 			if currentUser.Role != models.AdminRole {
-				return fmt.Errorf("current user does not have permission to update ")
+				return fmt.Errorf("current user does not have permission to update category")
 			}
 
-			category, err := categoryRepository.GetCategoryById(ctx, categoryId)
+			category, err := categoryRepository.GetCategoryById(ctx, id, isSecondary)
 			if err != nil {
 				return err
 			}
 			if category == nil {
-				return fmt.Errorf("category with id %s not found", categoryId)
+				idStr := fmt.Sprintf("%v", id)
+				return fmt.Errorf("category with %s %s not found",
+					map[bool]string{true: "secondary id", false: "id"}[isSecondary],
+					idStr)
 			}
 
+			var updatedCategory models.Category
 			if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
-				category.Name = *categoryRequest.Name
+				updatedCategory.Name = *categoryRequest.Name
 			}
-			return categoryRepository.UpdateCategory(ctx, categoryId, category)
+			return categoryRepository.UpdateCategory(ctx, id, &updatedCategory, isSecondary)
 		},
 	)
 }

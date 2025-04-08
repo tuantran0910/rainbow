@@ -100,30 +100,40 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 // GetSellerById godoc
 //
 //	@Summary		Get a seller
-//	@Description	Get a seller by its ID
+//	@Description	Get a seller by its ID or secondary ID
 //	@Tags			Seller
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Seller ID"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string	true	"Seller ID or Secondary ID"
+//	@Param			secondary	query		bool	false	"Use secondary ID"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/sellers/{id} [get]
 func (sc *SellerController) GetSellerById(ctx *gin.Context) {
-	sellerId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).
-			Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var sellerId interface{}
+	var err error
+	if !isSecondary {
+		sellerId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		sellerId = id
 	}
 
 	reqCtx := ctx.Request.Context()
-	seller, err := sc.sellerService.GetSellerById(reqCtx, sellerId)
+	seller, err := sc.sellerService.GetSellerById(reqCtx, sellerId, isSecondary)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -144,14 +154,15 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 	}
 
 	data := &dtos.GetSellerResponse{
-		ID:        seller.ID,
-		UserID:    seller.UserID,
-		Name:      seller.Name,
-		Link:      seller.Link,
-		Logo:      seller.Logo,
-		CreatedAt: seller.CreatedAt,
-		UpdatedAt: seller.UpdatedAt,
-		DeletedAt: seller.DeletedAt,
+		ID:          seller.ID,
+		SecondaryID: seller.SecondaryID,
+		UserID:      seller.UserID,
+		Name:        seller.Name,
+		Link:        seller.Link,
+		Logo:        seller.Logo,
+		CreatedAt:   seller.CreatedAt,
+		UpdatedAt:   seller.UpdatedAt,
+		DeletedAt:   seller.DeletedAt,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
@@ -219,27 +230,37 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 // UpdateSeller godoc
 //
 //	@Summary		Update Seller
-//	@Description	Update a seller by its ID
+//	@Description	Update a seller by its ID or secondary ID
 //	@Tags			Seller
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string						true	"Seller ID"
-//	@Param			req	body		dtos.UpdateSellerRequest	true	"Update Seller Request"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string						true	"Seller ID or Secondary ID"
+//	@Param			secondary	query		bool						false	"Use secondary ID"
+//	@Param			req			body		dtos.UpdateSellerRequest	true	"Update Seller Request"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/sellers/{id} [patch]
 func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
-	sellerId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).
-			Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var sellerId interface{}
+	var err error
+	if !isSecondary {
+		sellerId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		sellerId = id
 	}
 
 	var sellerRequest dtos.UpdateSellerRequest
@@ -264,7 +285,7 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID)); err != nil {
+	if err := sc.sellerService.UpdateSeller(reqCtx, sellerId, sellerRequest, currentUserId.(uuid.UUID), isSecondary); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).

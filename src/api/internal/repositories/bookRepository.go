@@ -17,7 +17,7 @@ type IBookRepository interface {
 	GetBookById(ctx context.Context, id interface{}, isSecondary bool) (*models.Book, error)
 	CreateBook(ctx context.Context, book *models.Book) error
 	AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error
-	UpdateBook(ctx context.Context, id interface{}, book *models.Book, isSecondary bool) error
+	UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID) error
 }
 
@@ -109,33 +109,19 @@ func (pr *bookRepository) AddAuthorToBook(
 
 func (pr *bookRepository) UpdateBook(
 	ctx context.Context,
-	id interface{},
+	bookId uuid.UUID,
 	book *models.Book,
-	isSecondary bool,
 ) error {
-	query := pr.db.WithContext(ctx).Model(&models.Book{})
-
-	if isSecondary {
-		query = query.Where("secondary_id = ?", id)
-	} else {
-		query = query.Where("id = ?", id)
-	}
-
-	result := query.Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
+	result := pr.db.WithContext(ctx).
+		Model(&models.Book{}).
+		Where("id = ?", bookId).
+		Select("CategoryID", "Name", "Description", "Price", "OriginalPrice", "RatingAverage", "ReviewCount", "PageCount", "SoldCount").
 		Updates(book)
-
 	if result.Error != nil {
-		idStr := fmt.Sprintf("%v", id)
-		return fmt.Errorf("failed to update book with %s %s: %w",
-			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
-			idStr, result.Error)
+		return fmt.Errorf("failed to update book with id %s: %w", bookId, result.Error)
 	}
-
 	if result.RowsAffected == 0 {
-		idStr := fmt.Sprintf("%v", id)
-		return fmt.Errorf("book with %s %s not found",
-			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
-			idStr)
+		return fmt.Errorf("book with id %s not found", bookId)
 	}
 	return nil
 }

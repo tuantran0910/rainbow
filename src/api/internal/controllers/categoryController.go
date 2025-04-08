@@ -97,34 +97,45 @@ func (cc *CategoryController) GetCategories(ctx *gin.Context) {
 // GetCategoryById godoc
 //
 //	@Summary		Get a category
-//	@Description	Get a category by its ID
+//	@Description	Get a category by its ID or secondary ID
 //	@Tags			Category
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Category ID"
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		400	{object}	response.APIResponse
-//	@Failure		404	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			id			path		string	true	"Category ID or Secondary ID"
+//	@Param			secondary	query		bool	false	"Use secondary ID"
+//	@Success		200			{object}	response.APIResponse
+//	@Failure		400			{object}	response.APIResponse
+//	@Failure		404			{object}	response.APIResponse
+//	@Failure		500			{object}	response.APIResponse
 //	@Router			/categories/{id} [get]
 func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
-	categoryId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
-			SetError(err.Error()).Respond(ctx)
-		return
+	id := ctx.Param("id")
+	isSecondary := ctx.Query("secondary") == "true"
+
+	var categoryId interface{}
+	var err error
+	if !isSecondary {
+		categoryId, err = uuid.Parse(id)
+		if err != nil {
+			response.
+				NewAPIResponse().
+				SetStatusCode(http.StatusInternalServerError).
+				SetMessage("Cannot parse the ID into UUID type").
+				SetError(err.Error()).
+				Respond(ctx)
+			return
+		}
+	} else {
+		categoryId = id
 	}
 
 	reqCtx := ctx.Request.Context()
-	category, err := cc.categoryService.GetCategoryById(reqCtx, categoryId)
+	category, err := cc.categoryService.GetCategoryById(reqCtx, categoryId, isSecondary)
 	if err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Failed to get the category").
+			SetMessage("Failed to fetch the category").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
@@ -140,12 +151,13 @@ func (cc *CategoryController) GetCategoryById(ctx *gin.Context) {
 	}
 
 	data := &dtos.GetCategoryResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		Slug:      category.Slug,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
-		DeletedAt: category.DeletedAt,
+		ID:          category.ID,
+		SecondaryID: category.SecondaryID,
+		Name:        category.Name,
+		Slug:        category.Slug,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+		DeletedAt:   category.DeletedAt,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
@@ -312,7 +324,7 @@ func (cc *CategoryController) UpdateCategory(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	if err := cc.categoryService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID)); err != nil {
+	if err := cc.categoryService.UpdateCategory(reqCtx, categoryId, categoryRequest, currentUserId.(uuid.UUID), false); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).

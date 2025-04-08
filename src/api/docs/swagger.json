@@ -577,14 +577,20 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Fetch an author by ID",
+        "description": "Get an author by its ID or secondary ID",
         "parameters": [
           {
-            "description": "Author ID",
+            "description": "Author ID or Secondary ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
+          },
+          {
+            "description": "Use secondary ID",
+            "in": "query",
+            "name": "secondary",
+            "type": "boolean"
           }
         ],
         "produces": [
@@ -616,7 +622,7 @@
             }
           }
         },
-        "summary": "Get Author by ID",
+        "summary": "Get an author",
         "tags": [
           "Author"
         ]
@@ -625,14 +631,20 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Update an author by its ID",
+        "description": "Update an author by its ID or secondary ID",
         "parameters": [
           {
-            "description": "Author ID",
+            "description": "Author ID or Secondary ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
+          },
+          {
+            "description": "Use secondary ID",
+            "in": "query",
+            "name": "secondary",
+            "type": "boolean"
           },
           {
             "description": "Update Author Request",
@@ -656,6 +668,12 @@
           },
           "400": {
             "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "schema": {
               "$ref": "#/definitions/response.APIResponse"
             }
@@ -817,20 +835,14 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Update a book by its ID or secondary ID",
+        "description": "Update a book by its ID",
         "parameters": [
           {
-            "description": "Book ID or Secondary ID",
+            "description": "Book ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
-          },
-          {
-            "description": "Use secondary ID",
-            "in": "query",
-            "name": "secondary",
-            "type": "boolean"
           },
           {
             "description": "Update Book Request",
@@ -1055,14 +1067,20 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Get a category by its ID",
+        "description": "Get a category by its ID or secondary ID",
         "parameters": [
           {
-            "description": "Category ID",
+            "description": "Category ID or Secondary ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
+          },
+          {
+            "description": "Use secondary ID",
+            "in": "query",
+            "name": "secondary",
+            "type": "boolean"
           }
         ],
         "produces": [
@@ -1725,14 +1743,20 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Get a seller by its ID",
+        "description": "Get a seller by its ID or secondary ID",
         "parameters": [
           {
-            "description": "Seller ID",
+            "description": "Seller ID or Secondary ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
+          },
+          {
+            "description": "Use secondary ID",
+            "in": "query",
+            "name": "secondary",
+            "type": "boolean"
           }
         ],
         "produces": [
@@ -1773,14 +1797,20 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Update a seller by its ID",
+        "description": "Update a seller by its ID or secondary ID",
         "parameters": [
           {
-            "description": "Seller ID",
+            "description": "Seller ID or Secondary ID",
             "in": "path",
             "name": "id",
             "required": true,
             "type": "string"
+          },
+          {
+            "description": "Use secondary ID",
+            "in": "query",
+            "name": "secondary",
+            "type": "boolean"
           },
           {
             "description": "Update Seller Request",

@@ -161,7 +161,7 @@ func (os *orderService) CreateOrder(
 			}
 
 			book.SoldCount += orderItem.Quantity
-			if err = bookRepository.UpdateBook(ctx, book.ID, book, false); err != nil {
+			if err = bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
 				return err
 			}
 		}
@@ -240,7 +240,7 @@ func (os *orderService) DeleteOrder(
 			}
 
 			book.SoldCount -= orderItem.Quantity
-			if err := bookRepository.UpdateBook(ctx, book.ID, book, false); err != nil {
+			if err := bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
 				return err
 			}
 		}
