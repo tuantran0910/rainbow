@@ -23,16 +23,17 @@ type CreateBookRequest struct {
 }
 
 type UpdateBookRequest struct {
-	SecondaryID   *string    `json:"secondary_id"   binding:"omitempty"`
-	CategoryID    *uuid.UUID `json:"category_id"    binding:"omitempty"`
-	Name          *string    `json:"name"           binding:"omitempty,min=1,max=255"`
-	Description   *string    `json:"description"    binding:"omitempty"`
-	Price         *float64   `json:"price"          binding:"omitempty,gt=0"`
-	OriginalPrice *float64   `json:"original_price" binding:"omitempty,gt=0"`
-	RatingAverage *float64   `json:"rating_average" binding:"omitempty,gt=0"`
-	ReviewCount   *int       `json:"review_count"   binding:"omitempty,gt=0"`
-	PageCount     *int       `json:"page_count"     binding:"omitempty,gt=0"`
-	Stock         *int       `json:"stock"          binding:"omitempty,gt=0"`
+	SecondaryID   *string     `json:"secondary_id"   binding:"omitempty"`
+	CategoryID    *uuid.UUID  `json:"category_id"    binding:"omitempty"`
+	Name          *string     `json:"name"           binding:"omitempty,min=1,max=255"`
+	Description   *string     `json:"description"    binding:"omitempty"`
+	Price         *float64    `json:"price"          binding:"omitempty,gt=0"`
+	OriginalPrice *float64    `json:"original_price" binding:"omitempty,gt=0"`
+	RatingAverage *float64    `json:"rating_average" binding:"omitempty,gt=0"`
+	ReviewCount   *int        `json:"review_count"   binding:"omitempty,gt=0"`
+	PageCount     *int        `json:"page_count"     binding:"omitempty,gt=0"`
+	Stock         *int        `json:"stock"          binding:"omitempty,gt=0"`
+	AuthorIds     []uuid.UUID `json:"author_ids"     binding:"omitempty"`
 }
 
 type GetBookResponse struct {

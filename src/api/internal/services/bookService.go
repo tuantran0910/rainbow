@@ -245,6 +245,25 @@ func (ps *bookService) UpdateBook(
 				}
 			}
 
+			// Handle author updates if provided
+			if len(bookRequest.AuthorIds) > 0 {
+				// Clear existing book authors
+				if err := bookRepository.ClearBookAuthors(ctx, bookId); err != nil {
+					return err
+				}
+
+				// Add new authors
+				for _, authorId := range bookRequest.AuthorIds {
+					bookAuthor := &models.BookAuthor{
+						BookID:   book.ID,
+						AuthorID: authorId,
+					}
+					if err := bookRepository.AddAuthorToBook(ctx, bookAuthor); err != nil {
+						return err
+					}
+				}
+			}
+
 			// Get the updated book with all fields populated
 			updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
 			return err

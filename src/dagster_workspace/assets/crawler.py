@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from typing import Any
 from typing import Optional
 
 from pydantic import BaseModel
@@ -24,8 +25,8 @@ TIKI_HEADERS = {
     "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
 }
-TIKI_PRODUCT_LISTINGS_PAGE_PARAMS = {
-    "limit": "10",
+TIKI_PRODUCT_LISTINGS_PAGE_PARAMS: dict[str, Any] = {
+    "limit": 10,
 }
 TIKI_CATEGORIES = {
     8322: "nha-sach-tiki",
@@ -35,92 +36,242 @@ TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
 
 import os
 
-API_URL = os.getenv("API_URL", "http://api:5000/api")
+API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
 
 import requests
-from typing import Any
+
+
+class AuthTokenManager:
+    """
+    Manages authentication tokens for API requests.
+    """
+
+    def __init__(
+        self,
+        api_url: str,
+        admin_email: str = "admin@example.com",
+        admin_password: str = "Admin123!",
+    ):
+        self.api_url = api_url
+        self.admin_email = admin_email
+        self.admin_password = admin_password
+        self.token = None
+        self.token_expiry = 0.0  # Unix timestamp when token expires
+
+    def get_token(self) -> Optional[str]:
+        """
+        Gets a valid authentication token, logging in if necessary.
+
+        Returns:
+            Optional[str]: The authentication token or None if login fails
+        """
+        current_time = time.time()
+
+        # Check if token exists and is not expired (with 5 min buffer)
+        if self.token and current_time < (self.token_expiry - 300):
+            return self.token
+
+        # Need to login and get a new token
+        logging.info("Getting new authentication token")
+        login_url = f"{self.api_url}/auth/login"
+        login_data = {"email": self.admin_email, "password": self.admin_password}
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            response = requests.post(login_url, json=login_data, headers=headers, timeout=30)
+            response.raise_for_status()
+            token_data = response.json()
+
+            if token_data and "data" in token_data and "token" in token_data["data"]:
+                self.token = token_data["data"]["token"]
+            elif token_data and "token" in token_data:
+                self.token = token_data["token"]
+            else:
+                logging.error(f"Unexpected response format: {token_data}")
+                return None
+
+            # Assume token is valid for 24 hours
+            self.token_expiry = current_time + (24 * 60 * 60)
+            logging.info("Successfully obtained authentication token")
+            return self.token
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Failed to get authentication token: {str(e)}")
+            if hasattr(e, "response") and e.response:
+                logging.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
+            return None
 
 
 def make_http_request(
     url: str,
     method: str = "GET",
     params: Optional[dict[str, Any]] = None,
+    data: Optional[dict[str, Any]] = None,
     headers: Optional[dict[str, Any]] = None,
     timeout: int = 30,
+    max_retries: int = 3,
+    retry_delay: float = 1.0,
+    retry_backoff: float = 2.0,
+    use_auth: bool = False,
+    auth_token_manager: Optional[AuthTokenManager] = None,
 ) -> Optional[dict[str, Any]]:
     """
     Makes an HTTP request to the provided URL with the given method, params, and headers.
 
     Args:
         url (str): The URL to make the request to.
-        method (str, optional): The HTTP method to use (default: "GET").
-        params (dict[str, Any], optional): The parameters to send with the request.
+        method (str, optional): The HTTP method to use (GET, POST, PUT, PATCH, DELETE). Default: "GET".
+        params (dict[str, Any], optional): The query parameters to send with the request.
+        data (dict[str, Any], optional): The JSON data to send in the request body for POST, PUT, PATCH.
         headers (dict[str, Any], optional): The headers to send with the request.
         timeout (int): The timeout for the request (default: 30 seconds).
+        max_retries (int): Maximum number of retry attempts (default: 3).
+        retry_delay (float): Initial delay between retries in seconds (default: 1.0).
+        retry_backoff (float): Multiplier for increasing retry delay with each attempt (default: 2.0).
+        use_auth (bool): Whether to use authentication for this request (default: False).
+        auth_token_manager (AuthTokenManager, optional): Token manager for authentication.
 
     Returns:
         Optional[dict[str, Any]]: The response from the request, or None if an error occurs.
     """
-    try:
-        if method == "GET":
-            response = requests.get(url, params=params, headers=headers, timeout=timeout)
-        elif method == "POST":
-            response = requests.post(url, json=params, headers=headers, timeout=timeout)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
+    method = method.upper()
+    attempts = 0
+    current_delay = retry_delay
 
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.Timeout:
-        logger.error(f"Request timed out: {url}")
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP Error: {e.response.status_code} for URL: {url}")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error making request to {url}: {e}")
-    except Exception as e:
-        logger.error(f"An unexpected error occurred during request to {url}: {e}")
+    # Create a copy of the headers to avoid modifying the original
+    request_headers = headers.copy() if headers else {}
+
+    # Add authentication if required - check base URL more flexibly
+    if use_auth and auth_token_manager:
+        token = auth_token_manager.get_token()
+        if token:
+            request_headers["Authorization"] = f"Bearer {token}"
+        else:
+            logger.error("Authentication required but couldn't get token")
+            return None
+
+    # Ensure we have Content-Type for POST/PUT/PATCH
+    if method in ["POST", "PUT", "PATCH"] and "Content-Type" not in request_headers:
+        request_headers["Content-Type"] = "application/json"
+
+    while attempts < max_retries:
+        try:
+            if method == "GET":
+                response = requests.get(
+                    url, params=params, headers=request_headers, timeout=timeout
+                )
+            elif method == "POST":
+                response = requests.post(
+                    url, params=params, json=data, headers=request_headers, timeout=timeout
+                )
+            elif method == "PUT":
+                response = requests.put(
+                    url, params=params, json=data, headers=request_headers, timeout=timeout
+                )
+            elif method == "PATCH":
+                response = requests.patch(
+                    url, params=params, json=data, headers=request_headers, timeout=timeout
+                )
+            elif method == "DELETE":
+                response = requests.delete(
+                    url, params=params, json=data, headers=request_headers, timeout=timeout
+                )
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+
+        except requests.exceptions.Timeout:
+            attempts += 1
+            if attempts >= max_retries:
+                logger.error(f"Request timed out after {max_retries} attempts: {url}")
+                break
+            logger.warning(
+                f"Request timeout (attempt {attempts}/{max_retries}), retrying in {current_delay}s: {url}"
+            )
+
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            # Handle authentication error - token might be expired
+            if status_code == 401 and use_auth and auth_token_manager and attempts < max_retries:
+                logger.warning("Authentication token might be expired, refreshing and retrying...")
+                # Reset token to force new login
+                auth_token_manager.token = None
+                token = auth_token_manager.get_token()
+                if token:
+                    request_headers["Authorization"] = f"Bearer {token}"
+                    attempts += 1
+                else:
+                    logger.error("Failed to refresh authentication token")
+                    break
+            # Only retry on certain status codes (server errors)
+            elif 500 <= status_code < 600 and attempts < max_retries:
+                attempts += 1
+                logger.warning(
+                    f"HTTP Error {status_code} (attempt {attempts}/{max_retries}), retrying in {current_delay}s: {url}"
+                )
+            else:
+                logger.error(f"HTTP Error: {status_code} for URL: {url}")
+                break
+
+        except requests.exceptions.RequestException as e:
+            attempts += 1
+            if attempts >= max_retries:
+                logger.error(f"Request exception after {max_retries} attempts: {url} - {e}")
+                break
+            logger.warning(
+                f"Request exception (attempt {attempts}/{max_retries}), retrying in {current_delay}s: {url} - {e}"
+            )
+
+        except Exception as e:
+            logger.error(f"An unexpected error occurred during request to {url}: {e}")
+            break
+
+        # Wait before retrying with exponential backoff
+        if attempts < max_retries:
+            time.sleep(current_delay)
+            current_delay *= retry_backoff
 
     return None
 
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 
 class TikiSeller(BaseModel):
-    secondary_id: int
+    secondary_id: str
     name: str
     link: str
     logo: str
 
 
-class TikiProduct(BaseModel):
-    secondary_id: int
+class TikiBook(BaseModel):
+    secondary_id: str
     name: str
     price: float
     original_price: float
     rating_average: float
     review_count: int
     page_count: int
-
-
-class TikiInventory(BaseModel):
-    secondary_id: int
-    quantity: int
+    author_ids: list[int] = []
 
 
 class TikiAuthor(BaseModel):
-    secondary_id: int
+    secondary_id: str
     name: str
     slug: str
 
 
 class TikiCategory(BaseModel):
-    secondary_id: int
+    secondary_id: str
     name: str
 
 
 class TikiCrawler:
-    def __init__(self):
+    def __init__(self, admin_email: str = "admin@example.com", admin_password: str = "Admin123!"):
         self.categories = TIKI_CATEGORIES
         self.request_params_base = TIKI_PRODUCT_LISTINGS_PAGE_PARAMS.copy()
         self.request_headers = TIKI_HEADERS
@@ -128,7 +279,13 @@ class TikiCrawler:
         self.request_product_url_base = TIKI_BASE_SPECIFIC_PRODUCT
         self.request_delay = TIKI_REQUEST_DELAY
 
-        self.api_url = API_URL
+        # API Configuration
+        self.api_base_url = API_URL
+        self.api_url = f"{API_URL}/api"  # For resource endpoints
+        self.auth_token_manager = AuthTokenManager(self.api_base_url, admin_email, admin_password)
+
+        logger.info(f"Initialized TikiCrawler with API URL: {self.api_url}")
+        logger.info(f"Auth base URL: {self.api_base_url}")
 
     def _get_total_pages(self, category_id: int, url_key: str) -> int:
         """
@@ -218,7 +375,7 @@ class TikiCrawler:
 
     def _extract_seller_info(self, seller_data: dict) -> dict:
         """Extract and format seller information from product data."""
-        seller_id = seller_data.get("id")
+        seller_id = str(seller_data.get("id"))
         seller_name = seller_data.get("name")
         seller_link = seller_data.get("link")
         seller_logo = seller_data.get("logo")
@@ -264,7 +421,7 @@ class TikiCrawler:
         for author in authors:
             authors_data.append(
                 {
-                    "id": author.get("id"),
+                    "id": str(author.get("id")),
                     "name": author.get("name"),
                     "slug": author.get("slug"),
                 }
@@ -276,7 +433,7 @@ class TikiCrawler:
         category = data.get("categories", {})
         if category:
             return {
-                "category_id": category.get("id"),
+                "category_id": str(category.get("id")),
                 "category_name": category.get("name"),
             }
 
@@ -284,7 +441,7 @@ class TikiCrawler:
         breadcrumbs = data.get("breadcrumbs", [])
         if breadcrumbs and len(breadcrumbs) > 1:
             return {
-                "category_id": breadcrumbs[-2].get("id"),
+                "category_id": str(breadcrumbs[-2].get("id")),
                 "category_name": breadcrumbs[-2].get("name"),
             }
 
@@ -316,7 +473,7 @@ class TikiCrawler:
 
             # Combine all information into a single details dictionary
             details = {
-                "id": data.get("id"),
+                "id": str(data.get("id")),
                 "name": data.get("name"),
                 "description": data.get("short_description"),
                 "price": data.get("price"),
@@ -360,55 +517,64 @@ class TikiCrawler:
         return products_details
 
     def _upsert_resource(
-        self, resource: str, data: TikiSeller | TikiProduct | TikiAuthor | TikiCategory
+        self, resource: str, data: TikiSeller | TikiBook | TikiAuthor | TikiCategory
     ) -> None:
         """
         Upserts a resource via API.
 
         Args:
             resource (str): The resource to upsert.
-            data (TikiSeller | TikiProduct | TikiAuthor | TikiCategory): The data to upsert.
+            data (TikiSeller | TikiBook | TikiAuthor | TikiCategory): The data to upsert.
         """
         existing = make_http_request(
-            url=f"{self.api_url}/{resource}/{data.id}",
+            url=f"{self.api_url}/{resource}/{data.secondary_id}",
             method="GET",
-            params={"secondary": True},
+            params={"secondary": "true"},
+            use_auth=True,
+            auth_token_manager=self.auth_token_manager,
         )
 
         # Handle the case when existing is None
         existing_resource = {} if existing is None else existing.get("data", {})
 
+        # Create data payload, handling special case for books with author_ids
+        payload = data.model_dump()
+
         if existing_resource:
             logger.info(
-                f"{resource[:-1].capitalize()} {data.id} already exists. Performing update..."
+                f"{resource[:-1].capitalize()} {data.secondary_id} already exists. Performing update..."
             )
             make_http_request(
                 url=f"{self.api_url}/{resource}/{existing_resource.get('id')}",
                 method="PUT",
-                # json=data.model_dump(),
+                data=payload,
+                use_auth=True,
+                auth_token_manager=self.auth_token_manager,
             )
         else:
             logger.info(
-                f"{resource[:-1].capitalize()} {data.id} does not exist. Creating new {resource[:-1]}..."
+                f"{resource[:-1].capitalize()} {data.secondary_id} does not exist. Creating new {resource[:-1]}..."
             )
             make_http_request(
                 url=f"{self.api_url}/{resource}",
                 method="POST",
-                # json=data.model_dump(),
+                data=payload,
+                use_auth=True,
+                auth_token_manager=self.auth_token_manager,
             )
 
     def _upsert_specific_data(
-        self, data: TikiSeller | TikiProduct | TikiAuthor | TikiCategory
+        self, data: TikiSeller | TikiBook | TikiAuthor | TikiCategory
     ) -> None:
         """
         Upserts specific data into the database.
 
         Args:
-            data (TikiSeller | TikiProduct | TikiAuthor | TikiCategory): The data to upsert.
+            data (TikiSeller | TikiBook | TikiAuthor | TikiCategory): The data to upsert.
         """
         resource_map = {
             TikiSeller: "sellers",
-            TikiProduct: "products",
+            TikiBook: "books",
             TikiAuthor: "authors",
             TikiCategory: "categories",
         }
@@ -419,6 +585,7 @@ class TikiCrawler:
 
     def _upsert_data(self, data: list[dict]) -> None:
         """
+        Upserts data into the database via API.
 
         Args:
             data (list[dict]): List of dictionaries containing the product details.
@@ -434,7 +601,7 @@ class TikiCrawler:
         author_ids = set()
 
         for record in data:
-            # --- Seller ---
+            # Seller
             if record["seller_id"] and record["seller_id"] not in seller_ids:
                 seller_to_upsert = TikiSeller(
                     secondary_id=record["seller_id"],
@@ -445,9 +612,9 @@ class TikiCrawler:
                 self._upsert_specific_data(data=seller_to_upsert)
                 seller_ids.add(record["seller_id"])
 
-            # --- Product & Inventory ---
+            # Product & Inventory
             if record["id"] and record["id"] not in product_ids:
-                product_to_upsert = TikiProduct(
+                product_to_upsert = TikiBook(
                     secondary_id=record["id"],
                     name=record["name"],
                     price=record["price"],
@@ -455,26 +622,25 @@ class TikiCrawler:
                     rating_average=record["rating_average"],
                     review_count=record["review_count"],
                     page_count=record["page_count"],
+                    author_ids=[author["id"] for author in record["authors"]],
                 )
                 self._upsert_specific_data(data=product_to_upsert)
-                inventory_to_upsert = TikiInventory(
-                    secondary_id=record["id"],  # Matches product ID
-                    quantity=10000,
-                )
-                self._upsert_specific_data(data=inventory_to_upsert)
                 product_ids.add(record["id"])
 
-            # --- Author ---
-            if record["authors"] and record["authors"] not in author_ids:
-                author_to_upsert = TikiAuthor(
-                    secondary_id=record["authors"][0]["id"],
-                    name=record["authors"][0]["name"],
-                    slug=record["authors"][0]["slug"],
-                )
-                self._upsert_specific_data(data=author_to_upsert)
-                author_ids.add(record["authors"][0]["id"])
+            # Authors - Handle all authors instead of just the first one
+            if record["authors"]:
+                # Process all authors
+                for author in record["authors"]:
+                    if author["id"] not in author_ids:
+                        author_to_upsert = TikiAuthor(
+                            secondary_id=author["id"],
+                            name=author["name"],
+                            slug=author["slug"],
+                        )
+                        self._upsert_specific_data(data=author_to_upsert)
+                        author_ids.add(author["id"])
 
-            # --- Category ---
+            # Category
             if record["category_id"] and record["category_id"] not in category_ids:
                 category_to_upsert = TikiCategory(
                     secondary_id=record["category_id"],
@@ -514,13 +680,13 @@ class TikiCrawler:
 
             products_details = self._extract_products_details(product_ids)
             print(products_details[-3])
-            # if products_details:
-            #     self._upsert_data(data=products_details)
-            # else:
-            #     logger.info(f"No valid product details extracted for page {page}.")
+            if products_details:
+                self._upsert_data(data=[products_details[-3]])
+            else:
+                logger.info(f"No valid product details extracted for page {page}.")
 
-            # logger.info(f"Waiting {self.request_delay}s before next page...")
-            # time.sleep(self.request_delay)
+            logger.info(f"Waiting {self.request_delay}s before next page...")
+            time.sleep(self.request_delay)
 
             break
 
@@ -541,5 +707,30 @@ class TikiCrawler:
 
 
 if __name__ == "__main__":
-    crawler = TikiCrawler()
-    crawler.run()
+    try:
+        # Set up logging to debug level for more detailed information
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.info("Starting Tiki Crawler...")
+
+        # Create a crawler with admin credentials - you can override these from command line if needed
+        import sys
+
+        admin_email = sys.argv[1] if len(sys.argv) > 1 else "admin@example.com"
+        admin_password = sys.argv[2] if len(sys.argv) > 2 else "Admin123!"
+
+        logging.info(f"Using credentials: {admin_email}")
+
+        # Test authentication explicitly first
+        crawler = TikiCrawler(admin_email=admin_email, admin_password=admin_password)
+
+        # Try to get a token to verify authentication works
+        token = crawler.auth_token_manager.get_token()
+        if token:
+            logging.info("✅ Authentication successful!")
+            crawler.run()
+        else:
+            logging.error("❌ Authentication failed. Please check your credentials and API URL.")
+            logging.info(f"API URL: {API_URL}")
+
+    except Exception as e:
+        logging.exception(f"Error in crawler main execution: {e}")
