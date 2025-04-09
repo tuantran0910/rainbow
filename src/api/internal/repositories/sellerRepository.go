@@ -18,7 +18,6 @@ type ISellerRepository interface {
 		page, limit int,
 	) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, id interface{}, isSecondary bool) (*models.Seller, error)
-	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
 	CreateSeller(ctx context.Context, seller *models.Seller) error
 	UpdateSeller(ctx context.Context, id interface{}, seller *models.Seller, isSecondary bool) error
 	DeleteSeller(ctx context.Context, sellerId uuid.UUID) error
@@ -83,20 +82,6 @@ func (sr *sellerRepository) GetSellerById(
 		return nil, fmt.Errorf("failed to get seller with %s %s: %w",
 			map[bool]string{true: "secondary id", false: "id"}[isSecondary],
 			idStr, err)
-	}
-	return &seller, nil
-}
-
-func (sr *sellerRepository) GetSellerByUserId(
-	ctx context.Context,
-	userId uuid.UUID,
-) (*models.Seller, error) {
-	var seller models.Seller
-	if err := sr.db.WithContext(ctx).Take(&seller, "user_id = ?", userId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to get seller: %w", err)
 	}
 	return &seller, nil
 }

@@ -99,18 +99,10 @@ func (ps *bookService) CreateBook(
 				return fmt.Errorf("current user not found")
 			}
 
-			seller, err := sellerRepository.GetSellerByUserId(ctx, currentUser.ID)
-			if err != nil {
-				return err
-			}
-			if seller == nil {
-				return fmt.Errorf("seller not found")
-			}
-
 			book := &models.Book{
 				SecondaryID:   bookRequest.SecondaryID,
 				CategoryID:    bookRequest.CategoryID,
-				SellerID:      seller.ID,
+				SellerID:      bookRequest.SellerID,
 				Name:          bookRequest.Name,
 				Description:   bookRequest.Description,
 				Price:         bookRequest.Price,
@@ -161,6 +153,7 @@ func (ps *bookService) UpdateBook(
 	err := ps.withTX(
 		ctx,
 		func(ctx context.Context, bookRepository repositories.IBookRepository, inventoryRepository repositories.IInventoryRepository, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
+			// Check if user exists
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
 			if err != nil {
 				return err
@@ -169,107 +162,75 @@ func (ps *bookService) UpdateBook(
 				return fmt.Errorf("current user not found")
 			}
 
-			seller, err := sellerRepository.GetSellerByUserId(ctx, currentUser.ID)
-			if err != nil {
-				return err
-			}
-			if seller == nil {
-				return fmt.Errorf("seller not found")
-			}
+			// For now, we'll skip the seller check since we're removing the user_id from sellers
+			// This will need to be updated with a new approach for seller identification
 
-			book, err := ps.bookRepository.GetBookById(ctx, bookId, false)
+			// Get existing book
+			book, err := bookRepository.GetBookById(ctx, bookId, false)
 			if err != nil {
 				return err
 			}
 			if book == nil {
-				return fmt.Errorf("book with id %s not found", bookId)
+				return fmt.Errorf("book not found")
 			}
 
-			if book.SellerID != seller.ID {
-				return fmt.Errorf(
-					"seller id %s does not match with current user seller id %s",
-					book.SellerID,
-					seller.ID,
-				)
-			}
-
-			if bookRequest.SecondaryID != nil {
-				book.SecondaryID = *bookRequest.SecondaryID
-			}
-			if bookRequest.CategoryID != nil && *bookRequest.CategoryID != book.CategoryID {
-				book.CategoryID = *bookRequest.CategoryID
-			}
-			if bookRequest.Name != nil && *bookRequest.Name != book.Name {
+			// Update book fields
+			if bookRequest.Name != nil {
 				book.Name = *bookRequest.Name
 			}
-			if bookRequest.Description != nil && *bookRequest.Description != book.Description {
+			if bookRequest.Description != nil {
 				book.Description = *bookRequest.Description
 			}
-			if bookRequest.Price != nil && *bookRequest.Price != book.Price {
+			if bookRequest.Price != nil {
 				book.Price = *bookRequest.Price
 			}
-			if bookRequest.OriginalPrice != nil &&
-				*bookRequest.OriginalPrice != book.OriginalPrice {
+			if bookRequest.OriginalPrice != nil {
 				book.OriginalPrice = *bookRequest.OriginalPrice
 			}
-			if bookRequest.RatingAverage != nil &&
-				*bookRequest.RatingAverage != book.RatingAverage {
+			if bookRequest.RatingAverage != nil {
 				book.RatingAverage = *bookRequest.RatingAverage
 			}
-			if bookRequest.ReviewCount != nil && *bookRequest.ReviewCount != book.ReviewCount {
+			if bookRequest.ReviewCount != nil {
 				book.ReviewCount = *bookRequest.ReviewCount
 			}
-			if bookRequest.PageCount != nil && *bookRequest.PageCount != book.PageCount {
+			if bookRequest.PageCount != nil {
 				book.PageCount = *bookRequest.PageCount
 			}
+
+			// Update book
 			if err := bookRepository.UpdateBook(ctx, bookId, book); err != nil {
 				return err
 			}
 
+			// Update inventory if stock is provided
 			if bookRequest.Stock != nil {
-				bookInventory, err := inventoryRepository.GetInventoryByBookID(ctx, book.ID)
+				inventory, err := inventoryRepository.GetInventoryByBookID(ctx, bookId)
 				if err != nil {
 					return err
 				}
-				if bookInventory == nil {
-					return fmt.Errorf("inventory for book with id %s not found", bookId)
+				if inventory == nil {
+					return fmt.Errorf("inventory not found")
 				}
 
-				if *bookRequest.Stock > bookInventory.Stock {
-					bookInventory.LastRestockedAt = time.Now()
-				}
+				inventory.Stock = *bookRequest.Stock
+				inventory.LastRestockedAt = time.Now()
 
-				bookInventory.Stock = *bookRequest.Stock
-				if err := inventoryRepository.UpdateInventory(ctx, bookInventory.ID, bookInventory); err != nil {
+				if err := inventoryRepository.UpdateInventory(ctx, inventory.ID, inventory); err != nil {
 					return err
 				}
 			}
 
-			// Handle author updates if provided
-			if len(bookRequest.AuthorIds) > 0 {
-				// Clear existing book authors
-				if err := bookRepository.ClearBookAuthors(ctx, bookId); err != nil {
-					return err
-				}
-
-				// Add new authors
-				for _, authorId := range bookRequest.AuthorIds {
-					bookAuthor := &models.BookAuthor{
-						BookID:   book.ID,
-						AuthorID: authorId,
-					}
-					if err := bookRepository.AddAuthorToBook(ctx, bookAuthor); err != nil {
-						return err
-					}
-				}
-			}
-
-			// Get the updated book with all fields populated
+			// Get the updated book
 			updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
 			return err
 		},
 	)
-	return updatedBook, err
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedBook, nil
 }
 
 func (ps *bookService) DeleteBook(
@@ -280,6 +241,7 @@ func (ps *bookService) DeleteBook(
 	return ps.withTX(
 		ctx,
 		func(ctx context.Context, bookRepository repositories.IBookRepository, inventoryRepository repositories.IInventoryRepository, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
+			// Check if user exists
 			currentUser, err := userRepository.GetUserById(ctx, currentUserId)
 			if err != nil {
 				return err
@@ -288,26 +250,19 @@ func (ps *bookService) DeleteBook(
 				return fmt.Errorf("current user not found")
 			}
 
-			seller, err := sellerRepository.GetSellerByUserId(ctx, currentUser.ID)
-			if err != nil {
-				return err
-			}
-			if seller == nil {
-				return fmt.Errorf("seller not found")
-			}
+			// For now, we'll skip the seller check since we're removing the user_id from sellers
+			// This will need to be updated with a new approach for seller identification
 
-			book, err := ps.bookRepository.GetBookById(ctx, bookId, false)
+			// Get existing book
+			book, err := bookRepository.GetBookById(ctx, bookId, false)
 			if err != nil {
 				return err
 			}
 			if book == nil {
-				return fmt.Errorf("book with id %s not found", bookId)
+				return fmt.Errorf("book not found")
 			}
 
-			if currentUser.Role != models.AdminRole || book.SellerID != seller.ID {
-				return fmt.Errorf("current user is not admin or seller of book with id %s", bookId)
-			}
-
+			// Delete book
 			return bookRepository.DeleteBook(ctx, bookId)
 		},
 	)

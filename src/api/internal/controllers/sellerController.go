@@ -73,14 +73,14 @@ func (sc *SellerController) GetSellers(ctx *gin.Context) {
 	sellerResponses := make([]*dtos.GetSellerResponse, 0)
 	for _, seller := range sellers {
 		sellerResponses = append(sellerResponses, &dtos.GetSellerResponse{
-			ID:        seller.ID,
-			UserID:    seller.UserID,
-			Name:      seller.Name,
-			Link:      seller.Link,
-			Logo:      seller.Logo,
-			CreatedAt: seller.CreatedAt,
-			UpdatedAt: seller.UpdatedAt,
-			DeletedAt: seller.DeletedAt,
+			ID:          seller.ID,
+			SecondaryID: seller.SecondaryID,
+			Name:        seller.Name,
+			Link:        seller.Link,
+			Logo:        seller.Logo,
+			CreatedAt:   seller.CreatedAt,
+			UpdatedAt:   seller.UpdatedAt,
+			DeletedAt:   seller.DeletedAt,
 		})
 	}
 	data := &dtos.ListSellersResponse{
@@ -156,7 +156,6 @@ func (sc *SellerController) GetSellerById(ctx *gin.Context) {
 	data := &dtos.GetSellerResponse{
 		ID:          seller.ID,
 		SecondaryID: seller.SecondaryID,
-		UserID:      seller.UserID,
 		Name:        seller.Name,
 		Link:        seller.Link,
 		Logo:        seller.Logo,
@@ -198,18 +197,8 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 		return
 	}
 
-	currentUserId, ok := ctx.Get("user_id")
-	if !ok {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot get the current user's ID").
-			Respond(ctx)
-		return
-	}
-
 	reqCtx := ctx.Request.Context()
-	seller, err := sc.sellerService.CreateSeller(reqCtx, sellerRequest, currentUserId.(uuid.UUID))
+	seller, err := sc.sellerService.CreateSeller(reqCtx, sellerRequest)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -223,7 +212,6 @@ func (sc *SellerController) CreateSeller(ctx *gin.Context) {
 	data := &dtos.GetSellerResponse{
 		ID:          seller.ID,
 		SecondaryID: seller.SecondaryID,
-		UserID:      seller.UserID,
 		Name:        seller.Name,
 		Link:        seller.Link,
 		Logo:        seller.Logo,
@@ -288,22 +276,11 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 		return
 	}
 
-	currentUserId, ok := ctx.Get("user_id")
-	if !ok {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot get the current user's ID").
-			Respond(ctx)
-		return
-	}
-
 	reqCtx := ctx.Request.Context()
 	seller, err := sc.sellerService.UpdateSeller(
 		reqCtx,
 		sellerId,
 		sellerRequest,
-		currentUserId.(uuid.UUID),
 		isSecondary,
 	)
 	if err != nil {
@@ -319,7 +296,6 @@ func (sc *SellerController) UpdateSeller(ctx *gin.Context) {
 	data := &dtos.GetSellerResponse{
 		ID:          seller.ID,
 		SecondaryID: seller.SecondaryID,
-		UserID:      seller.UserID,
 		Name:        seller.Name,
 		Link:        seller.Link,
 		Logo:        seller.Logo,
@@ -354,25 +330,15 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 	if err != nil {
 		response.
 			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot parse the ID into UUID type").
+			SetStatusCode(http.StatusBadRequest).
+			SetMessage("Invalid seller ID").
 			SetError(err.Error()).
 			Respond(ctx)
 		return
 	}
 
-	currentUserId, ok := ctx.Get("user_id")
-	if !ok {
-		response.
-			NewAPIResponse().
-			SetStatusCode(http.StatusInternalServerError).
-			SetMessage("Cannot get the current user's ID").
-			Respond(ctx)
-		return
-	}
-
 	reqCtx := ctx.Request.Context()
-	if err := sc.sellerService.DeleteSeller(reqCtx, sellerId, currentUserId.(uuid.UUID)); err != nil {
+	if err := sc.sellerService.DeleteSeller(reqCtx, sellerId); err != nil {
 		response.
 			NewAPIResponse().
 			SetStatusCode(http.StatusInternalServerError).
@@ -382,9 +348,8 @@ func (sc *SellerController) DeleteSeller(ctx *gin.Context) {
 		return
 	}
 
-	headers := headers.NewHeaders(nil, ctx)
 	response.NewAPIResponse().
-		SetHeaders(headers).
 		SetStatusCode(http.StatusNoContent).
+		SetMessage("Successfully deleted the seller").
 		Respond(ctx)
 }

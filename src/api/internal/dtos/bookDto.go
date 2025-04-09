@@ -15,10 +15,10 @@ type CreateBookRequest struct {
 	Description   string      `json:"description"    binding:"omitempty"`
 	Price         float64     `json:"price"          binding:"required,gt=0"`
 	OriginalPrice float64     `json:"original_price" binding:"omitempty,gt=0"`
-	RatingAverage float64     `json:"rating_average" binding:"omitempty,gt=0"`
-	ReviewCount   int         `json:"review_count"   binding:"omitempty,gt=0"`
+	RatingAverage float64     `json:"rating_average" binding:"omitempty,gte=0,lte=5"`
+	ReviewCount   int         `json:"review_count"   binding:"omitempty,gte=0"`
 	PageCount     int         `json:"page_count"     binding:"omitempty,gt=0"`
-	Stock         int         `json:"stock"          binding:"omitempty,gt=0"`
+	Stock         int         `json:"stock"          binding:"omitempty,gte=0"`
 	AuthorIds     []uuid.UUID `json:"author_ids"     binding:"required"`
 }
 
@@ -29,10 +29,10 @@ type UpdateBookRequest struct {
 	Description   *string     `json:"description"    binding:"omitempty"`
 	Price         *float64    `json:"price"          binding:"omitempty,gt=0"`
 	OriginalPrice *float64    `json:"original_price" binding:"omitempty,gt=0"`
-	RatingAverage *float64    `json:"rating_average" binding:"omitempty,gt=0"`
-	ReviewCount   *int        `json:"review_count"   binding:"omitempty,gt=0"`
+	RatingAverage *float64    `json:"rating_average" binding:"omitempty,gte=0,lte=5"`
+	ReviewCount   *int        `json:"review_count"   binding:"omitempty,gte=0"`
 	PageCount     *int        `json:"page_count"     binding:"omitempty,gt=0"`
-	Stock         *int        `json:"stock"          binding:"omitempty,gt=0"`
+	Stock         *int        `json:"stock"          binding:"omitempty,gte=0"`
 	AuthorIds     []uuid.UUID `json:"author_ids"     binding:"omitempty"`
 }
 

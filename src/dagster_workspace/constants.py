@@ -23,3 +23,6 @@ TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings
 TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
 
 API_URL = os.getenv("API_URL", "http://api:5000/api")
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
