@@ -6,6 +6,7 @@ from assets.crawler import TikiCrawler
 from assets.factory import build_dlt_pipelines
 from constants import ADMIN_EMAIL
 from constants import ADMIN_PASSWORD
+from constants import DAGSTER_CRAWLING_ASSET_GROUP
 from constants import DAGSTER_CRAWLING_ASSET_NAME
 from constants import DAGSTER_METADATA
 from constants import DAGSTER_TAGS
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
     description="Crawl tiki resources",
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
+    group_name=DAGSTER_CRAWLING_ASSET_GROUP,
 )
 def tiki_resources_asset():
     try:

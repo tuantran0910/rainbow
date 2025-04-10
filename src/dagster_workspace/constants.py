@@ -38,3 +38,5 @@ DAGSTER_TAGS = {"team": "data_engineering"}
 DAGSTER_CRAWLING_ASSET_NAME = "tiki_resources"
 DAGSTER_CRAWLING_JOB_NAME = "tiki_crawling_job"
 DAGSTER_CRAWLING_SCHEDULE_NAME = "tiki_crawling_schedule"
+
+DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
