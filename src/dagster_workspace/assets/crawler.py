@@ -1,13 +1,14 @@
 import json
 import logging
+import os
 import re
 import time
 import unicodedata
 from typing import Any
 from typing import Optional
 
+import requests
 from pydantic import BaseModel
-
 # from constants import (
 #     TIKI_CATEGORIES,
 #     TIKI_BASE_PRODUCT_LISTINGS,
@@ -36,11 +37,7 @@ TIKI_CATEGORIES = {
 TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings"
 TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
 
-import os
-
 API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
-
-import requests
 
 
 class AuthTokenManager:
@@ -570,8 +567,6 @@ class TikiCrawler:
             use_auth=True,
             auth_token_manager=self.auth_token_manager,
         )
-
-        # Handle the case when existing is None
         existing_resource = {} if existing is None else existing.get("data", {})
 
         # Create data payload, handling special case for books with author_ids
@@ -668,7 +663,7 @@ class TikiCrawler:
                     seller_uuids[record["seller_id"]] = seller_uuid
                     seller_ids.add(record["seller_id"])
 
-            # Authors - Handle all authors instead of just the first one
+            # Authors
             if record["authors"]:
                 # Process all authors
                 for author in record["authors"]:
@@ -768,7 +763,6 @@ class TikiCrawler:
 
             logger.info(f"Waiting {self.request_delay}s before next page...")
             time.sleep(self.request_delay)
-            break
 
     def run(self) -> None:
         """

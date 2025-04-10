@@ -17,7 +17,6 @@ type IBookRepository interface {
 	GetBookById(ctx context.Context, id interface{}, isSecondary bool) (*models.Book, error)
 	CreateBook(ctx context.Context, book *models.Book) error
 	AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error
-	ClearBookAuthors(ctx context.Context, bookId uuid.UUID) error
 	UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID) error
 }
@@ -104,16 +103,6 @@ func (pr *bookRepository) AddAuthorToBook(
 			bookAuthor.BookID,
 			err,
 		)
-	}
-	return nil
-}
-
-func (pr *bookRepository) ClearBookAuthors(
-	ctx context.Context,
-	bookId uuid.UUID,
-) error {
-	if err := pr.db.WithContext(ctx).Where("book_id = ?", bookId).Delete(&models.BookAuthor{}).Error; err != nil {
-		return fmt.Errorf("failed to clear authors for book with id %s: %w", bookId, err)
 	}
 	return nil
 }
