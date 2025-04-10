@@ -45,7 +45,6 @@ func InitializeUserController(db *gorm.DB) (*controllers.UserController, error) 
 
 func InitializeSellerController(db *gorm.DB) (*controllers.SellerController, error) {
 	wire.Build(
-		repositories.NewUserRepository,
 		repositories.NewSellerRepository,
 		services.NewSellerService,
 		controllers.NewSellerController,

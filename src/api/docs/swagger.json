@@ -51,9 +51,12 @@
           "type": "number"
         },
         "rating_average": {
+          "maximum": 5,
+          "minimum": 0,
           "type": "number"
         },
         "review_count": {
+          "minimum": 0,
           "type": "integer"
         },
         "secondary_id": {
@@ -63,6 +66,7 @@
           "type": "string"
         },
         "stock": {
+          "minimum": 0,
           "type": "integer"
         }
       },
@@ -270,6 +274,12 @@
     },
     "dtos.UpdateBookRequest": {
       "properties": {
+        "author_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "category_id": {
           "type": "string"
         },
@@ -291,15 +301,19 @@
           "type": "number"
         },
         "rating_average": {
+          "maximum": 5,
+          "minimum": 0,
           "type": "number"
         },
         "review_count": {
+          "minimum": 0,
           "type": "integer"
         },
         "secondary_id": {
           "type": "string"
         },
         "stock": {
+          "minimum": 0,
           "type": "integer"
         }
       },

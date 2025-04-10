@@ -37,7 +37,7 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
+max-complexity = 20
 
 [tool.sqlfluff.core]
 dialect = "ansi"

@@ -1,0 +1,810 @@
+import json
+import logging
+import os
+import re
+import time
+import unicodedata
+from typing import Any
+from typing import Optional
+
+import requests
+from pydantic import BaseModel
+# from constants import (
+#     TIKI_CATEGORIES,
+#     TIKI_BASE_PRODUCT_LISTINGS,
+#     TIKI_BASE_SPECIFIC_PRODUCT,
+#     TIKI_REQUEST_DELAY,
+#     TIKI_HEADERS,
+#     TIKI_PRODUCT_LISTINGS_PAGE_PARAMS,
+#     API_URL,
+# )
+# from assets.helpers import make_http_request
+
+TIKI_REQUEST_DELAY = 0.5
+TIKI_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+}
+TIKI_PRODUCT_LISTINGS_PAGE_PARAMS: dict[str, Any] = {
+    "limit": 10,
+}
+TIKI_CATEGORIES = {
+    8322: "nha-sach-tiki",
+}
+TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings"
+TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
+
+API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
+
+
+class AuthTokenManager:
+    """
+    Manages authentication tokens for API requests.
+
+    Args:
+        api_url (str): The base URL of the API.
+        admin_email (str): The email of the admin user.
+        admin_password (str): The password of the admin user.
+    """
+
+    def __init__(
+        self,
+        api_url: str,
+        admin_email: str,
+        admin_password: str,
+    ):
+        self.api_url = api_url
+        self.admin_email = admin_email
+        self.admin_password = admin_password
+        self.token = None
+        self.token_expiry = 0.0
+
+    def get_token(self) -> Optional[str]:
+        """
+        Gets a valid authentication token, logging in if necessary.
+
+        Returns:
+            Optional[str]: The authentication token or None if login fails
+        """
+        current_time = time.time()
+
+        # Check if token exists and is not expired (with 5 min buffer)
+        if self.token and current_time < (self.token_expiry - 300):
+            return self.token
+
+        # Need to login and get a new token
+        logging.info("Getting new authentication token")
+        login_url = f"{self.api_url}/auth/login"
+        login_data = {"email": self.admin_email, "password": self.admin_password}
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            response = requests.post(login_url, json=login_data, headers=headers, timeout=30)
+            response.raise_for_status()
+            token_data = response.json()
+
+            if token_data and "data" in token_data and "token" in token_data["data"]:
+                self.token = token_data["data"]["token"]
+            elif token_data and "token" in token_data:
+                self.token = token_data["token"]
+            else:
+                logging.error(f"Unexpected response format: {token_data}")
+                return None
+
+            self.token_expiry = current_time + (24 * 60 * 60)
+            logging.info("Successfully obtained authentication token")
+            return self.token
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Failed to get authentication token: {str(e)}")
+            if hasattr(e, "response") and e.response:
+                logging.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
+            return None
+
+
+def make_http_request(
+    url: str,
+    method: str = "GET",
+    params: Optional[dict[str, Any]] = None,
+    data: Optional[dict[str, Any]] = None,
+    headers: Optional[dict[str, Any]] = None,
+    timeout: int = 30,
+    max_retries: int = 3,
+    retry_delay: float = 1.0,
+    retry_backoff: float = 2.0,
+    use_auth: bool = False,
+    auth_token_manager: Optional[AuthTokenManager] = None,
+) -> Optional[dict[str, Any]]:
+    """
+    Makes an HTTP request with retry logic and optional authentication.
+
+    Args:
+        url (str): The URL to make the request to.
+        method (str, optional): The HTTP method to use. Default: "GET".
+        params (dict[str, Any], optional): Query parameters.
+        data (dict[str, Any], optional): JSON data for request body.
+        headers (dict[str, Any], optional): Request headers.
+        timeout (int): Request timeout in seconds (default: 30).
+        max_retries (int): Maximum retry attempts (default: 3).
+        retry_delay (float): Initial delay between retries (default: 1.0).
+        retry_backoff (float): Multiplier for increasing retry delay (default: 2.0).
+        use_auth (bool): Whether to use authentication (default: False).
+        auth_token_manager (AuthTokenManager, optional): Token manager.
+
+    Returns:
+        Optional[dict[str, Any]]: JSON response or None if request failed.
+    """
+    method = method.upper()
+    request_headers = headers.copy() if headers else {}
+
+    # Set content type for request methods with body
+    if method in ["POST", "PUT", "PATCH"] and "Content-Type" not in request_headers:
+        request_headers["Content-Type"] = "application/json"
+
+    attempts = 0
+    current_delay = retry_delay
+
+    while attempts < max_retries:
+        # Add auth token if required (refresh on each attempt to handle expiration)
+        if use_auth and auth_token_manager:
+            token = auth_token_manager.get_token()
+            if token:
+                request_headers["Authorization"] = f"Bearer {token}"
+            else:
+                logger.error("Authentication required but couldn't get token")
+                return None
+
+        try:
+            # Create session and prepare request
+            session = requests.Session()
+            request = requests.Request(
+                method=method,
+                url=url,
+                params=params,
+                json=data if method != "GET" else None,
+                headers=request_headers,
+            )
+            prepped = request.prepare()
+
+            # Execute request
+            response = session.send(prepped, timeout=timeout)
+
+            if 400 <= response.status_code < 600:
+                logger.error(f"Error response ({response.status_code}): {response.text}")
+
+            response.raise_for_status()
+            return response.json()
+
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            # Network-related errors
+            attempts += 1
+            if attempts >= max_retries:
+                logger.error(f"Request failed after {max_retries} attempts: {url} - {e}")
+                return None
+
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            # Handle auth token refresh for 401 errors
+            if status_code == 401 and use_auth and auth_token_manager:
+                # Force token refresh
+                auth_token_manager.token = None
+                attempts += 1
+            # Only retry server errors
+            elif 500 <= status_code < 600:
+                attempts += 1
+            else:
+                logger.error(f"HTTP Error {status_code} for URL: {url}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Unexpected error during request to {url}: {e}")
+            return None
+
+        # Apply backoff delay before retry
+        if attempts < max_retries:
+            logger.warning(
+                f"Retrying request (attempt {attempts}/{max_retries}) in {current_delay}s"
+            )
+            time.sleep(current_delay)
+            current_delay *= retry_backoff
+
+    return None
+
+
+def sanitize_text(text: Optional[str]) -> Optional[str]:
+    """
+    Sanitize text by handling special characters, normalizing Unicode, and cleaning whitespace.
+    This is a general-purpose function that can handle various text issues.
+
+    Args:
+        text (Optional[str]): The text to sanitize
+
+    Returns:
+        Optional[str]: The sanitized text
+    """
+    if not text:
+        return text
+
+    try:
+        text = unicodedata.normalize("NFKC", text)
+        replacements = {
+            "\xa0": " ",  # Non-breaking space
+            "\u200b": "",  # Zero-width space
+            "\u200c": "",  # Zero-width non-joiner
+            "\u200d": "",  # Zero-width joiner
+            "\u2028": " ",  # Line separator
+            "\u2029": " ",  # Paragraph separator
+            "\u202f": " ",  # Narrow no-break space
+            "\u205f": " ",  # Medium mathematical space
+            "\u3000": " ",  # Ideographic space
+            "\ufeff": "",  # Byte order mark
+            "\u200e": "",  # Left-to-right mark
+            "\u200f": "",  # Right-to-left mark
+            "\u202a": "",  # Left-to-right embedding
+            "\u202b": "",  # Right-to-left embedding
+            "\u202c": "",  # Pop directional formatting
+            "\u202d": "",  # Left-to-right override
+            "\u202e": "",  # Right-to-left override
+        }
+
+        for char, replacement in replacements.items():
+            text = text.replace(char, replacement)
+
+        text = "".join(ch for ch in text if unicodedata.category(ch)[0] != "C")
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
+    except Exception as e:
+        logging.warning(f"Error sanitizing text: {e}")
+        return text
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+
+class TikiSeller(BaseModel):
+    secondary_id: str
+    name: str
+    link: str
+    logo: str
+
+
+class TikiBook(BaseModel):
+    secondary_id: str
+    category_id: str
+    seller_id: str
+    name: str
+    description: str
+    price: float
+    original_price: float
+    rating_average: float
+    review_count: Optional[int] = None
+    page_count: Optional[int] = None
+    author_ids: list[str] = []
+
+
+class TikiAuthor(BaseModel):
+    secondary_id: str
+    name: str
+    slug: str
+
+
+class TikiCategory(BaseModel):
+    secondary_id: str
+    name: str
+
+
+class TikiCrawler:
+    def __init__(self, admin_email: str, admin_password: str):
+        self.categories = TIKI_CATEGORIES
+        self.request_params_base = TIKI_PRODUCT_LISTINGS_PAGE_PARAMS.copy()
+        self.request_headers = TIKI_HEADERS
+        self.request_listings_url = TIKI_BASE_PRODUCT_LISTINGS
+        self.request_product_url_base = TIKI_BASE_SPECIFIC_PRODUCT
+        self.request_delay = TIKI_REQUEST_DELAY
+
+        # API Configuration
+        self.api_base_url = API_URL
+        self.api_url = f"{API_URL}/api"  # For resource endpoints
+        self.auth_token_manager = AuthTokenManager(self.api_base_url, admin_email, admin_password)
+
+        logger.info(f"Initialized TikiCrawler with API URL: {self.api_url}")
+        logger.info(f"Auth base URL: {self.api_base_url}/auth/login")
+
+    def _get_total_pages(self, category_id: int, url_key: str) -> int:
+        """
+        Gets the total number of pages for a given category.
+
+        Args:
+            category_id (int): The ID of the category to get the total pages for.
+            url_key (str): The URL key of the category to get the total pages for.
+
+        Returns:
+            int: The total number of pages for the given category.
+
+        Raises:
+            JSONDecodeError: If the JSON response is invalid.
+            Exception: If an error occurs while getting the total pages.
+        """
+        logger.info(f"Getting total pages for category {category_id} ({url_key})...")
+
+        params = self.request_params_base.copy()
+        params["category"] = category_id
+        params["urlKey"] = url_key
+        # Always check the first page for total pages
+        params["page"] = 1
+
+        data = make_http_request(
+            url=self.request_listings_url, headers=self.request_headers, params=params
+        )
+        if not data:
+            logger.error("Failed to get initial page response.")
+            return 0
+
+        try:
+            last_page = data.get("paging", {}).get("last_page", 0)
+            if last_page > 0:
+                logger.info(f"Total pages found: {last_page}")
+            else:
+                logger.warning("Could not find 'last_page' in response paging data.")
+            return last_page
+        except json.JSONDecodeError:
+            logger.exception("Failed to parse JSON response for total pages.")
+            raise
+        except Exception as e:
+            logger.exception(f"Error processing response for total pages: {e}")
+            raise
+
+    def _extract_product_ids(self, page: int, category_id: int, url_key: str) -> list[int]:
+        """
+        Extracts product IDs from a specific listings page.
+
+        Args:
+            page (int): The page number to extract product IDs from.
+            category_id (int): The ID of the category to extract product IDs from.
+            url_key (str): The URL key of the category to extract product IDs from.
+
+        Returns:
+            list[int]: A list of product IDs.
+
+        Raises:
+            JSONDecodeError: If the JSON response is invalid.
+            Exception: If an error occurs while extracting product IDs.
+        """
+        logger.info(f"Extracting product IDs from page {page} for category {category_id}...")
+
+        params = self.request_params_base.copy()
+        params["category"] = category_id
+        params["urlKey"] = url_key
+        params["page"] = page
+
+        data = make_http_request(
+            url=self.request_listings_url, headers=self.request_headers, params=params
+        )
+        if not data:
+            return []
+
+        try:
+            items = data.get("data", [])
+            ids = [item.get("id") for item in items if item.get("id") is not None]
+            logger.info(f"Found {len(ids)} product IDs on page {page}.")
+            return ids
+        except json.JSONDecodeError:
+            logger.error(f"Failed to parse JSON response for product IDs on page {page}.")
+        except Exception as e:
+            logger.error(f"Error processing response for product IDs on page {page}: {e}")
+
+        return []
+
+    def _extract_seller_info(self, seller_data: dict) -> dict:
+        """Extract and format seller information from product data."""
+        seller_id = str(seller_data.get("id"))
+        seller_name = seller_data.get("name")
+        seller_link = seller_data.get("link")
+        seller_logo = seller_data.get("logo")
+
+        # Fix logo URL if needed
+        if seller_logo and not seller_logo.startswith("https://"):
+            seller_logo = f"https://vcdn.tikicdn.com/cache/w100/ts/seller/{seller_logo}"
+
+        return {
+            "seller_id": seller_id,
+            "seller_name": seller_name,
+            "seller_link": seller_link,
+            "seller_logo": seller_logo,
+        }
+
+    def _extract_page_count(self, specifications: list) -> Optional[int]:
+        """Extract page count from product specifications."""
+        if not specifications:
+            return None
+
+        try:
+            spec_data = specifications[0]
+            attributes = spec_data.get("attributes", [])
+
+            if not attributes:
+                return None
+
+            pages_attr = next(
+                (attr for attr in attributes if attr.get("code") == "number_of_page"),
+                None,
+            )
+
+            if pages_attr and pages_attr.get("value"):
+                return int(pages_attr.get("value"))
+        except Exception as e:
+            logger.error(f"Error extracting page count: {e}")
+
+        return None
+
+    def _extract_authors_data(self, authors: list) -> list:
+        """Extract and format authors data."""
+        authors_data = []
+        for author in authors:
+            authors_data.append(
+                {
+                    "id": str(author.get("id")),
+                    "name": author.get("name"),
+                    "slug": author.get("slug"),
+                }
+            )
+        return authors_data
+
+    def _extract_category_info(self, data: dict) -> dict:
+        """Extract category information from product data."""
+        category = data.get("categories", {})
+        if category:
+            return {
+                "category_id": str(category.get("id")),
+                "category_name": category.get("name"),
+            }
+
+        # Fallback to breadcrumbs if categories is empty
+        breadcrumbs = data.get("breadcrumbs", [])
+        if breadcrumbs and len(breadcrumbs) > 1:
+            return {
+                "category_id": str(breadcrumbs[-2].get("id")),
+                "category_name": breadcrumbs[-2].get("name"),
+            }
+
+        return {"category_id": None, "category_name": None}
+
+    def _extract_product_details(self, product_id: int) -> Optional[dict]:
+        """
+        Extracts detailed information for a single product ID.
+
+        Args:
+            product_id (int): The ID of the product to extract details for.
+
+        Returns:
+            Optional[dict]: Dictionary containing the product details.
+        """
+        logger.info(f"Extracting details for product ID: {product_id}")
+        url = f"{self.request_product_url_base}{product_id}"
+        data = make_http_request(url=url, headers=self.request_headers)
+
+        if not data:
+            return None
+
+        try:
+            # Extract data using helper methods
+            seller_info = self._extract_seller_info(data.get("current_seller", {}))
+            page_count = self._extract_page_count(data.get("specifications", []))
+            authors_data = self._extract_authors_data(data.get("authors", []))
+            category_info = self._extract_category_info(data)
+
+            # Clean text fields that may contain special characters
+            name = sanitize_text(data.get("name"))
+            description = sanitize_text(data.get("short_description"))
+
+            # Combine all information into a single details dictionary
+            details = {
+                "id": str(data.get("id")),
+                "name": name,
+                "description": description,
+                "price": data.get("price"),
+                "original_price": data.get("original_price"),
+                "rating_average": data.get("rating_average"),
+                "review_count": data.get("review_count"),
+                "page_count": page_count,
+                "authors": authors_data,
+                **seller_info,
+                **category_info,
+            }
+            return details
+
+        except json.JSONDecodeError:
+            logger.error(f"Failed to parse JSON response for product details (ID: {product_id}).")
+        except Exception as e:
+            logger.error(f"Error processing product details for ID {product_id}: {e}")
+
+        return None
+
+    def _extract_products_details(self, product_ids: list[int]) -> list[dict]:
+        """
+        Extracts details for a list of product IDs.
+
+        Args:
+            product_ids (list[int]): A list of product IDs to extract details for.
+
+        Returns:
+            list[dict]: A list of dictionaries containing the product details.
+        """
+        products_details = []
+        for product_id in product_ids:
+            details = self._extract_product_details(product_id)
+            if details:
+                products_details.append(details)
+            time.sleep(self.request_delay)
+
+        logger.info(
+            f"Successfully extracted details for {len(products_details)} out of {len(product_ids)} products."
+        )
+        return products_details
+
+    def _upsert_resource(
+        self, resource: str, data: TikiSeller | TikiBook | TikiAuthor | TikiCategory
+    ) -> Optional[str]:
+        """
+        Upserts a resource via API.
+
+        Args:
+            resource (str): The resource to upsert.
+            data (TikiSeller | TikiBook | TikiAuthor | TikiCategory): The data to upsert.
+
+        Returns:
+            Optional[str]: The UUID of the created/updated resource, or None if the operation failed.
+        """
+        existing = make_http_request(
+            url=f"{self.api_url}/{resource}/{data.secondary_id}",
+            method="GET",
+            params={"secondary": "true"},
+            use_auth=True,
+            auth_token_manager=self.auth_token_manager,
+        )
+        existing_resource = {} if existing is None else existing.get("data", {})
+
+        # Create data payload, handling special case for books with author_ids
+        payload = data.model_dump()
+
+        if existing_resource:
+            logger.info(
+                f"{resource[:-1].capitalize()} {data.secondary_id} already exists. Performing update..."
+            )
+            response = make_http_request(
+                url=f"{self.api_url}/{resource}/{existing_resource.get('id')}",
+                method="PATCH",
+                data=payload,
+                use_auth=True,
+                auth_token_manager=self.auth_token_manager,
+            )
+            if response and "data" in response:
+                return response["data"].get("id")
+        else:
+            logger.info(
+                f"{resource[:-1].capitalize()} {data.secondary_id} does not exist. Creating new {resource[:-1]}..."
+            )
+            response = make_http_request(
+                url=f"{self.api_url}/{resource}",
+                method="POST",
+                data=payload,
+                use_auth=True,
+                auth_token_manager=self.auth_token_manager,
+            )
+            if response and "data" in response:
+                return response["data"].get("id")
+
+        logger.error(f"Failed to upsert {resource} with secondary_id {data.secondary_id}")
+        return None
+
+    def _upsert_specific_data(
+        self, data: TikiSeller | TikiBook | TikiAuthor | TikiCategory
+    ) -> Optional[str]:
+        """
+        Upserts specific data into the database.
+
+        Args:
+            data (TikiSeller | TikiBook | TikiAuthor | TikiCategory): The data to upsert.
+
+        Returns:
+            Optional[str]: The UUID of the created/updated resource, or None if the operation failed.
+        """
+        resource_map = {
+            TikiSeller: "sellers",
+            TikiBook: "books",
+            TikiAuthor: "authors",
+            TikiCategory: "categories",
+        }
+
+        for model_cls, resource in resource_map.items():
+            if isinstance(data, model_cls):
+                return self._upsert_resource(resource=resource, data=data)
+
+        return None
+
+    def _upsert_data(self, data: list[dict]) -> None:
+        """
+        Upserts data into the database via API.
+
+        Args:
+            data (list[dict]): List of dictionaries containing the product details.
+        """
+        if not data:
+            logger.info("No data provided to be upserted.")
+            return
+
+        # Use sets to avoid duplicates within this batch
+        seller_ids = set()
+        book_ids = set()
+        category_ids = set()
+        author_ids = set()
+
+        # Store UUIDs for each resource type
+        seller_uuids = {}
+        category_uuids = {}
+        author_uuids = {}
+
+        for record in data:
+            # Seller
+            if record["seller_id"] and record["seller_id"] not in seller_ids:
+                seller_to_upsert = TikiSeller(
+                    secondary_id=record["seller_id"],
+                    name=sanitize_text(record["seller_name"]),
+                    link=record["seller_link"],
+                    logo=record["seller_logo"],
+                )
+                seller_uuid = self._upsert_specific_data(data=seller_to_upsert)
+                if seller_uuid:
+                    seller_uuids[record["seller_id"]] = seller_uuid
+                    seller_ids.add(record["seller_id"])
+
+            # Authors
+            if record["authors"]:
+                # Process all authors
+                for author in record["authors"]:
+                    if author["id"] not in author_ids:
+                        author_to_upsert = TikiAuthor(
+                            secondary_id=author["id"],
+                            name=sanitize_text(author["name"]),
+                            slug=author["slug"],
+                        )
+                        author_uuid = self._upsert_specific_data(data=author_to_upsert)
+                        if author_uuid:
+                            author_uuids[author["id"]] = author_uuid
+                            author_ids.add(author["id"])
+
+            # Category
+            if record["category_id"] and record["category_id"] not in category_ids:
+                category_to_upsert = TikiCategory(
+                    secondary_id=record["category_id"],
+                    name=sanitize_text(record["category_name"]),
+                )
+                category_uuid = self._upsert_specific_data(data=category_to_upsert)
+                if category_uuid:
+                    category_uuids[record["category_id"]] = category_uuid
+                    category_ids.add(record["category_id"])
+
+            # Product & Inventory
+            if record["id"] and record["id"] not in book_ids:
+                # Get the UUIDs for the related entities
+                category_uuid = category_uuids.get(record["category_id"])
+                seller_uuid = seller_uuids.get(record["seller_id"])
+                author_uuids_list = [
+                    author_uuids.get(author["id"])
+                    for author in record["authors"]
+                    if author["id"] in author_uuids
+                ]
+
+                # Only create the book if we have all required UUIDs
+                if category_uuid and seller_uuid:
+                    book_to_upsert = TikiBook(
+                        secondary_id=record["id"],
+                        category_id=category_uuid,
+                        seller_id=seller_uuid,
+                        name=sanitize_text(record["name"]),
+                        description=sanitize_text(record["description"]),
+                        price=record["price"],
+                        original_price=record["original_price"],
+                        rating_average=record["rating_average"],
+                        review_count=record["review_count"],
+                        page_count=record["page_count"],
+                        author_ids=author_uuids_list,
+                    )
+                    self._upsert_specific_data(data=book_to_upsert)
+                    book_ids.add(record["id"])
+                else:
+                    logger.warning(
+                        f"Missing required UUIDs for book {record['id']}. Skipping book creation."
+                    )
+                    if not category_uuid:
+                        logger.warning(f"Missing category UUID for book {record['id']}")
+                    if not seller_uuid:
+                        logger.warning(f"Missing seller UUID for book {record['id']}")
+
+    def _process_crawling(self, category_id: int, url_key: str) -> None:
+        """
+        Handles crawling and inserting data for a single category.
+
+        Args:
+            category_id (int): The ID of the category to process.
+            url_key (str): The URL key of the category to process.
+        """
+        total_pages = self._get_total_pages(category_id=category_id, url_key=url_key)
+        if total_pages == 0:
+            logger.warning(
+                f"No pages found or error occurred for category {category_id}. Skipping."
+            )
+            return
+
+        logger.info(
+            f"Starting data extraction for {total_pages} pages in category {category_id}..."
+        )
+
+        for page in range(1, total_pages + 1):
+            logger.info(f"Processing page {page}/{total_pages} for category {category_id}...")
+            product_ids = self._extract_product_ids(
+                page=page, category_id=category_id, url_key=url_key
+            )
+            if not product_ids:
+                logger.warning(f"No product IDs found on page {page}. Moving to next.")
+                time.sleep(self.request_delay)
+                continue
+
+            products_details = self._extract_products_details(product_ids)
+            if products_details:
+                self._upsert_data(data=products_details)
+            else:
+                logger.info(f"No valid product details extracted for page {page}.")
+
+            logger.info(f"Waiting {self.request_delay}s before next page...")
+            time.sleep(self.request_delay)
+
+    def run(self) -> None:
+        """
+        Main execution method for the crawler pipeline.
+        """
+        logger.info("Tiki Crawler starting run...")
+        start_time = time.time()
+
+        for category_id, url_key in self.categories.items():
+            logger.info(f"Processing Category ID: {category_id}, URL Key: {url_key}")
+            self._process_crawling(category_id=category_id, url_key=url_key)
+            logger.info(f"Finished Category ID: {category_id}, URL Key: {url_key}")
+
+        end_time = time.time()
+        logger.info(f"Tiki Crawler finished run. Total time: {end_time - start_time:.2f} seconds.")
+
+
+if __name__ == "__main__":
+    try:
+        # Set up logging to debug level for more detailed information
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.info("Starting Tiki Crawler...")
+
+        # Create a crawler with admin credentials - you can override these from command line if needed
+        import sys
+
+        admin_email = sys.argv[1] if len(sys.argv) > 1 else "admin@example.com"
+        admin_password = sys.argv[2] if len(sys.argv) > 2 else "Admin123!"
+
+        logging.info(f"Using credentials: {admin_email}")
+
+        # Test authentication explicitly first
+        crawler = TikiCrawler(admin_email=admin_email, admin_password=admin_password)
+
+        # Try to get a token to verify authentication works
+        token = crawler.auth_token_manager.get_token()
+        if token:
+            logging.info("✅ Authentication successful!")
+            crawler.run()
+        else:
+            logging.error("❌ Authentication failed. Please check your credentials and API URL.")
+            logging.info(f"API URL: {API_URL}")
+
+    except Exception as e:
+        logging.exception(f"Error in crawler main execution: {e}")

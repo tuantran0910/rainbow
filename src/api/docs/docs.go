@@ -1774,10 +1774,13 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "rating_average": {
-                    "type": "number"
+                    "type": "number",
+                    "maximum": 5,
+                    "minimum": 0
                 },
                 "review_count": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "secondary_id": {
                     "type": "string"
@@ -1786,7 +1789,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "stock": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         },
@@ -1986,6 +1990,12 @@ const docTemplate = `{
         "dtos.UpdateBookRequest": {
             "type": "object",
             "properties": {
+                "author_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "category_id": {
                     "type": "string"
                 },
@@ -2007,16 +2017,20 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "rating_average": {
-                    "type": "number"
+                    "type": "number",
+                    "maximum": 5,
+                    "minimum": 0
                 },
                 "review_count": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "secondary_id": {
                     "type": "string"
                 },
                 "stock": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         },

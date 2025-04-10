@@ -19,48 +19,41 @@ type ISellerService interface {
 		page, limit int,
 	) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, id interface{}, isSecondary bool) (*models.Seller, error)
-	GetSellerByUserId(ctx context.Context, userId uuid.UUID) (*models.Seller, error)
 	CreateSeller(
 		ctx context.Context,
 		sellerReq dtos.CreateSellerRequest,
-		userId uuid.UUID,
 	) (*models.Seller, error)
 	UpdateSeller(
 		ctx context.Context,
 		id interface{},
 		sellerReq dtos.UpdateSellerRequest,
-		userId uuid.UUID,
 		isSecondary bool,
 	) (*models.Seller, error)
-	DeleteSeller(ctx context.Context, sellerId uuid.UUID, userId uuid.UUID) error
+	DeleteSeller(ctx context.Context, sellerId uuid.UUID) error
 }
 
 type sellerService struct {
 	db               *gorm.DB
 	sellerRepository repositories.ISellerRepository
-	userRepository   repositories.IUserRepository
 }
 
 func NewSellerService(
 	db *gorm.DB,
 	sellerRepository repositories.ISellerRepository,
-	userRepository repositories.IUserRepository,
 ) ISellerService {
 	return &sellerService{
 		db:               db,
 		sellerRepository: sellerRepository,
-		userRepository:   userRepository,
 	}
 }
 
 func (ss *sellerService) withTX(
 	ctx context.Context,
-	fn func(context.Context, repositories.ISellerRepository, repositories.IUserRepository) error,
+	fn func(context.Context, repositories.ISellerRepository) error,
 ) error {
 	return ss.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		sellerRepository := ss.sellerRepository.WithTX(tx)
-		userRepository := ss.userRepository.WithTX(tx)
-		return fn(ctx, sellerRepository, userRepository)
+		return fn(ctx, sellerRepository)
 	})
 }
 
@@ -79,30 +72,14 @@ func (ss *sellerService) GetSellerById(
 	return ss.sellerRepository.GetSellerById(ctx, id, isSecondary)
 }
 
-func (ss *sellerService) GetSellerByUserId(
-	ctx context.Context,
-	userId uuid.UUID,
-) (*models.Seller, error) {
-	return ss.sellerRepository.GetSellerByUserId(ctx, userId)
-}
-
 func (ss *sellerService) CreateSeller(
 	ctx context.Context,
 	sellerReq dtos.CreateSellerRequest,
-	userId uuid.UUID,
 ) (*models.Seller, error) {
 	var createdSeller *models.Seller
 	err := ss.withTX(
 		ctx,
-		func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
-			exitingSeller, err := sellerRepository.GetSellerByUserId(ctx, userId)
-			if err != nil {
-				if exitingSeller != nil {
-					return fmt.Errorf("seller already exists")
-				}
-				return err
-			}
-
+		func(ctx context.Context, sellerRepository repositories.ISellerRepository) error {
 			if sellerReq.Link == "" {
 				sellerReq.Link = fmt.Sprintf(
 					"https://rainbow.tuantrann.work/sellers/%s-%s",
@@ -113,7 +90,6 @@ func (ss *sellerService) CreateSeller(
 
 			seller := &models.Seller{
 				SecondaryID: sellerReq.SecondaryID,
-				UserID:      userId,
 				Name:        sellerReq.Name,
 				Link:        sellerReq.Link,
 				Logo:        sellerReq.Logo,
@@ -123,8 +99,9 @@ func (ss *sellerService) CreateSeller(
 			}
 
 			// Get the created seller with all fields populated
-			createdSeller, err = sellerRepository.GetSellerById(ctx, seller.ID, false)
-			return err
+			var getErr error
+			createdSeller, getErr = sellerRepository.GetSellerById(ctx, seller.ID, false)
+			return getErr
 		},
 	)
 	return createdSeller, err
@@ -134,13 +111,12 @@ func (ss *sellerService) UpdateSeller(
 	ctx context.Context,
 	id interface{},
 	sellerReq dtos.UpdateSellerRequest,
-	userId uuid.UUID,
 	isSecondary bool,
 ) (*models.Seller, error) {
 	var updatedSeller *models.Seller
 	err := ss.withTX(
 		ctx,
-		func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
+		func(ctx context.Context, sellerRepository repositories.ISellerRepository) error {
 			seller, err := sellerRepository.GetSellerById(ctx, id, isSecondary)
 			if err != nil {
 				return err
@@ -150,18 +126,6 @@ func (ss *sellerService) UpdateSeller(
 				return fmt.Errorf("seller with %s %s not found",
 					map[bool]string{true: "secondary id", false: "id"}[isSecondary],
 					idStr)
-			}
-
-			currentUser, err := userRepository.GetUserById(ctx, userId)
-			if err != nil {
-				return err
-			}
-			if currentUser == nil {
-				return fmt.Errorf("current user not found")
-			}
-
-			if currentUser.ID != seller.UserID && currentUser.Role != models.AdminRole {
-				return fmt.Errorf("only admin can update other seller's information")
 			}
 
 			var sellerToUpdate models.Seller
@@ -184,8 +148,9 @@ func (ss *sellerService) UpdateSeller(
 			}
 
 			// Get the updated seller
-			updatedSeller, err = sellerRepository.GetSellerById(ctx, id, isSecondary)
-			return err
+			var getErr error
+			updatedSeller, getErr = sellerRepository.GetSellerById(ctx, id, isSecondary)
+			return getErr
 		},
 	)
 	return updatedSeller, err
@@ -194,29 +159,16 @@ func (ss *sellerService) UpdateSeller(
 func (ss *sellerService) DeleteSeller(
 	ctx context.Context,
 	sellerId uuid.UUID,
-	userId uuid.UUID,
 ) error {
 	return ss.withTX(
 		ctx,
-		func(ctx context.Context, sellerRepository repositories.ISellerRepository, userRepository repositories.IUserRepository) error {
+		func(ctx context.Context, sellerRepository repositories.ISellerRepository) error {
 			seller, err := sellerRepository.GetSellerById(ctx, sellerId, false)
 			if err != nil {
 				return err
 			}
 			if seller == nil {
 				return fmt.Errorf("seller with id %s not found", sellerId)
-			}
-
-			currentUser, err := userRepository.GetUserById(ctx, userId)
-			if err != nil {
-				return err
-			}
-			if currentUser == nil {
-				return fmt.Errorf("current user not found")
-			}
-
-			if currentUser.ID != seller.UserID && currentUser.Role != models.AdminRole {
-				return fmt.Errorf("only admin can delete other seller")
 			}
 			return sellerRepository.DeleteSeller(ctx, sellerId)
 		},
