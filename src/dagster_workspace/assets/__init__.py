@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
 )
-def tiki_resources():
+def tiki_resources_asset():
     try:
         logger.info("Starting Tiki Crawler...")
         crawler = TikiCrawler(admin_email=ADMIN_EMAIL, admin_password=ADMIN_PASSWORD)
@@ -40,7 +40,7 @@ def tiki_resources():
 
 
 defs = dg.Definitions(
-    assets=[tiki_resources],
+    assets=[tiki_resources_asset],
     jobs=[crawling_job],
     schedules=[crawling_schedule],
 )
