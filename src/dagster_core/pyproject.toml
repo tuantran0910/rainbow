@@ -5,9 +5,9 @@ description = "Rainbow Dagster project"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "dagster==1.10.6",
-    "dagster-graphql>=1.10.6",
-    "dagster-postgres>=0.26.6",
-    "dagster-webserver>=1.10.6",
-    "dagster-obstore>=0.2.1",
+    "dagster==1.10.9",
+    "dagster-graphql>=1.10.9",
+    "dagster-postgres>=0.26.9",
+    "dagster-webserver>=1.10.9",
+    "dagster-obstore>=0.2.3",
 ]

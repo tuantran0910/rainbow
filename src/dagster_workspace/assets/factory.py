@@ -8,7 +8,8 @@ from dlt import pipeline
 from assets.helpers import load_assets_configs
 from assets.helpers import make_dlt_resources
 from assets.translators import CustomDagsterDltTranslator
-
+from constants import DAGSTER_METADATA
+from constants import DAGSTER_TAGS
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +71,14 @@ def build_dlt_pipelines() -> dg.Definitions:
     schedules = None
 
     if job_config:
+        metadata = DAGSTER_METADATA.update(job_config.get("metadata", {}))
+        tags = DAGSTER_TAGS.update(job_config.get("tags", {}))
         job = dg.define_asset_job(
             name=job_config.get("name", f"{base_name}__{asset_group}__job"),
             description=job_config.get("description"),
             selection=dg.AssetSelection.groups(asset_group),
-            metadata=job_config.get("metadata", {}),
-            tags=job_config.get("tags", {}),
+            metadata=metadata,
+            tags=tags,
         )
         jobs = [job]
 
@@ -84,14 +87,16 @@ def build_dlt_pipelines() -> dg.Definitions:
             "Schedule configuration provided without a job. Schedule will not be created."
         )
     if schedule_config and job_config:
+        metadata = DAGSTER_METADATA.update(schedule_config.get("metadata", {}))
+        tags = DAGSTER_TAGS.update(schedule_config.get("tags", {}))
         schedule = dg.ScheduleDefinition(
             name=schedule_config.get("name", f"{base_name}__{asset_group}__schedule"),
             job=job,
             description=schedule_config.get("description"),
             cron_schedule=schedule_config.get("cron_schedule"),
             execution_timezone=schedule_config.get("execution_timezone"),
-            metadata=schedule_config.get("metadata", {}),
-            tags=schedule_config.get("tags", {}),
+            metadata=metadata,
+            tags=tags,
         )
         schedules = [schedule]
 

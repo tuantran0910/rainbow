@@ -4,6 +4,8 @@ x-dagster-common: &dagster-common
     dockerfile: Dockerfile
   env_file:
     - ./.env
+  environment:
+    API_URL: http://api:5000
   depends_on: &dagster-common-depends-on
     postgres:
       condition: service_healthy
