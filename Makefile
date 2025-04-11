@@ -19,7 +19,7 @@ clickhouse: ## Start Clickhouse service
 
 cdc: ## Start CDC services
 	@echo "Starting CDC service..."
-	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres clickhouse zookeeper kafka-broker kafka-schema-registry kafka-connect kafka-ui
+	docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d postgres clickhouse redpanda kafka-ui kafka-connect
 
 cdc_connectors: ## Initialize CDC connectors
 	@echo "Starting Connectors..."

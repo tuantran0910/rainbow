@@ -147,83 +147,41 @@ services:
       - dagster-network
       - clickhouse-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.9.0
-    container_name: zookeeper
-    hostname: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_SERVERS: zookeeper:2888:3888
+  redpanda:
+    image: redpandadata/redpanda:v25.1.1
+    container_name: redpanda
+    hostname: redpanda
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory=1G
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --node-id=0
+      - --check=false
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr=internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr=internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr=internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr=redpanda:33145
+      - --advertise-rpc-addr=redpanda:33145
     ports:
-      - 2181:2181
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
+    volumes:
+      - redpanda:/var/lib/redpanda/data
     healthcheck:
-      test: [CMD, sh, -c, echo ruok | nc localhost 2181]
-      interval: 30s
-      timeout: 10s
+      test: [CMD-SHELL, rpk cluster health | grep -E 'Healthy:.+true' || exit 1]
+      interval: 15s
+      timeout: 3s
       retries: 5
-      start_period: 30s
+      start_period: 5s
     restart: always
     networks:
-      - kafka-network
-
-  kafka-broker:
-    image: confluentinc/cp-kafka:7.9.0
-    container_name: broker
-    hostname: broker
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_BROKER_ID: 1
-      KAFKA_LOG4J_LOGGERS: kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_JMX_PORT: 9999
-      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
-      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
-      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: true
-    ports:
-      - 9092:9092
-      - 29092:29092
-      - 9999:9999
-    healthcheck:
-      test: [CMD, sh, -c, nc -z localhost 9092]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      - zookeeper
-    restart: always
-    networks:
-      - kafka-network
-
-  kafka-schema-registry:
-    image: confluentinc/cp-schema-registry:7.9.0
-    container_name: schema-registry
-    hostname: schema-registry
-    environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://broker:29092
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-    ports:
-      - 8081:8081
-    depends_on:
-      - zookeeper
-      - kafka-broker
-    restart: always
-    healthcheck:
-      test: [CMD, timeout, '1', curl, --silent, --fail, http://schema-registry:8081/subjects]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    networks:
-      - kafka-network
+      - redpanda-network
 
   kafka-connect:
     image: confluentinc/cp-kafka-connect:7.9.0
@@ -237,16 +195,16 @@ services:
         confluent-hub install --no-prompt clickhouse/clickhouse-kafka-connect:v1.2.6
         /etc/confluent/docker/run
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: broker:29092
+      CONNECT_BOOTSTRAP_SERVERS: redpanda:9092
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: connect-cluster
       CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: connect-status
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
@@ -263,10 +221,9 @@ services:
       - 8083:8083
     volumes:
       - ./connectors:/etc/kafka-connect/jars/
+      - kafka-connect-plugins:/usr/share/confluent-hub-components
     depends_on:
-      - zookeeper
-      - kafka-broker
-      - kafka-schema-registry
+      - redpanda
     restart: always
     healthcheck:
       test: [CMD, curl, --fail, http://connect:8083/]
@@ -276,7 +233,7 @@ services:
       start_period: 30s
     networks:
       - postgres-network
-      - kafka-network
+      - redpanda-network
       - clickhouse-network
 
   kafka-ui:
@@ -285,17 +242,14 @@ services:
     hostname: kafka-ui
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
-      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: redpanda:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://redpanda:8081
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local-connect
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://connect:8083
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     ports:
       - 8082:8080
     depends_on:
-      - zookeeper
-      - kafka-broker
-      - kafka-schema-registry
+      - redpanda
       - kafka-connect
     restart: always
     healthcheck:
@@ -305,7 +259,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - kafka-network
+      - redpanda-network
 
   kafka-init-connectors:
     image: ellerbrock/alpine-bash-curl-ssl
@@ -321,7 +275,7 @@ services:
       - ${KAFKA_PROJ_DIR:-../../src/kafka}/connectors:/connectors
     entrypoint: bash -c '/connectors/start.sh'
     networks:
-      - kafka-network
+      - redpanda-network
 
   metabase:
     image: metabase/metabase:v0.53.5.4
@@ -493,6 +447,8 @@ volumes:
   metabase-data:
   cubestore:
   minio_data:
+  redpanda:
+  kafka-connect-plugins:
 
 networks:
   dagster-network:
@@ -503,7 +459,7 @@ networks:
     driver: bridge
   clickhouse-network:
     driver: bridge
-  kafka-network:
+  redpanda-network:
     driver: bridge
   metabase-network:
     driver: bridge
