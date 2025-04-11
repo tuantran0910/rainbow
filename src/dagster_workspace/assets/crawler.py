@@ -54,6 +54,13 @@ class TikiCategory(BaseModel):
 
 class TikiCrawler:
     def __init__(self, admin_email: str, admin_password: str):
+        """
+        Initializes the TikiCrawler with the provided admin credentials.
+
+        Args:
+            admin_email (str): Admin email for authentication.
+            admin_password (str): Admin password for authentication.
+        """
         self.categories = TIKI_CATEGORIES
         self.request_params_base = TIKI_PRODUCT_LISTINGS_PAGE_PARAMS.copy()
         self.request_headers = TIKI_HEADERS
