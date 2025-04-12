@@ -43,7 +43,7 @@ services:
       context: ../../src/api
       dockerfile: Dockerfile
     container_name: api
-    hostname: api
+    hostname: ${API_HOST}
     ports:
       - ${SERVER_PORT:-5000}:${SERVER_PORT}
     volumes:
@@ -104,6 +104,7 @@ services:
     image: dagster-workspace
     environment:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
+      API_URL: http://${API_HOST}:${SERVER_PORT}
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
       - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/dbt
@@ -116,6 +117,7 @@ services:
     networks:
       - dagster-network
       - minio-network
+      - api-network
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.12

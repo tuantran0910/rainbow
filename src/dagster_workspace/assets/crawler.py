@@ -1,269 +1,23 @@
 import json
-import logging
-import os
-import re
 import time
-import unicodedata
-from typing import Any
 from typing import Optional
 
-import requests
+import dagster as dg
 from pydantic import BaseModel
-# from constants import (
-#     TIKI_CATEGORIES,
-#     TIKI_BASE_PRODUCT_LISTINGS,
-#     TIKI_BASE_SPECIFIC_PRODUCT,
-#     TIKI_REQUEST_DELAY,
-#     TIKI_HEADERS,
-#     TIKI_PRODUCT_LISTINGS_PAGE_PARAMS,
-#     API_URL,
-# )
-# from assets.helpers import make_http_request
 
-TIKI_REQUEST_DELAY = 0.5
-TIKI_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-}
-TIKI_PRODUCT_LISTINGS_PAGE_PARAMS: dict[str, Any] = {
-    "limit": 10,
-}
-TIKI_CATEGORIES = {
-    8322: "nha-sach-tiki",
-}
-TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings"
-TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
-
-API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
+from assets.helpers import AuthTokenManager
+from assets.helpers import make_http_request
+from assets.helpers import sanitize_text
+from constants import API_URL
+from constants import TIKI_BASE_PRODUCT_LISTINGS
+from constants import TIKI_BASE_SPECIFIC_PRODUCT
+from constants import TIKI_CATEGORIES
+from constants import TIKI_HEADERS
+from constants import TIKI_PRODUCT_LISTINGS_PAGE_PARAMS
+from constants import TIKI_REQUEST_DELAY
 
 
-class AuthTokenManager:
-    """
-    Manages authentication tokens for API requests.
-
-    Args:
-        api_url (str): The base URL of the API.
-        admin_email (str): The email of the admin user.
-        admin_password (str): The password of the admin user.
-    """
-
-    def __init__(
-        self,
-        api_url: str,
-        admin_email: str,
-        admin_password: str,
-    ):
-        self.api_url = api_url
-        self.admin_email = admin_email
-        self.admin_password = admin_password
-        self.token = None
-        self.token_expiry = 0.0
-
-    def get_token(self) -> Optional[str]:
-        """
-        Gets a valid authentication token, logging in if necessary.
-
-        Returns:
-            Optional[str]: The authentication token or None if login fails
-        """
-        current_time = time.time()
-
-        # Check if token exists and is not expired (with 5 min buffer)
-        if self.token and current_time < (self.token_expiry - 300):
-            return self.token
-
-        # Need to login and get a new token
-        logging.info("Getting new authentication token")
-        login_url = f"{self.api_url}/auth/login"
-        login_data = {"email": self.admin_email, "password": self.admin_password}
-        headers = {"Content-Type": "application/json"}
-
-        try:
-            response = requests.post(login_url, json=login_data, headers=headers, timeout=30)
-            response.raise_for_status()
-            token_data = response.json()
-
-            if token_data and "data" in token_data and "token" in token_data["data"]:
-                self.token = token_data["data"]["token"]
-            elif token_data and "token" in token_data:
-                self.token = token_data["token"]
-            else:
-                logging.error(f"Unexpected response format: {token_data}")
-                return None
-
-            self.token_expiry = current_time + (24 * 60 * 60)
-            logging.info("Successfully obtained authentication token")
-            return self.token
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to get authentication token: {str(e)}")
-            if hasattr(e, "response") and e.response:
-                logging.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
-            return None
-
-
-def make_http_request(
-    url: str,
-    method: str = "GET",
-    params: Optional[dict[str, Any]] = None,
-    data: Optional[dict[str, Any]] = None,
-    headers: Optional[dict[str, Any]] = None,
-    timeout: int = 30,
-    max_retries: int = 3,
-    retry_delay: float = 1.0,
-    retry_backoff: float = 2.0,
-    use_auth: bool = False,
-    auth_token_manager: Optional[AuthTokenManager] = None,
-) -> Optional[dict[str, Any]]:
-    """
-    Makes an HTTP request with retry logic and optional authentication.
-
-    Args:
-        url (str): The URL to make the request to.
-        method (str, optional): The HTTP method to use. Default: "GET".
-        params (dict[str, Any], optional): Query parameters.
-        data (dict[str, Any], optional): JSON data for request body.
-        headers (dict[str, Any], optional): Request headers.
-        timeout (int): Request timeout in seconds (default: 30).
-        max_retries (int): Maximum retry attempts (default: 3).
-        retry_delay (float): Initial delay between retries (default: 1.0).
-        retry_backoff (float): Multiplier for increasing retry delay (default: 2.0).
-        use_auth (bool): Whether to use authentication (default: False).
-        auth_token_manager (AuthTokenManager, optional): Token manager.
-
-    Returns:
-        Optional[dict[str, Any]]: JSON response or None if request failed.
-    """
-    method = method.upper()
-    request_headers = headers.copy() if headers else {}
-
-    # Set content type for request methods with body
-    if method in ["POST", "PUT", "PATCH"] and "Content-Type" not in request_headers:
-        request_headers["Content-Type"] = "application/json"
-
-    attempts = 0
-    current_delay = retry_delay
-
-    while attempts < max_retries:
-        # Add auth token if required (refresh on each attempt to handle expiration)
-        if use_auth and auth_token_manager:
-            token = auth_token_manager.get_token()
-            if token:
-                request_headers["Authorization"] = f"Bearer {token}"
-            else:
-                logger.error("Authentication required but couldn't get token")
-                return None
-
-        try:
-            # Create session and prepare request
-            session = requests.Session()
-            request = requests.Request(
-                method=method,
-                url=url,
-                params=params,
-                json=data if method != "GET" else None,
-                headers=request_headers,
-            )
-            prepped = request.prepare()
-
-            # Execute request
-            response = session.send(prepped, timeout=timeout)
-
-            if 400 <= response.status_code < 600:
-                logger.error(f"Error response ({response.status_code}): {response.text}")
-
-            response.raise_for_status()
-            return response.json()
-
-        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
-            # Network-related errors
-            attempts += 1
-            if attempts >= max_retries:
-                logger.error(f"Request failed after {max_retries} attempts: {url} - {e}")
-                return None
-
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            # Handle auth token refresh for 401 errors
-            if status_code == 401 and use_auth and auth_token_manager:
-                # Force token refresh
-                auth_token_manager.token = None
-                attempts += 1
-            # Only retry server errors
-            elif 500 <= status_code < 600:
-                attempts += 1
-            else:
-                logger.error(f"HTTP Error {status_code} for URL: {url}")
-                return None
-
-        except Exception as e:
-            logger.error(f"Unexpected error during request to {url}: {e}")
-            return None
-
-        # Apply backoff delay before retry
-        if attempts < max_retries:
-            logger.warning(
-                f"Retrying request (attempt {attempts}/{max_retries}) in {current_delay}s"
-            )
-            time.sleep(current_delay)
-            current_delay *= retry_backoff
-
-    return None
-
-
-def sanitize_text(text: Optional[str]) -> Optional[str]:
-    """
-    Sanitize text by handling special characters, normalizing Unicode, and cleaning whitespace.
-    This is a general-purpose function that can handle various text issues.
-
-    Args:
-        text (Optional[str]): The text to sanitize
-
-    Returns:
-        Optional[str]: The sanitized text
-    """
-    if not text:
-        return text
-
-    try:
-        text = unicodedata.normalize("NFKC", text)
-        replacements = {
-            "\xa0": " ",  # Non-breaking space
-            "\u200b": "",  # Zero-width space
-            "\u200c": "",  # Zero-width non-joiner
-            "\u200d": "",  # Zero-width joiner
-            "\u2028": " ",  # Line separator
-            "\u2029": " ",  # Paragraph separator
-            "\u202f": " ",  # Narrow no-break space
-            "\u205f": " ",  # Medium mathematical space
-            "\u3000": " ",  # Ideographic space
-            "\ufeff": "",  # Byte order mark
-            "\u200e": "",  # Left-to-right mark
-            "\u200f": "",  # Right-to-left mark
-            "\u202a": "",  # Left-to-right embedding
-            "\u202b": "",  # Right-to-left embedding
-            "\u202c": "",  # Pop directional formatting
-            "\u202d": "",  # Left-to-right override
-            "\u202e": "",  # Right-to-left override
-        }
-
-        for char, replacement in replacements.items():
-            text = text.replace(char, replacement)
-
-        text = "".join(ch for ch in text if unicodedata.category(ch)[0] != "C")
-        text = re.sub(r"\s+", " ", text)
-        return text.strip()
-    except Exception as e:
-        logging.warning(f"Error sanitizing text: {e}")
-        return text
-
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logger = dg.get_dagster_logger(__name__)
 
 
 class TikiSeller(BaseModel):
@@ -300,6 +54,13 @@ class TikiCategory(BaseModel):
 
 class TikiCrawler:
     def __init__(self, admin_email: str, admin_password: str):
+        """
+        Initializes the TikiCrawler with the provided admin credentials.
+
+        Args:
+            admin_email (str): Admin email for authentication.
+            admin_password (str): Admin password for authentication.
+        """
         self.categories = TIKI_CATEGORIES
         self.request_params_base = TIKI_PRODUCT_LISTINGS_PAGE_PARAMS.copy()
         self.request_headers = TIKI_HEADERS
@@ -764,6 +525,10 @@ class TikiCrawler:
             logger.info(f"Waiting {self.request_delay}s before next page...")
             time.sleep(self.request_delay)
 
+            # TODO: Remove this break statement for production
+            if page == 50:
+                break
+
     def run(self) -> None:
         """
         Main execution method for the crawler pipeline.
@@ -782,9 +547,7 @@ class TikiCrawler:
 
 if __name__ == "__main__":
     try:
-        # Set up logging to debug level for more detailed information
-        logging.getLogger().setLevel(logging.DEBUG)
-        logging.info("Starting Tiki Crawler...")
+        logger.info("Starting Tiki Crawler...")
 
         # Create a crawler with admin credentials - you can override these from command line if needed
         import sys
@@ -792,7 +555,7 @@ if __name__ == "__main__":
         admin_email = sys.argv[1] if len(sys.argv) > 1 else "admin@example.com"
         admin_password = sys.argv[2] if len(sys.argv) > 2 else "Admin123!"
 
-        logging.info(f"Using credentials: {admin_email}")
+        logger.info(f"Using credentials: {admin_email}")
 
         # Test authentication explicitly first
         crawler = TikiCrawler(admin_email=admin_email, admin_password=admin_password)
@@ -800,11 +563,11 @@ if __name__ == "__main__":
         # Try to get a token to verify authentication works
         token = crawler.auth_token_manager.get_token()
         if token:
-            logging.info("✅ Authentication successful!")
+            logger.info("✅ Authentication successful!")
             crawler.run()
         else:
-            logging.error("❌ Authentication failed. Please check your credentials and API URL.")
-            logging.info(f"API URL: {API_URL}")
+            logger.error("❌ Authentication failed. Please check your credentials and API URL.")
+            logger.info(f"API URL: {API_URL}")
 
     except Exception as e:
-        logging.exception(f"Error in crawler main execution: {e}")
+        logger.exception(f"Error in crawler main execution: {e}")

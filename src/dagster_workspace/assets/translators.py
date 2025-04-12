@@ -69,4 +69,4 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         Overrides the get_owners method to return a list of emails.
         This is used to set the owner of the asset in Dagster.
         """
-        return DAGSTER_ASSETS_OWNER
+        return [DAGSTER_ASSETS_OWNER]

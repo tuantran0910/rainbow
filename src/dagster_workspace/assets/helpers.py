@@ -1,17 +1,22 @@
-import logging
 import os
+import re
+import time
+import unicodedata
 from pathlib import Path
 from typing import Any
+from typing import Optional
 
+import dagster as dg
 import dlt
+import requests
 import yaml
 from dlt.extract.source import DltSource
 from dlt.sources.sql_database import sql_database
 
 from constants import DAGSTER_ASSETS_CONFIG_DIR
+from exceptions import AuthenticationError
 
-
-logger = logging.getLogger(__name__)
+logger = dg.get_dagster_logger(__name__)
 
 
 def load_assets_configs(
@@ -172,3 +177,235 @@ def set_dlt_object(dlt_object: dict[str, Any], config: dict[str, Any], *, prefix
     except Exception as e:
         logger.error(f"Error setting attribute {full_key}: {e}")
         raise
+
+
+class AuthTokenManager:
+    """
+    Manages authentication tokens for API requests.
+
+    Args:
+        api_url (str): The base URL of the API.
+        admin_email (str): The email of the admin user.
+        admin_password (str): The password of the admin user.
+    """
+
+    def __init__(
+        self,
+        api_url: str,
+        admin_email: str,
+        admin_password: str,
+    ):
+        self.api_url = api_url
+        self.admin_email = admin_email
+        self.admin_password = admin_password
+        self.token = None
+        self.token_expiry = 0.0
+
+    def get_token(self) -> Optional[str]:
+        """
+        Gets a valid authentication token, logging in if necessary.
+
+        Returns:
+            Optional[str]: The authentication token or None if login fails
+        """
+        current_time = time.time()
+
+        # Check if token exists and is not expired (with 5 min buffer)
+        if self.token and current_time < (self.token_expiry - 300):
+            return self.token
+
+        # Need to login and get a new token
+        logger.info("Getting new authentication token")
+        login_url = f"{self.api_url}/auth/login"
+        login_data = {"email": self.admin_email, "password": self.admin_password}
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            response = requests.post(login_url, json=login_data, headers=headers, timeout=30)
+            response.raise_for_status()
+            token_data = response.json()
+
+            if token_data and "data" in token_data and "token" in token_data["data"]:
+                self.token = token_data["data"]["token"]
+            elif token_data and "token" in token_data:
+                self.token = token_data["token"]
+            else:
+                logger.error(f"Unexpected response format: {token_data}")
+                return None
+
+            self.token_expiry = current_time + (24 * 60 * 60)
+            logger.info("Successfully obtained authentication token")
+            return self.token
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to get authentication token: {str(e)}")
+            if hasattr(e, "response") and e.response:
+                logger.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
+            raise e
+
+
+def make_http_request(
+    url: str,
+    method: str = "GET",
+    params: Optional[dict[str, Any]] = None,
+    data: Optional[dict[str, Any]] = None,
+    headers: Optional[dict[str, Any]] = None,
+    timeout: int = 30,
+    max_retries: int = 3,
+    retry_delay: float = 1.0,
+    retry_backoff: float = 2.0,
+    use_auth: bool = False,
+    auth_token_manager: Optional[AuthTokenManager] = None,
+) -> Optional[dict[str, Any]]:
+    """
+    Makes an HTTP request with retry logic and optional authentication.
+
+    Args:
+        url (str): The URL to make the request to.
+        method (str, optional): The HTTP method to use. Default: "GET".
+        params (dict[str, Any], optional): Query parameters.
+        data (dict[str, Any], optional): JSON data for request body.
+        headers (dict[str, Any], optional): Request headers.
+        timeout (int): Request timeout in seconds (default: 30).
+        max_retries (int): Maximum retry attempts (default: 3).
+        retry_delay (float): Initial delay between retries (default: 1.0).
+        retry_backoff (float): Multiplier for increasing retry delay (default: 2.0).
+        use_auth (bool): Whether to use authentication (default: False).
+        auth_token_manager (AuthTokenManager, optional): Token manager.
+
+    Returns:
+        Optional[dict[str, Any]]: JSON response or None if request failed.
+    """
+    method = method.upper()
+    request_headers = headers.copy() if headers else {}
+
+    # Set content type for request methods with body
+    if method in ["POST", "PUT", "PATCH"] and "Content-Type" not in request_headers:
+        request_headers["Content-Type"] = "application/json"
+
+    attempts = 0
+    current_delay = retry_delay
+
+    while attempts < max_retries:
+        # Add auth token if required (refresh on each attempt to handle expiration)
+        if use_auth and auth_token_manager:
+            token = auth_token_manager.get_token()
+            if token:
+                request_headers["Authorization"] = f"Bearer {token}"
+            else:
+                logger.error("Authentication required but couldn't get token")
+                raise AuthenticationError("Authentication failed")
+
+        try:
+            # Create session and prepare request
+            session = requests.Session()
+            request = requests.Request(
+                method=method,
+                url=url,
+                params=params,
+                json=data if method != "GET" else None,
+                headers=request_headers,
+            )
+            prepped = request.prepare()
+
+            # Execute request
+            response = session.send(prepped, timeout=timeout)
+            response_json: dict[str, Any] = response.json()
+
+            is_warning_response = False
+            if 400 <= response.status_code < 600:
+                response_message: Optional[str] = response_json.get("message")
+                if response_json.get("error"):
+                    logger.error(
+                        f"Error response: {response.json()['error']} - URL: {url} - Status Code: {response.status_code}"
+                    )
+                elif response_message is not None and "not found" in response_message.lower():
+                    is_warning_response = True
+                    logger.warning(
+                        f"Resource not found: {response_message} - URL: {url} - Status Code: {response.status_code}"
+                    )
+
+            if not is_warning_response:
+                response.raise_for_status()
+            return response.json()
+
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            # Network-related errors
+            attempts += 1
+            if attempts >= max_retries:
+                logger.error(f"Request failed after {max_retries} attempts: {url} - {e}")
+                raise dg.DagsterError(f"Request failed: {e}")
+
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            # Handle auth token refresh for 401 errors
+            if status_code == 401 and use_auth and auth_token_manager:
+                # Force token refresh
+                auth_token_manager.token = None
+                attempts += 1
+            # Only retry server errors
+            elif 500 <= status_code < 600:
+                attempts += 1
+            else:
+                logger.error(f"HTTP Error {status_code} for URL: {url}")
+                raise dg.DagsterError(f"HTTP Error {status_code}: {e}")
+
+        except Exception as e:
+            logger.error(f"Unexpected error during request to {url}: {e}")
+            raise dg.DagsterError(f"Unexpected error occurred: {e}")
+
+        # Apply backoff delay before retry
+        if attempts < max_retries:
+            logger.warning(
+                f"Retrying request (attempt {attempts}/{max_retries}) in {current_delay}s"
+            )
+            time.sleep(current_delay)
+            current_delay *= retry_backoff
+
+    return None
+
+
+def sanitize_text(text: Optional[str]) -> Optional[str]:
+    """
+    Sanitize text by handling special characters, normalizing Unicode, and cleaning whitespace.
+    This is a general-purpose function that can handle various text issues.
+
+    Args:
+        text (Optional[str]): The text to sanitize
+
+    Returns:
+        Optional[str]: The sanitized text
+    """
+    if not text:
+        return text
+
+    try:
+        text = unicodedata.normalize("NFKC", text)
+        replacements = {
+            "\xa0": " ",  # Non-breaking space
+            "\u200b": "",  # Zero-width space
+            "\u200c": "",  # Zero-width non-joiner
+            "\u200d": "",  # Zero-width joiner
+            "\u2028": " ",  # Line separator
+            "\u2029": " ",  # Paragraph separator
+            "\u202f": " ",  # Narrow no-break space
+            "\u205f": " ",  # Medium mathematical space
+            "\u3000": " ",  # Ideographic space
+            "\ufeff": "",  # Byte order mark
+            "\u200e": "",  # Left-to-right mark
+            "\u200f": "",  # Right-to-left mark
+            "\u202a": "",  # Left-to-right embedding
+            "\u202b": "",  # Right-to-left embedding
+            "\u202c": "",  # Pop directional formatting
+            "\u202d": "",  # Left-to-right override
+            "\u202e": "",  # Right-to-left override
+        }
+
+        for char, replacement in replacements.items():
+            text = text.replace(char, replacement)
+
+        text = "".join(ch for ch in text if unicodedata.category(ch)[0] != "C")
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
+    except Exception as e:
+        logger.warning(f"Error sanitizing text: {e}. Returning original text.")
+        return text
