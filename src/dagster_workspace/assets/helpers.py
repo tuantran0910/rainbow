@@ -309,11 +309,23 @@ def make_http_request(
 
             # Execute request
             response = session.send(prepped, timeout=timeout)
+            response_json: dict[str, Any] = response.json()
 
+            is_warning_response = False
             if 400 <= response.status_code < 600:
-                logger.error(f"Error response ({response.status_code}): {response.text}")
+                response_message: Optional[str] = response_json.get("message")
+                if response_json.get("error"):
+                    logger.error(
+                        f"Error response: {response.json()['error']} - URL: {url} - Status Code: {response.status_code}"
+                    )
+                elif response_message is not None and "not found" in response_message.lower():
+                    is_warning_response = True
+                    logger.warning(
+                        f"Resource not found: {response_message} - URL: {url} - Status Code: {response.status_code}"
+                    )
 
-            response.raise_for_status()
+            if not is_warning_response:
+                response.raise_for_status()
             return response.json()
 
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
@@ -335,7 +347,7 @@ def make_http_request(
                 attempts += 1
             else:
                 logger.error(f"HTTP Error {status_code} for URL: {url}")
-                return None
+                raise dg.DagsterError(f"HTTP Error {status_code}: {e}")
 
         except Exception as e:
             logger.error(f"Unexpected error during request to {url}: {e}")

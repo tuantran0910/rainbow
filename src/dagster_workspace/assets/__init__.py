@@ -23,6 +23,7 @@ logger = dg.get_dagster_logger(__name__)
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
     group_name=DAGSTER_CRAWLING_ASSET_GROUP,
+    kinds={"python"},
 )
 def tiki_resources_asset():
     """
