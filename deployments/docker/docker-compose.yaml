@@ -104,7 +104,7 @@ services:
     image: dagster-workspace
     environment:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
-      API_URL: http://${API_HOST}:${SERVER_PORT}
+      API_BASE_URL: http://${API_HOST}:${SERVER_PORT}
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
       - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt}:/opt/dagster/dbt

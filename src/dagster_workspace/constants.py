@@ -20,10 +20,16 @@ TIKI_CATEGORIES = {
 TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings"
 TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
+
+# Tiki Mocker
+MAX_BOOKS_PER_REQUEST = int(os.getenv("MAX_BOOKS_PER_REQUEST", "10"))
+MAX_ITEMS_PER_ORDER = int(os.getenv("MAX_ITEMS_PER_ORDER", "5"))
+
+DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "default")
 
 # Dagster Resources
 DAGSTER_ASSETS_CONFIG_DIR = Path(os.getenv("DAGSTER_ASSETS_CONFIG_DIR", "/opt/dagster/app/configs"))

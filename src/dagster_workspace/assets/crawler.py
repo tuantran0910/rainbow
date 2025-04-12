@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from assets.helpers import AuthTokenManager
 from assets.helpers import make_http_request
 from assets.helpers import sanitize_text
-from constants import API_URL
+from constants import API_BASE_URL
 from constants import TIKI_BASE_PRODUCT_LISTINGS
 from constants import TIKI_BASE_SPECIFIC_PRODUCT
 from constants import TIKI_CATEGORIES
@@ -69,8 +69,8 @@ class TikiCrawler:
         self.request_delay = TIKI_REQUEST_DELAY
 
         # API Configuration
-        self.api_base_url = API_URL
-        self.api_url = f"{API_URL}/api"  # For resource endpoints
+        self.api_base_url = API_BASE_URL
+        self.api_url = f"{API_BASE_URL}/api"  # For resource endpoints
         self.auth_token_manager = AuthTokenManager(self.api_base_url, admin_email, admin_password)
 
         logger.info(f"Initialized TikiCrawler with API URL: {self.api_url}")
@@ -567,7 +567,7 @@ if __name__ == "__main__":
             crawler.run()
         else:
             logger.error("❌ Authentication failed. Please check your credentials and API URL.")
-            logger.info(f"API URL: {API_URL}")
+            logger.info(f"API URL: {API_BASE_URL}")
 
     except Exception as e:
         logger.exception(f"Error in crawler main execution: {e}")
