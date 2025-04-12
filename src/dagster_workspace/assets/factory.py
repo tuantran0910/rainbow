@@ -69,8 +69,8 @@ def build_dlt_pipelines() -> dg.Definitions:
     schedules = None
 
     if job_config:
-        metadata = DAGSTER_METADATA.update(job_config.get("metadata", {}))
-        tags = DAGSTER_TAGS.update(job_config.get("tags", {}))
+        metadata = {**DAGSTER_METADATA, **job_config.get("metadata", {})}
+        tags = {**DAGSTER_TAGS, **job_config.get("tags", {})}
         job = dg.define_asset_job(
             name=job_config.get("name", f"{base_name}__{asset_group}__job"),
             description=job_config.get("description"),
@@ -85,8 +85,8 @@ def build_dlt_pipelines() -> dg.Definitions:
             "Schedule configuration provided without a job. Schedule will not be created."
         )
     if schedule_config and job_config:
-        metadata = DAGSTER_METADATA.update(schedule_config.get("metadata", {}))
-        tags = DAGSTER_TAGS.update(schedule_config.get("tags", {}))
+        metadata = {**DAGSTER_METADATA, **schedule_config.get("metadata", {})}
+        tags = {**DAGSTER_TAGS, **schedule_config.get("tags", {})}
         schedule = dg.ScheduleDefinition(
             name=schedule_config.get("name", f"{base_name}__{asset_group}__schedule"),
             job=job,
