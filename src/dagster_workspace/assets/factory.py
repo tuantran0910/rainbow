@@ -1,5 +1,3 @@
-import logging
-
 import dagster as dg
 from dagster_dlt import DagsterDltResource
 from dagster_dlt import dlt_assets
@@ -11,7 +9,7 @@ from assets.translators import CustomDagsterDltTranslator
 from constants import DAGSTER_METADATA
 from constants import DAGSTER_TAGS
 
-logger = logging.getLogger(__name__)
+logger = dg.get_dagster_logger(__name__)
 
 
 def build_dlt_pipelines() -> dg.Definitions:

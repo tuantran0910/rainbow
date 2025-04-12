@@ -1,5 +1,3 @@
-import logging
-
 import dagster as dg
 
 from assets.crawler import TikiCrawler
@@ -16,7 +14,7 @@ from schedules.crawling_schedules import crawling_schedule
 __all__ = ["build_dlt_pipelines"]
 
 
-logger = logging.getLogger(__name__)
+logger = dg.get_dagster_logger(__name__)
 
 
 @dg.asset(
@@ -27,18 +25,27 @@ logger = logging.getLogger(__name__)
     group_name=DAGSTER_CRAWLING_ASSET_GROUP,
 )
 def tiki_resources_asset():
-    try:
-        logger.info("Starting Tiki Crawler...")
-        crawler = TikiCrawler(admin_email=ADMIN_EMAIL, admin_password=ADMIN_PASSWORD)
+    """
+    Dagster asset that handles the crawling of Tiki resources.
 
-        # Try to get a token to verify authentication works
-        token = crawler.auth_token_manager.get_token()
-        if token:
-            logger.info("✅ Authentication successful!")
-            crawler.run()
+    This asset authenticates with Tiki using provided admin credentials,
+    then executes the crawler to fetch and process resources.
+
+    Returns:
+        None
+
+    Raises:
+        Exception: If any step in the crawling process fails
+    """
+    logger.info("Starting Tiki Crawler...")
+    try:
+        crawler = TikiCrawler(admin_email=ADMIN_EMAIL, admin_password=ADMIN_PASSWORD)
+        crawler.run()
+        logger.info("Tiki Crawler completed successfully.")
 
     except Exception as e:
-        logger.exception(f"Error in crawler main execution: {e}")
+        logger.exception(f"Crawler execution failed: {e}")
+        raise dg.DagsterError(f"Tiki crawler failed: {e}")
 
 
 defs = dg.Definitions(

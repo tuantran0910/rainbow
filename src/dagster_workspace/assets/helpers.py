@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import time
@@ -7,6 +6,7 @@ from pathlib import Path
 from typing import Any
 from typing import Optional
 
+import dagster as dg
 import dlt
 import requests
 import yaml
@@ -14,9 +14,9 @@ from dlt.extract.source import DltSource
 from dlt.sources.sql_database import sql_database
 
 from constants import DAGSTER_ASSETS_CONFIG_DIR
+from exceptions import AuthenticationError
 
-
-logger = logging.getLogger(__name__)
+logger = dg.get_dagster_logger(__name__)
 
 
 def load_assets_configs(
@@ -215,7 +215,7 @@ class AuthTokenManager:
             return self.token
 
         # Need to login and get a new token
-        logging.info("Getting new authentication token")
+        logger.info("Getting new authentication token")
         login_url = f"{self.api_url}/auth/login"
         login_data = {"email": self.admin_email, "password": self.admin_password}
         headers = {"Content-Type": "application/json"}
@@ -230,17 +230,17 @@ class AuthTokenManager:
             elif token_data and "token" in token_data:
                 self.token = token_data["token"]
             else:
-                logging.error(f"Unexpected response format: {token_data}")
+                logger.error(f"Unexpected response format: {token_data}")
                 return None
 
             self.token_expiry = current_time + (24 * 60 * 60)
-            logging.info("Successfully obtained authentication token")
+            logger.info("Successfully obtained authentication token")
             return self.token
         except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to get authentication token: {str(e)}")
+            logger.error(f"Failed to get authentication token: {str(e)}")
             if hasattr(e, "response") and e.response:
-                logging.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
-            return None
+                logger.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
+            raise e
 
 
 def make_http_request(
@@ -293,7 +293,7 @@ def make_http_request(
                 request_headers["Authorization"] = f"Bearer {token}"
             else:
                 logger.error("Authentication required but couldn't get token")
-                return None
+                raise AuthenticationError("Authentication failed")
 
         try:
             # Create session and prepare request
@@ -321,7 +321,7 @@ def make_http_request(
             attempts += 1
             if attempts >= max_retries:
                 logger.error(f"Request failed after {max_retries} attempts: {url} - {e}")
-                return None
+                raise dg.DagsterError(f"Request failed: {e}")
 
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
@@ -339,7 +339,7 @@ def make_http_request(
 
         except Exception as e:
             logger.error(f"Unexpected error during request to {url}: {e}")
-            return None
+            raise dg.DagsterError(f"Unexpected error occurred: {e}")
 
         # Apply backoff delay before retry
         if attempts < max_retries:
@@ -395,5 +395,5 @@ def sanitize_text(text: Optional[str]) -> Optional[str]:
         text = re.sub(r"\s+", " ", text)
         return text.strip()
     except Exception as e:
-        logging.warning(f"Error sanitizing text: {e}")
+        logger.warning(f"Error sanitizing text: {e}. Returning original text.")
         return text

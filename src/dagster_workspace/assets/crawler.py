@@ -1,8 +1,8 @@
 import json
-import logging
 import time
 from typing import Optional
 
+import dagster as dg
 from pydantic import BaseModel
 
 from assets.helpers import AuthTokenManager
@@ -17,7 +17,7 @@ from constants import TIKI_PRODUCT_LISTINGS_PAGE_PARAMS
 from constants import TIKI_REQUEST_DELAY
 
 
-logger = logging.getLogger(__name__)
+logger = dg.get_dagster_logger(__name__)
 
 
 class TikiSeller(BaseModel):
@@ -525,6 +525,10 @@ class TikiCrawler:
             logger.info(f"Waiting {self.request_delay}s before next page...")
             time.sleep(self.request_delay)
 
+            # TODO: Remove this break statement for production
+            if page == 50:
+                break
+
     def run(self) -> None:
         """
         Main execution method for the crawler pipeline.
@@ -543,9 +547,7 @@ class TikiCrawler:
 
 if __name__ == "__main__":
     try:
-        # Set up logging to debug level for more detailed information
-        logging.getLogger().setLevel(logging.DEBUG)
-        logging.info("Starting Tiki Crawler...")
+        logger.info("Starting Tiki Crawler...")
 
         # Create a crawler with admin credentials - you can override these from command line if needed
         import sys
@@ -553,7 +555,7 @@ if __name__ == "__main__":
         admin_email = sys.argv[1] if len(sys.argv) > 1 else "admin@example.com"
         admin_password = sys.argv[2] if len(sys.argv) > 2 else "Admin123!"
 
-        logging.info(f"Using credentials: {admin_email}")
+        logger.info(f"Using credentials: {admin_email}")
 
         # Test authentication explicitly first
         crawler = TikiCrawler(admin_email=admin_email, admin_password=admin_password)
@@ -561,11 +563,11 @@ if __name__ == "__main__":
         # Try to get a token to verify authentication works
         token = crawler.auth_token_manager.get_token()
         if token:
-            logging.info("✅ Authentication successful!")
+            logger.info("✅ Authentication successful!")
             crawler.run()
         else:
-            logging.error("❌ Authentication failed. Please check your credentials and API URL.")
-            logging.info(f"API URL: {API_URL}")
+            logger.error("❌ Authentication failed. Please check your credentials and API URL.")
+            logger.info(f"API URL: {API_URL}")
 
     except Exception as e:
-        logging.exception(f"Error in crawler main execution: {e}")
+        logger.exception(f"Error in crawler main execution: {e}")
