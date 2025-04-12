@@ -59,3 +59,8 @@ type GetBookResponse struct {
 type ListBooksResponse struct {
 	Books []*GetBookResponse `json:"books"`
 }
+
+// CountBooksResponse represents the response containing the total number of books
+type CountBooksResponse struct {
+	TotalBooks int64 `json:"total_books"`
+}

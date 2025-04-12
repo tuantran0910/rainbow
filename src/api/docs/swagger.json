@@ -775,6 +775,35 @@
         ]
       }
     },
+    "/books/count": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Get the total number of books in the system",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/response.APIResponse"
+            }
+          }
+        },
+        "summary": "Get Total Books Count",
+        "tags": [
+          "Book"
+        ]
+      }
+    },
     "/books/{id}": {
       "delete": {
         "consumes": [

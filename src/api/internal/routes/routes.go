@@ -55,6 +55,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		{
 			books.GET("", bookController.GetBooks)
 			books.GET(":id", bookController.GetBookById)
+			books.GET("/total", bookController.CountBooks)
 			books.POST("", middlewares.AuthMiddleware(), bookController.CreateBook)
 			books.PATCH(":id", middlewares.AuthMiddleware(), bookController.UpdateBook)
 			books.DELETE(":id", middlewares.AuthMiddleware(), bookController.DeleteBook)
