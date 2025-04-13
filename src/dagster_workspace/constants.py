@@ -46,7 +46,7 @@ DAGSTER_TAGS = {"team": "data_engineering"}
 DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
 DAGSTER_MOCKING_ASSET_GROUP = "mocking"
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 RAINBOW_DB_NAME = os.getenv("API_DB_NAME")
