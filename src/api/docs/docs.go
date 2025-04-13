@@ -376,6 +376,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/books/count": {
+            "get": {
+                "description": "Get the total number of books in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get Total Books Count",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/books/{id}": {
             "get": {
                 "description": "Fetch a book by its ID or secondary ID",

@@ -19,6 +19,7 @@ type IBookRepository interface {
 	AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error
 	UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID) error
+	CountBooks(ctx context.Context) (int64, error)
 }
 
 type bookRepository struct {
@@ -45,9 +46,9 @@ func (pr *bookRepository) GetBooks(
 	ctx context.Context,
 	page, limit int,
 ) ([]*models.Book, *pagination.Pagination, error) {
-	var totalBooks int64
-	if err := pr.db.WithContext(ctx).Model(&models.Book{}).Count(&totalBooks).Error; err != nil {
-		return nil, nil, fmt.Errorf("failed to fetch total number of books: %w", err)
+	totalBooks, err := pr.CountBooks(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to count books: %w", err)
 	}
 
 	pagination := pagination.NewPagination(page, limit, int(totalBooks))
@@ -136,4 +137,12 @@ func (pr *bookRepository) DeleteBook(ctx context.Context, bookId uuid.UUID) erro
 		return fmt.Errorf("book with id %s not found", bookId)
 	}
 	return nil
+}
+
+func (pr *bookRepository) CountBooks(ctx context.Context) (int64, error) {
+	var totalBooks int64
+	if err := pr.db.WithContext(ctx).Model(&models.Book{}).Count(&totalBooks).Error; err != nil {
+		return 0, fmt.Errorf("failed to count books: %w", err)
+	}
+	return totalBooks, nil
 }

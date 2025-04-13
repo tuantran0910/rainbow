@@ -28,6 +28,7 @@ type IBookService interface {
 		currentUserId uuid.UUID,
 	) (*models.Book, error)
 	DeleteBook(ctx context.Context, bookId uuid.UUID, currentUserId uuid.UUID) error
+	CountBooks(ctx context.Context) (int64, error)
 }
 
 type bookService struct {
@@ -266,4 +267,8 @@ func (ps *bookService) DeleteBook(
 			return bookRepository.DeleteBook(ctx, bookId)
 		},
 	)
+}
+
+func (ps *bookService) CountBooks(ctx context.Context) (int64, error) {
+	return ps.bookRepository.CountBooks(ctx)
 }

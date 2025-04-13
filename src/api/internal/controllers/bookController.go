@@ -460,3 +460,38 @@ func (pc *BookController) DeleteBook(ctx *gin.Context) {
 		SetStatusCode(http.StatusNoContent).
 		Respond(ctx)
 }
+
+// CountBooks godoc
+//
+//	@Summary		Get Total Books Count
+//	@Description	Get the total number of books in the system
+//	@Tags			Book
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	response.APIResponse
+//	@Failure		500	{object}	response.APIResponse
+//	@Router			/books/count [get]
+func (pc *BookController) CountBooks(ctx *gin.Context) {
+	reqCtx := ctx.Request.Context()
+	count, err := pc.bookService.CountBooks(reqCtx)
+	if err != nil {
+		response.
+			NewAPIResponse().
+			SetStatusCode(http.StatusInternalServerError).
+			SetMessage("Failed to count books").
+			SetError(err.Error()).Respond(ctx)
+		return
+	}
+
+	data := &dtos.CountBooksResponse{
+		Total: count,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
+	response.NewAPIResponse().
+		SetHeaders(headers).
+		SetStatusCode(http.StatusOK).
+		SetMessage("Successfully counted books").
+		SetData(data).
+		Respond(ctx)
+}
