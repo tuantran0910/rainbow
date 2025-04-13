@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/tuantran0910/rainbow/internal/models"
+	"gorm.io/gorm"
 )
 
 type CreatePromotionRequest struct {
@@ -27,4 +28,9 @@ type GetPromotionResponse struct {
 	UsedCount     int                 `json:"used_count"`
 	CreatedAt     time.Time           `json:"created_at"`
 	UpdatedAt     time.Time           `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt      `json:"deleted_at,omitempty"`
+}
+
+type ListPromotionsResponse struct {
+	Promotions []*GetPromotionResponse `json:"promotions"`
 }

@@ -33,7 +33,8 @@ func NewPromotionController(promotionService services.IPromotionService) *Promot
 func (pc *PromotionController) GetAllPromotions(ctx *gin.Context) {
 	responseHeaders := headers.NewHeaders(nil, ctx)
 
-	promotions, err := pc.promotionService.GetAllPromotions(ctx.Request.Context())
+	reqCtx := ctx.Request.Context()
+	promotions, err := pc.promotionService.GetAllPromotions(reqCtx)
 	if err != nil {
 		response.
 			NewAPIResponse().
@@ -45,12 +46,32 @@ func (pc *PromotionController) GetAllPromotions(ctx *gin.Context) {
 		return
 	}
 
-	response.
-		NewAPIResponse().
-		SetHeaders(responseHeaders).
+	promotionResponses := make([]*dtos.GetPromotionResponse, 0)
+	for _, promotion := range promotions {
+		promotionResponses = append(promotionResponses, &dtos.GetPromotionResponse{
+			ID:            promotion.ID,
+			Name:          promotion.Name,
+			DiscountType:  promotion.DiscountType,
+			DiscountValue: promotion.DiscountValue,
+			StartDate:     promotion.StartDate,
+			EndDate:       promotion.EndDate,
+			MaxUses:       promotion.MaxUses,
+			UsedCount:     promotion.UsedCount,
+			CreatedAt:     promotion.CreatedAt,
+			UpdatedAt:     promotion.UpdatedAt,
+			DeletedAt:     promotion.DeletedAt,
+		})
+	}
+	data := &dtos.ListPromotionsResponse{
+		Promotions: promotionResponses,
+	}
+
+	headers := headers.NewHeaders(data, ctx)
+	response.NewAPIResponse().
+		SetHeaders(headers).
 		SetStatusCode(http.StatusOK).
 		SetMessage("Successfully fetched promotions").
-		SetData(promotions).
+		SetData(data).
 		Respond(ctx)
 }
 
