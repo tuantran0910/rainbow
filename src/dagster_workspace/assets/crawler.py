@@ -494,7 +494,7 @@ class TikiCrawler:
                         review_count=record["review_count"],
                         page_count=record["page_count"],
                         author_ids=author_uuids_list,
-                        stock=new_stock if existing_book_data is None else None,
+                        stock=new_stock if not existing_book_data else None,
                     )
                     book_uuid = self._upsert_specific_data(data=book_to_upsert)
                     if book_uuid:
