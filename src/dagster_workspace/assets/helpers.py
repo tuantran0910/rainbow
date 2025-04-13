@@ -187,18 +187,18 @@ class AuthTokenManager:
     Args:
         email (str): The email of the user.
         password (str): The password of the user.
-        api_url (str): The base URL of the API.
+        auth_api_url (str): The base URL of the API.
     """
 
     def __init__(
         self,
         email: str,
         password: str,
-        api_url: str = API_BASE_URL,
+        auth_api_url: str = f"{API_BASE_URL}/auth/login",
     ):
         self.email = email
         self.password = password
-        self.api_url = api_url
+        self.auth_api_url = auth_api_url
         self.token = None
         self.token_expiry = 0.0
 
@@ -217,12 +217,13 @@ class AuthTokenManager:
 
         # Need to login and get a new token
         logger.info("Getting new authentication token")
-        login_url = f"{self.api_url}/auth/login"
         login_data = {"email": self.email, "password": self.password}
         headers = {"Content-Type": "application/json"}
 
         try:
-            response = requests.post(login_url, json=login_data, headers=headers, timeout=30)
+            response = requests.post(
+                self.auth_api_url, json=login_data, headers=headers, timeout=30
+            )
             response.raise_for_status()
             token_data = response.json()
 

@@ -6,6 +6,7 @@ from faker import Faker
 
 from assets.helpers import AuthTokenManager
 from assets.helpers import make_http_request
+from constants import ADMIN_EMAIL
 from constants import API_BASE_URL
 from constants import DAGSTER_METADATA
 from constants import DAGSTER_MOCKING_ASSET_GROUP
@@ -47,7 +48,7 @@ def get_users(rainbow_psql_resource: PostgresResource) -> list[str]:
         if not users:
             raise dg.DagsterError("No users found in the database")
 
-        return [user[0] for user in users]
+        return [user[0] for user in users if user[0] != ADMIN_EMAIL]
     except Exception as e:
         raise dg.DagsterError(f"Failed to fetch users: {e}")
 
@@ -167,6 +168,9 @@ def process_mock_orders(
     Raises:
         Exception: If API request fails.
     """
+    orders_api_url = f"{API_BASE_URL}/api/orders"
+    auth_api_url = f"{API_BASE_URL}/auth/login"
+
     created_orders = []
     faker = Faker(locale="vi_VN")
 
@@ -209,12 +213,11 @@ def process_mock_orders(
                 order_payload["promotion_id"] = promotion_id
 
             # Make the API request
-            orders_url = f"{API_BASE_URL}/api/orders"
             auth_token_manager = AuthTokenManager(
-                email=user, password=DEFAULT_USER_PASSWORD, api_url=API_BASE_URL
+                email=user, password=DEFAULT_USER_PASSWORD, auth_api_url=auth_api_url
             )
             response_data = make_http_request(
-                orders_url,
+                url=orders_api_url,
                 method="POST",
                 data=order_payload,
                 use_auth=True,

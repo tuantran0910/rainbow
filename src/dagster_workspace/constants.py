@@ -25,6 +25,9 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
 
+INVENTORY_MIN_STOCK = int(os.getenv("INVENTORY_MIN_STOCK", "10"))
+INVENTORY_MAX_STOCK = int(os.getenv("INVENTORY_MAX_STOCK", "50"))
+
 # Tiki Mocker
 MAX_BOOKS_PER_REQUEST = int(os.getenv("MAX_BOOKS_PER_REQUEST", "10"))
 MAX_ITEMS_PER_ORDER = int(os.getenv("MAX_ITEMS_PER_ORDER", "5"))

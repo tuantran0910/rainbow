@@ -182,7 +182,7 @@ func (pc *BookController) GetBookById(ctx *gin.Context) {
 		CreatedAt:     book.CreatedAt,
 		UpdatedAt:     book.UpdatedAt,
 		DeletedAt:     book.DeletedAt,
-		Stock: &dtos.GetInventoryResponse{
+		Inventory: &dtos.GetInventoryResponse{
 			ID:              book.Inventory.ID,
 			BookID:          book.Inventory.BookID,
 			Stock:           book.Inventory.Stock,
@@ -278,7 +278,7 @@ func (pc *BookController) CreateBook(ctx *gin.Context) {
 		CreatedAt:     book.CreatedAt,
 		UpdatedAt:     book.UpdatedAt,
 		DeletedAt:     book.DeletedAt,
-		Stock: &dtos.GetInventoryResponse{
+		Inventory: &dtos.GetInventoryResponse{
 			ID:              book.Inventory.ID,
 			BookID:          book.Inventory.BookID,
 			Stock:           book.Inventory.Stock,
@@ -388,7 +388,7 @@ func (pc *BookController) UpdateBook(ctx *gin.Context) {
 		CreatedAt:     book.CreatedAt,
 		UpdatedAt:     book.UpdatedAt,
 		DeletedAt:     book.DeletedAt,
-		Stock: &dtos.GetInventoryResponse{
+		Inventory: &dtos.GetInventoryResponse{
 			ID:              book.Inventory.ID,
 			BookID:          book.Inventory.BookID,
 			Stock:           book.Inventory.Stock,
