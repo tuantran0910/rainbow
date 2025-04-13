@@ -13,6 +13,7 @@ import yaml
 from dlt.extract.source import DltSource
 from dlt.sources.sql_database import sql_database
 
+from constants import API_BASE_URL
 from constants import DAGSTER_ASSETS_CONFIG_DIR
 from exceptions import AuthenticationError
 
@@ -184,20 +185,20 @@ class AuthTokenManager:
     Manages authentication tokens for API requests.
 
     Args:
+        email (str): The email of the user.
+        password (str): The password of the user.
         api_url (str): The base URL of the API.
-        admin_email (str): The email of the admin user.
-        admin_password (str): The password of the admin user.
     """
 
     def __init__(
         self,
-        api_url: str,
-        admin_email: str,
-        admin_password: str,
+        email: str,
+        password: str,
+        api_url: str = API_BASE_URL,
     ):
+        self.email = email
+        self.password = password
         self.api_url = api_url
-        self.admin_email = admin_email
-        self.admin_password = admin_password
         self.token = None
         self.token_expiry = 0.0
 
@@ -217,7 +218,7 @@ class AuthTokenManager:
         # Need to login and get a new token
         logger.info("Getting new authentication token")
         login_url = f"{self.api_url}/auth/login"
-        login_data = {"email": self.admin_email, "password": self.admin_password}
+        login_data = {"email": self.email, "password": self.password}
         headers = {"Content-Type": "application/json"}
 
         try:
