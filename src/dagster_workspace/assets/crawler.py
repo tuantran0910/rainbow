@@ -331,8 +331,6 @@ class TikiCrawler:
             url=f"{self.api_url}/{resource}/{data.secondary_id}",
             method="GET",
             params={"secondary": "true"},
-            use_auth=True,
-            auth_token_manager=self.auth_token_manager,
         )
         existing_resource = {} if existing is None else existing.get("data", {})
 
@@ -463,8 +461,6 @@ class TikiCrawler:
                     url=f"{self.api_url}/books/{record['id']}",
                     method="GET",
                     params={"secondary": "true"},
-                    use_auth=True,
-                    auth_token_manager=self.auth_token_manager,
                 )
                 existing_book_data = existing_book.get("data", {})
 
