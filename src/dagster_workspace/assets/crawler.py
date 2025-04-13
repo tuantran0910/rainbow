@@ -74,13 +74,16 @@ class TikiCrawler:
 
         # API Configuration
         self.api_base_url = API_BASE_URL
-        self.api_url = f"{API_BASE_URL}/api"  # For resource endpoints
+        self.api_url = f"{API_BASE_URL}/api"
+        self.auth_api_url = f"{API_BASE_URL}/auth/login"
+
+        # For resource endpoints
         self.auth_token_manager = AuthTokenManager(
-            email=admin_email, password=admin_password, api_url=self.api_base_url
+            email=admin_email, password=admin_password, auth_api_url=self.auth_api_url
         )
 
         logger.info(f"Initialized TikiCrawler with API URL: {self.api_url}")
-        logger.info(f"Auth base URL: {self.api_base_url}/auth/login")
+        logger.info(f"Auth base URL: {self.auth_api_url}")
 
     def _get_total_pages(self, category_id: int, url_key: str) -> int:
         """
