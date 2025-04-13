@@ -52,7 +52,7 @@ type GetBookResponse struct {
 	CreatedAt     time.Time             `json:"created_at"`
 	UpdatedAt     time.Time             `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt        `json:"deleted_at,omitempty"`
-	Stock         *GetInventoryResponse `json:"stock,omitempty"`
+	Inventory     *GetInventoryResponse `json:"inventory,omitempty"`
 	Authors       []*GetAuthorResponse  `json:"authors"`
 }
 
