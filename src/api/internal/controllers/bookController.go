@@ -484,7 +484,7 @@ func (pc *BookController) CountBooks(ctx *gin.Context) {
 	}
 
 	data := &dtos.CountBooksResponse{
-		TotalBooks: count,
+		Total: count,
 	}
 
 	headers := headers.NewHeaders(data, ctx)
