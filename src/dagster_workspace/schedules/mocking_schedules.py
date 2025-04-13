@@ -1,0 +1,14 @@
+import dagster as dg
+
+from constants import DAGSTER_METADATA
+from constants import DAGSTER_TAGS
+from jobs.mocking_jobs import users_mocking_job
+
+users_mocking_schedule = dg.ScheduleDefinition(
+    name="users_mocking_schedule",
+    description="This schedule is responsible for mocking users",
+    cron_schedule="0 * * * *",
+    job=users_mocking_job,
+    metadata=DAGSTER_METADATA,
+    tags=DAGSTER_TAGS,
+)

@@ -20,7 +20,7 @@ TIKI_CATEGORIES = {
 TIKI_BASE_PRODUCT_LISTINGS = "https://tiki.vn/api/personalish/v1/blocks/listings"
 TIKI_BASE_SPECIFIC_PRODUCT = "https://tiki.vn/api/v2/products/"
 
-API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
@@ -29,6 +29,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
 MAX_BOOKS_PER_REQUEST = int(os.getenv("MAX_BOOKS_PER_REQUEST", "10"))
 MAX_ITEMS_PER_ORDER = int(os.getenv("MAX_ITEMS_PER_ORDER", "5"))
 
+MAX_USERS_PER_REQUEST = int(os.getenv("MAX_USERS_PER_REQUEST", "5"))
 DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "default")
 
 # Dagster Resources
@@ -41,8 +42,5 @@ DAGSTER_METADATA = {
 }
 DAGSTER_TAGS = {"team": "data_engineering"}
 
-DAGSTER_CRAWLING_ASSET_NAME = "tiki_resources"
-DAGSTER_CRAWLING_JOB_NAME = "tiki_crawling_job"
-DAGSTER_CRAWLING_SCHEDULE_NAME = "tiki_crawling_schedule"
-
 DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
+DAGSTER_MOCKING_ASSET_GROUP = "mocking"

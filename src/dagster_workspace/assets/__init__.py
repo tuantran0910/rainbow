@@ -2,14 +2,16 @@ import dagster as dg
 
 from assets.crawler import TikiCrawler
 from assets.factory import build_dlt_pipelines
+from assets.users import user_registrations
 from constants import ADMIN_EMAIL
 from constants import ADMIN_PASSWORD
 from constants import DAGSTER_CRAWLING_ASSET_GROUP
-from constants import DAGSTER_CRAWLING_ASSET_NAME
 from constants import DAGSTER_METADATA
 from constants import DAGSTER_TAGS
-from jobs.crawling_job import crawling_job
+from jobs.crawling_jobs import crawling_job
+from jobs.mocking_jobs import users_mocking_job
 from schedules.crawling_schedules import crawling_schedule
+from schedules.mocking_schedules import users_mocking_schedule
 
 __all__ = ["build_dlt_pipelines"]
 
@@ -18,7 +20,7 @@ logger = dg.get_dagster_logger(__name__)
 
 
 @dg.asset(
-    name=DAGSTER_CRAWLING_ASSET_NAME,
+    name="tiki_resources",
     description="Crawl tiki resources",
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
@@ -50,7 +52,7 @@ def tiki_resources_asset():
 
 
 defs = dg.Definitions(
-    assets=[tiki_resources_asset],
-    jobs=[crawling_job],
-    schedules=[crawling_schedule],
+    assets=[tiki_resources_asset, user_registrations],
+    jobs=[crawling_job, users_mocking_job],
+    schedules=[crawling_schedule, users_mocking_schedule],
 )
