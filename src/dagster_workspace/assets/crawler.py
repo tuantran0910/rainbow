@@ -1,4 +1,5 @@
 import json
+import random
 import time
 from typing import Optional
 
@@ -9,6 +10,8 @@ from assets.helpers import AuthTokenManager
 from assets.helpers import make_http_request
 from assets.helpers import sanitize_text
 from constants import API_BASE_URL
+from constants import INVENTORY_MAX_STOCK
+from constants import INVENTORY_MIN_STOCK
 from constants import TIKI_BASE_PRODUCT_LISTINGS
 from constants import TIKI_BASE_SPECIFIC_PRODUCT
 from constants import TIKI_CATEGORIES
@@ -39,6 +42,7 @@ class TikiBook(BaseModel):
     review_count: Optional[int] = None
     page_count: Optional[int] = None
     author_ids: list[str] = []
+    stock: Optional[int] = None
 
 
 class TikiAuthor(BaseModel):
@@ -71,7 +75,9 @@ class TikiCrawler:
         # API Configuration
         self.api_base_url = API_BASE_URL
         self.api_url = f"{API_BASE_URL}/api"  # For resource endpoints
-        self.auth_token_manager = AuthTokenManager(self.api_base_url, admin_email, admin_password)
+        self.auth_token_manager = AuthTokenManager(
+            email=admin_email, password=admin_password, api_url=self.api_base_url
+        )
 
         logger.info(f"Initialized TikiCrawler with API URL: {self.api_url}")
         logger.info(f"Auth base URL: {self.api_base_url}/auth/login")
@@ -452,6 +458,19 @@ class TikiCrawler:
 
             # Product & Inventory
             if record["id"] and record["id"] not in book_ids:
+                # First, check if the book already exists by secondary ID
+                existing_book = make_http_request(
+                    url=f"{self.api_url}/books/{record['id']}",
+                    method="GET",
+                    params={"secondary": "true"},
+                    use_auth=True,
+                    auth_token_manager=self.auth_token_manager,
+                )
+                existing_book_data = existing_book.get("data", {})
+
+                # Generate a random stock value in case the book is new or needs to be restocked
+                new_stock = random.randint(INVENTORY_MIN_STOCK, INVENTORY_MAX_STOCK)
+
                 # Get the UUIDs for the related entities
                 category_uuid = category_uuids.get(record["category_id"])
                 seller_uuid = seller_uuids.get(record["seller_id"])
@@ -475,9 +494,41 @@ class TikiCrawler:
                         review_count=record["review_count"],
                         page_count=record["page_count"],
                         author_ids=author_uuids_list,
+                        stock=new_stock if existing_book_data is None else None,
                     )
-                    self._upsert_specific_data(data=book_to_upsert)
-                    book_ids.add(record["id"])
+                    book_uuid = self._upsert_specific_data(data=book_to_upsert)
+                    if book_uuid:
+                        book_ids.add(record["id"])
+
+                        # Check inventory status if the book exists
+                        inventory_needs_update = False
+
+                        if existing_book_data:
+                            existing_inventory = existing_book_data.get("inventory", {})
+                            if existing_inventory:
+                                current_stock = existing_inventory.get("stock", 0)
+
+                                # Check if stock is low and needs replenishment
+                                if current_stock <= 0:
+                                    inventory_needs_update = True
+                                    logger.info(
+                                        f"Book {record['id']} has low inventory ({current_stock}). Restocking..."
+                                    )
+
+                        # Update inventory if needed when it's low
+                        if inventory_needs_update:
+                            logger.info(
+                                f"Updating inventory for book {record['id']} with new stock: {new_stock}"
+                            )
+                            make_http_request(
+                                url=f"{self.api_url}/books/{book_uuid}",
+                                method="PATCH",
+                                data={
+                                    "stock": new_stock,
+                                },
+                                use_auth=True,
+                                auth_token_manager=self.auth_token_manager,
+                            )
                 else:
                     logger.warning(
                         f"Missing required UUIDs for book {record['id']}. Skipping book creation."
