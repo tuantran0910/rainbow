@@ -50,5 +50,5 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 RAINBOW_DB_NAME = os.getenv("API_DB_NAME")
-RAINBOW_DB_USER = os.getenv("API_DB_USER")
-RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")
+RAINBOW_DB_USER = os.getenv("DB_USER")
+RAINBOW_DB_PASSWORD = os.getenv("DB_PASSWORD")
