@@ -1,28 +1,35 @@
 import random
-from datetime import datetime
 from typing import Any
-from typing import Optional
 
 import dagster as dg
+from faker import Faker
 
 from assets.helpers import AuthTokenManager
 from assets.helpers import make_http_request
 from constants import API_BASE_URL
+from constants import DAGSTER_METADATA
+from constants import DAGSTER_MOCKING_ASSET_GROUP
+from constants import DAGSTER_TAGS
 from constants import DEFAULT_USER_PASSWORD
 from constants import MAX_BOOKS_PER_REQUEST
 from constants import MAX_ITEMS_PER_ORDER
+from constants import MAX_QUANTITY_PER_BOOK
 from resources.psql_resource import PostgresResource
 
 logger = dg.get_dagster_logger()
 
 
-@dg.op
-def get_users(psql_resource: PostgresResource) -> list[str]:
+@dg.op(
+    name="get_users",
+    description="Get all users from the PostgreSQL database.",
+    out=dg.Out(description="A list of user emails."),
+)
+def get_users(rainbow_psql_resource: PostgresResource) -> list[str]:
     """
     Get all users from the PostgreSQL database.
 
     Args:
-        psql_resource (PostgresResource): A resource for interacting with the PostgreSQL database.
+        rainbow_psql_resource (PostgresResource): A resource for interacting with the PostgreSQL database.
 
     Returns:
         list[str]: A list of user emails.
@@ -31,13 +38,25 @@ def get_users(psql_resource: PostgresResource) -> list[str]:
         Exception: If database query fails.
     """
     try:
-        users = psql_resource.fetchall("SELECT email FROM users")
+        query = """
+            SELECT email
+            FROM users
+            WHERE deleted_at IS NULL
+        """
+        users = rainbow_psql_resource.fetchall(query=query)
+        if not users:
+            raise dg.DagsterError("No users found in the database")
+
         return [user[0] for user in users]
     except Exception as e:
         raise dg.DagsterError(f"Failed to fetch users: {e}")
 
 
-@dg.op
+@dg.op(
+    name="get_available_books",
+    description="Fetch available books from the Rainbow API.",
+    out=dg.Out(description="A list of book objects with their details."),
+)
 def get_available_books() -> list[dict[str, Any]]:
     """
     Fetch available books from the Rainbow API.
@@ -70,7 +89,11 @@ def get_available_books() -> list[dict[str, Any]]:
         raise dg.DagsterError(f"Failed to fetch books: {e}")
 
 
-@dg.op
+@dg.op(
+    name="get_available_payments",
+    description="Fetch all available payment methods from the Rainbow API.",
+    out=dg.Out(description="A list of payment objects."),
+)
 def get_available_payments() -> list[dict[str, Any]]:
     """
     Fetch all available payment methods from the Rainbow API.
@@ -89,7 +112,11 @@ def get_available_payments() -> list[dict[str, Any]]:
         raise dg.DagsterError(f"Failed to fetch payments: {e}")
 
 
-@dg.op
+@dg.op(
+    name="get_available_promotions",
+    description="Fetch available promotions from the Rainbow API.",
+    out=dg.Out(description="A list of promotion objects."),
+)
 def get_available_promotions() -> list[dict[str, Any]]:
     """
     Fetch available promotions from the Rainbow API.
@@ -108,63 +135,110 @@ def get_available_promotions() -> list[dict[str, Any]]:
         raise dg.DagsterError(f"Failed to fetch promotions: {e}")
 
 
-@dg.op
-def create_mock_order(
-    user: str,
-    order_items: list[dict[str, Any]],
-    payment_id: str,
-    promotion_id: Optional[str] = None,
-) -> dict[str, Any]:
+@dg.op(
+    name="process_mock_orders",
+    description="Process mock orders for users.",
+    ins={
+        "users": dg.In(description="List of user emails to create orders for."),
+        "books": dg.In(description="List of available books."),
+        "payments": dg.In(description="List of available payment methods."),
+        "promotions": dg.In(description="List of available promotions."),
+    },
+    out=dg.Out(description="List of created order objects."),
+)
+def process_mock_orders(
+    users: list[str],
+    books: list[dict[str, Any]],
+    payments: list[dict[str, Any]],
+    promotions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     """
     Create a mock order via the Rainbow API.
 
     Args:
-        user (str): User email to create the order for.
-        order_items (list[dict[str, Any]]): List of items to include in the order.
-        payment_id (str): ID of the payment method to use.
-        promotion_id (Optional[str]): Optional promotion ID to apply.
+        users (list[str]): List of user emails to create orders for.
+        books (list[dict[str, Any]]): List of available books.
+        payments (list[dict[str, Any]]): List of available payment methods.
+        promotions (list[dict[str, Any]]): List of available promotions.
 
     Returns:
-        dict[str, Any]: The created order object.
+        list[dict[str, Any]]: List of created order objects.
 
     Raises:
         Exception: If API request fails.
     """
-    logger.info(f"Creating mock order for user {user}...")
+    created_orders = []
+    faker = Faker(locale="vi_VN")
 
-    # Create order payload
-    order_payload = {
-        "payment_id": payment_id,
-        "shipping_address": f"Mock Address {datetime.now().strftime('%Y%m%d%H%M%S')}",
-        "order_items": order_items,
-    }
+    for user in users:
+        logger.info(f"Processing mock order for user {user}...")
 
-    # Optionally add promotion
-    if promotion_id:
-        order_payload["promotion_id"] = promotion_id
+        try:
+            # Randomly select items
+            num_items = random.randint(1, min(MAX_ITEMS_PER_ORDER, len(books)))
+            selected_books = random.sample(books, num_items)
 
-    # Make the API request
-    orders_url = f"{API_BASE_URL}/api/orders"
-    try:
-        auth_token_manager = AuthTokenManager(
-            email=user, password=DEFAULT_USER_PASSWORD, api_url=API_BASE_URL
-        )
-        response_data = make_http_request(
-            orders_url,
-            method="POST",
-            json=order_payload,
-            use_auth=True,
-            auth_token_manager=auth_token_manager,
-        )
-        order_id = response_data["data"]["order"]["id"]
-        logger.info(f"Order created successfully: {order_id}")
-        return response_data["data"]["order"]
-    except Exception as e:
-        raise dg.DagsterError(f"Failed to mock order transaction: {e}")
+            # Create order items
+            order_items = [
+                {
+                    "book_id": book["id"],
+                    "quantity": random.randint(1, MAX_QUANTITY_PER_BOOK),
+                }
+                for book in selected_books
+            ]
+
+            # Randomly select payment
+            payment = random.choice(payments)
+            payment_id = payment.get("id")
+
+            # Randomly select promotion (if available)
+            promotion_id = None
+            if promotions:
+                promotion = random.choice(promotions)
+                promotion_id = promotion.get("id")
+
+            # Create order payload
+            order_payload = {
+                "payment_id": payment_id,
+                "shipping_address": faker.state(),
+                "order_items": order_items,
+            }
+
+            # Optionally add promotion
+            if promotion_id:
+                order_payload["promotion_id"] = promotion_id
+
+            # Make the API request
+            orders_url = f"{API_BASE_URL}/api/orders"
+            auth_token_manager = AuthTokenManager(
+                email=user, password=DEFAULT_USER_PASSWORD, api_url=API_BASE_URL
+            )
+            response_data = make_http_request(
+                orders_url,
+                method="POST",
+                data=order_payload,
+                use_auth=True,
+                auth_token_manager=auth_token_manager,
+            )
+            order_id = response_data["data"]["id"]
+            logger.info(f"Order created successfully: {order_id}")
+            created_orders.append(response_data["data"])
+        except Exception as e:
+            logger.error(f"Failed to mock order transaction for user {user}: {e}")
+            continue
+
+    return created_orders
 
 
-@dg.graph_asset
-def order_transactions(psql_resource: PostgresResource) -> dg.MaterializeResult:
+@dg.graph_asset(
+    name="order_transactions",
+    description="A graph asset that creates mock orders for all users in the database.",
+    metadata=DAGSTER_METADATA,
+    tags=DAGSTER_TAGS,
+    group_name=DAGSTER_MOCKING_ASSET_GROUP,
+    kinds={"python"},
+)
+def order_transactions() -> list[dict[str, Any]]:
     """
     A graph asset that creates mock orders for all users in the database.
 
@@ -173,18 +247,13 @@ def order_transactions(psql_resource: PostgresResource) -> dg.MaterializeResult:
     2. Fetches available books, payment methods, and promotions
     3. Creates a random order for each user
 
-    Args:
-        psql_resource (PostgresResource): A resource for interacting with the PostgreSQL database.
-
     Returns:
-        dg.MaterializeResult: A materialize result containing the number of orders created.
+        list[dict[str, Any]]: A list of created order objects.
     """
-    users = get_users(psql_resource)
+    users = get_users()
     books = get_available_books()
     payments = get_available_payments()
     promotions = get_available_promotions()
-
-    created_orders = []
 
     # Validate we have necessary data
     if not users:
@@ -199,52 +268,8 @@ def order_transactions(psql_resource: PostgresResource) -> dg.MaterializeResult:
         logger.warning("No payment methods available")
         return dg.MaterializeResult(metadata={"number_of_orders": 0})
 
-    for user in users:
-        logger.info(f"Processing order for user {user}")
-
-        try:
-            # Randomly select items
-            num_items = random.randint(1, min(MAX_ITEMS_PER_ORDER, len(books)))
-            selected_books = random.sample(books, num_items)
-
-            # Create order items
-            order_items = [
-                {
-                    "book_id": book["id"],
-                    "quantity": random.randint(1, 3),
-                }
-                for book in selected_books
-                if "id" in book  # Validate book has required fields
-            ]
-
-            # Randomly select payment
-            payment = random.choice(payments)
-            payment_id = payment.get("id")
-
-            if not payment_id:
-                logger.warning(f"Payment method missing ID, skipping order for {user}")
-                continue
-
-            # Randomly select promotion (if available)
-            promotion_id = None
-            if promotions:
-                promotion = random.choice(promotions)
-                promotion_id = promotion.get("id")
-
-            order = create_mock_order(
-                user=user,
-                order_items=order_items,
-                payment_id=payment_id,
-                promotion_id=promotion_id,
-            )
-
-            created_orders.append(order)
-
-        except Exception as e:
-            raise dg.DagsterError(f"Failed to create order for user {user}: {e}")
-
-    return dg.MaterializeResult(
-        metadata={
-            "number_of_orders": len(created_orders),
-        }
+    created_orders = process_mock_orders(
+        users=users, books=books, payments=payments, promotions=promotions
     )
+
+    return created_orders

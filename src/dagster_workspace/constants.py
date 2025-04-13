@@ -28,6 +28,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
 # Tiki Mocker
 MAX_BOOKS_PER_REQUEST = int(os.getenv("MAX_BOOKS_PER_REQUEST", "10"))
 MAX_ITEMS_PER_ORDER = int(os.getenv("MAX_ITEMS_PER_ORDER", "5"))
+MAX_QUANTITY_PER_BOOK = int(os.getenv("MAX_QUANTITY_PER_BOOK", "3"))
 
 MAX_USERS_PER_REQUEST = int(os.getenv("MAX_USERS_PER_REQUEST", "5"))
 DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "default")
@@ -44,3 +45,10 @@ DAGSTER_TAGS = {"team": "data_engineering"}
 
 DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
 DAGSTER_MOCKING_ASSET_GROUP = "mocking"
+
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+
+RAINBOW_DB_NAME = os.getenv("API_DB_NAME")
+RAINBOW_DB_USER = os.getenv("API_DB_USER")
+RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")

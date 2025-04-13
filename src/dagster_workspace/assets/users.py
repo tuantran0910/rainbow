@@ -1,4 +1,5 @@
 import random
+import unicodedata
 from enum import Enum
 from typing import Any
 
@@ -25,12 +26,56 @@ class UserGenerationOpConfig(dg.Config):
     num_users: int = MAX_USERS_PER_REQUEST
 
 
+def generate_phone_number() -> str:
+    """
+    Generate a random phone number.
+
+    Returns:
+        str: A random phone number.
+    """
+    phone_start = [
+        "086",
+        "096",
+        "097",
+        "098",
+        "032",
+        "033",
+        "034",
+        "035",
+        "036",
+        "037",
+        "038",
+        "039",
+        "090",
+        "093",
+        "091",
+        "094",
+        "083",
+        "084",
+        "085",
+    ]
+    start = random.choice(phone_start)
+    end = "".join([str(random.randint(0, 9)) for _ in range(7)])
+    return f"{start}{end}"
+
+
+def remove_accents(text: str) -> str:
+    """
+    Remove accents from a Vietnamese string.
+
+    Args:
+        text (str): The string to remove accents from.
+
+    Returns:
+        str: The string without accents.
+    """
+    return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
+
+
 @dg.op(
     name="generate_fake_users",
     description="Generate a specified number of fake users with Faker.",
-    out={
-        "users": dg.Out(description="List of generated user data"),
-    },
+    out=dg.Out(description="List of generated user data"),
 )
 def generate_fake_users(config: UserGenerationOpConfig) -> list[dict[str, Any]]:
     """
@@ -42,14 +87,30 @@ def generate_fake_users(config: UserGenerationOpConfig) -> list[dict[str, Any]]:
     Returns:
         list[dict[str, Any]]: List of generated user data.
     """
-    faker = Faker()
+    faker = Faker(locale="vi_VN")
     users = []
 
     for _ in range(config.num_users):
-        first_name = faker.first_name()
-        last_name = faker.last_name()
-        email = f"{first_name.lower()}.{last_name.lower()}{random.randint(1, 999)}@example.com"
-        phone_number = "".join([str(random.randint(0, 9)) for _ in range(10)])
+        # Randomly choose a gender to generate a fake name
+        gender = random.choice(["male", "female"])
+        if gender == "male":
+            first_name = faker.first_name_male()
+            last_name = faker.last_name_male() + " " + faker.middle_name()
+        else:
+            first_name = faker.first_name_female()
+            last_name = faker.last_name_female() + " " + faker.middle_name()
+
+        # Email is generated from the first name and last name
+        first_name_without_accents = remove_accents(first_name).lower()
+        last_name_without_accents = remove_accents(last_name).lower().replace(" ", "")
+        email_template = "{first_name}.{last_name}{random_number}@gmail.com"
+        email = email_template.format(
+            first_name=first_name_without_accents,
+            last_name=last_name_without_accents,
+            random_number=random.randint(1, 999),
+        )
+
+        phone_number = generate_phone_number()
 
         # Construct user data
         user = {
@@ -71,9 +132,7 @@ def generate_fake_users(config: UserGenerationOpConfig) -> list[dict[str, Any]]:
     ins={
         "user_data": dg.In(description="List of user data to register"),
     },
-    out={
-        "registration_results": dg.Out(description="List of registration results"),
-    },
+    out=dg.Out(description="List of registration results"),
 )
 def register_users(user_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
@@ -135,9 +194,7 @@ def register_users(user_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ins={
         "registration_results": dg.In(description="List of registration results"),
     },
-    out={
-        "analysis": dg.Out(description="Analysis of registration results"),
-    },
+    out=dg.Out(description="Analysis of registration results"),
 )
 def analyze_registration_results(registration_results: list[dict[str, Any]]) -> dict[str, int]:
     """
