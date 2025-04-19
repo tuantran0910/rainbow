@@ -3,6 +3,7 @@ import dagster as dg
 from constants import DAGSTER_METADATA
 from constants import DAGSTER_TAGS
 from jobs.mocking_jobs import orders_mocking_job
+from jobs.mocking_jobs import promotions_mocking_job
 from jobs.mocking_jobs import users_mocking_job
 
 users_mocking_schedule = dg.ScheduleDefinition(
@@ -19,6 +20,15 @@ orders_mocking_schedule = dg.ScheduleDefinition(
     description="This schedule is responsible for mocking orders",
     cron_schedule="*/5 * * * *",
     job=orders_mocking_job,
+    metadata=DAGSTER_METADATA,
+    tags=DAGSTER_TAGS,
+)
+
+promotions_mocking_schedule = dg.ScheduleDefinition(
+    name="promotions_mocking_schedule",
+    description="This schedule is responsible for mocking promotions",
+    cron_schedule="0 0,12 * * *",
+    job=promotions_mocking_job,
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
 )

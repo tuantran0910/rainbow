@@ -50,4 +50,4 @@ USER 1000
 EXPOSE 4000
 
 # Run the Dagster GRPC server
-CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]
+CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]
