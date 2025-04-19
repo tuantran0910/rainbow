@@ -45,7 +45,7 @@ func (pc *PromotionController) GetAllPromotions(ctx *gin.Context) {
 	}
 
 	reqCtx := ctx.Request.Context()
-	promotions, err := pc.promotionService.GetAllPromotions(reqCtx, currentUserId.(*uuid.UUID))
+	promotions, err := pc.promotionService.GetAllPromotions(reqCtx, currentUserId.(uuid.UUID))
 	if err != nil {
 		response.
 			NewAPIResponse().
