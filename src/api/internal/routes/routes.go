@@ -106,7 +106,7 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 		// Promotion routes
 		promotions := api.Group("/promotions")
 		{
-			promotions.GET("", promotionController.GetAllPromotions)
+			promotions.GET("", middlewares.AuthMiddleware(), promotionController.GetAllPromotions)
 			promotions.POST("", middlewares.AuthMiddleware(), promotionController.CreatePromotion)
 		}
 

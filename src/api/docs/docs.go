@@ -1154,7 +1154,7 @@ const docTemplate = `{
         },
         "/promotions": {
             "get": {
-                "description": "Get all promotions that are currently active (within their start and end date range)",
+                "description": "Get all promotions that are currently active (within their start and end date range). If user_id is provided, returns only promotions available for that user.",
                 "produces": [
                     "application/json"
                 ],
@@ -1162,6 +1162,14 @@ const docTemplate = `{
                     "Promotion"
                 ],
                 "summary": "Get all active promotions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID to filter available promotions",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

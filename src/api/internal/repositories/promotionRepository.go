@@ -13,7 +13,7 @@ import (
 
 type IPromotionRepository interface {
 	WithTX(tx *gorm.DB) IPromotionRepository
-	GetAllPromotions(ctx context.Context) ([]*models.Promotion, error)
+	GetAllPromotions(ctx context.Context, userID uuid.UUID) ([]*models.Promotion, error)
 	GetPromotionById(ctx context.Context, promotionID uuid.UUID) (*models.Promotion, error)
 	CreatePromotion(ctx context.Context, promotion *models.Promotion) error
 	UpdatePromotion(ctx context.Context, promotionId uuid.UUID, promotion *models.Promotion) error
@@ -38,12 +38,22 @@ func (pr *promotionRepository) WithTX(tx *gorm.DB) IPromotionRepository {
 	}
 }
 
-func (pr *promotionRepository) GetAllPromotions(ctx context.Context) ([]*models.Promotion, error) {
+func (pr *promotionRepository) GetAllPromotions(
+	ctx context.Context,
+	userID uuid.UUID,
+) ([]*models.Promotion, error) {
 	var promotions []*models.Promotion
 	now := time.Now()
-	err := pr.db.WithContext(ctx).
-		Where("start_date <= ? AND end_date >= ?", now, now).
-		Find(&promotions).Error
+
+	// Start with base query for active promotions that are not yet used up
+	query := pr.db.WithContext(ctx).Where("start_date <= ? AND end_date >= ?", now, now)
+
+	// Filter by promotions available for that user
+	query = query.Where("used_count < max_uses").
+		Joins("LEFT JOIN user_promotions up ON promotions.id = up.promotion_id AND up.user_id = ?", userID).
+		Where("up.id IS NULL")
+
+	err := query.Find(&promotions).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch promotions: %w", err)
 	}

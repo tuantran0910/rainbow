@@ -32,12 +32,13 @@ type IOrderService interface {
 }
 
 type orderService struct {
-	db                  *gorm.DB
-	orderRepository     repositories.IOrderRepository
-	bookRepository      repositories.IBookRepository
-	inventoryRepository repositories.IInventoryRepository
-	promotionRepository repositories.IPromotionRepository
-	userRepository      repositories.IUserRepository
+	db                      *gorm.DB
+	orderRepository         repositories.IOrderRepository
+	bookRepository          repositories.IBookRepository
+	inventoryRepository     repositories.IInventoryRepository
+	promotionRepository     repositories.IPromotionRepository
+	userRepository          repositories.IUserRepository
+	userPromotionRepository repositories.IUserPromotionRepository
 }
 
 func NewOrderService(
@@ -47,14 +48,16 @@ func NewOrderService(
 	inventoryRepository repositories.IInventoryRepository,
 	promoRepository repositories.IPromotionRepository,
 	userRepository repositories.IUserRepository,
+	userPromotionRepository repositories.IUserPromotionRepository,
 ) IOrderService {
 	return &orderService{
-		db:                  db,
-		orderRepository:     orderRepository,
-		bookRepository:      bookRepository,
-		inventoryRepository: inventoryRepository,
-		promotionRepository: promoRepository,
-		userRepository:      userRepository,
+		db:                      db,
+		orderRepository:         orderRepository,
+		bookRepository:          bookRepository,
+		inventoryRepository:     inventoryRepository,
+		promotionRepository:     promoRepository,
+		userRepository:          userRepository,
+		userPromotionRepository: userPromotionRepository,
 	}
 }
 
@@ -67,6 +70,7 @@ func (os *orderService) withTX(
 		repositories.IInventoryRepository,
 		repositories.IPromotionRepository,
 		repositories.IUserRepository,
+		repositories.IUserPromotionRepository,
 	) error,
 ) error {
 	return os.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -75,6 +79,7 @@ func (os *orderService) withTX(
 		inventoryRepository := os.inventoryRepository.WithTX(tx)
 		promotionRepository := os.promotionRepository.WithTX(tx)
 		userRepository := os.userRepository.WithTX(tx)
+		userPromotionRepository := os.userPromotionRepository.WithTX(tx)
 		return fn(
 			ctx,
 			orderRepository,
@@ -82,6 +87,7 @@ func (os *orderService) withTX(
 			inventoryRepository,
 			promotionRepository,
 			userRepository,
+			userPromotionRepository,
 		)
 	})
 }
@@ -115,6 +121,7 @@ func (os *orderService) CreateOrder(
 		inventoryRepository repositories.IInventoryRepository,
 		promotionRepository repositories.IPromotionRepository,
 		userRepository repositories.IUserRepository,
+		userPromotionRepository repositories.IUserPromotionRepository,
 	) error {
 		var err error
 
@@ -173,6 +180,18 @@ func (os *orderService) CreateOrder(
 			if err != nil {
 				return err
 			}
+
+			// Check if the user has already used this promotion
+			userPromotion, err := userPromotionRepository.GetUserPromotionByUserAndPromotion(
+				ctx, currentUserId, *orderRequest.PromotionId,
+			)
+			if err != nil {
+				return err
+			}
+
+			if userPromotion != nil {
+				return fmt.Errorf("you have already used this promotion")
+			}
 		}
 
 		if promotion != nil && promotion.UsedCount < promotion.MaxUses {
@@ -190,6 +209,15 @@ func (os *orderService) CreateOrder(
 
 			if order.TotalAmount < 0 {
 				order.TotalAmount = 0
+			}
+
+			// Create a record in user_promotions table
+			userPromotion := &models.UserPromotion{
+				UserID:      currentUserId,
+				PromotionID: promotion.ID,
+			}
+			if err = userPromotionRepository.CreateUserPromotion(ctx, userPromotion); err != nil {
+				return err
 			}
 
 			promotion.UsedCount++
@@ -221,6 +249,7 @@ func (os *orderService) DeleteOrder(
 		inventoryRepository repositories.IInventoryRepository,
 		promotionRepository repositories.IPromotionRepository,
 		userRepository repositories.IUserRepository,
+		userPromotionRepository repositories.IUserPromotionRepository,
 	) error {
 		order, err := orderRepository.GetOrderById(ctx, orderId, currentUserId)
 		if err != nil {
