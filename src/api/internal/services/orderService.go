@@ -130,7 +130,6 @@ func (os *orderService) CreateOrder(
 			PaymentID:       orderRequest.PaymentId,
 			PromotionID:     orderRequest.PromotionId,
 			ShippingAddress: orderRequest.ShippingAddress,
-			TotalAmount:     0,
 		}
 		if err = orderRepository.CreateOrder(ctx, order); err != nil {
 			return err
@@ -174,6 +173,9 @@ func (os *orderService) CreateOrder(
 			}
 		}
 
+		// Set the default total amount (without promotion)
+		order.TotalAmount = bookTotalAmount
+
 		var promotion *models.Promotion
 		if orderRequest.PromotionId != nil {
 			promotion, err = promotionRepository.GetPromotionById(ctx, *orderRequest.PromotionId)
@@ -200,7 +202,7 @@ func (os *orderService) CreateOrder(
 				return fmt.Errorf("promotion is not available")
 			}
 
-			*order.PromotionID = promotion.ID
+			order.PromotionID = &promotion.ID
 			if promotion.DiscountType == models.DiscountPercentage {
 				order.TotalAmount = bookTotalAmount * (1 - promotion.DiscountValue/100)
 			} else {
@@ -226,6 +228,7 @@ func (os *orderService) CreateOrder(
 			}
 		}
 
+		// Update the order with the final total amount
 		if err = orderRepository.UpdateOrder(ctx, order); err != nil {
 			return err
 		}

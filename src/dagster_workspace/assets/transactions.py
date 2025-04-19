@@ -114,36 +114,12 @@ def get_available_payments() -> list[dict[str, Any]]:
 
 
 @dg.op(
-    name="get_available_promotions",
-    description="Fetch available promotions from the Rainbow API.",
-    out=dg.Out(description="A list of promotion objects."),
-)
-def get_available_promotions() -> list[dict[str, Any]]:
-    """
-    Fetch available promotions from the Rainbow API.
-
-    Returns:
-        list[dict[str, Any]]: A list of promotion objects.
-
-    Raises:
-        Exception: If API request fails.
-    """
-    promotions_url = f"{API_BASE_URL}/api/promotions"
-    try:
-        response_data = make_http_request(promotions_url, method="GET")
-        return response_data["data"]["promotions"]
-    except Exception as e:
-        raise dg.DagsterError(f"Failed to fetch promotions: {e}")
-
-
-@dg.op(
     name="process_mock_orders",
     description="Process mock orders for users.",
     ins={
         "users": dg.In(description="List of user emails to create orders for."),
         "books": dg.In(description="List of available books."),
         "payments": dg.In(description="List of available payment methods."),
-        "promotions": dg.In(description="List of available promotions."),
     },
     out=dg.Out(description="List of created order objects."),
 )
@@ -151,7 +127,6 @@ def process_mock_orders(
     users: list[str],
     books: list[dict[str, Any]],
     payments: list[dict[str, Any]],
-    promotions: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """
     Create a mock order via the Rainbow API.
@@ -160,7 +135,6 @@ def process_mock_orders(
         users (list[str]): List of user emails to create orders for.
         books (list[dict[str, Any]]): List of available books.
         payments (list[dict[str, Any]]): List of available payment methods.
-        promotions (list[dict[str, Any]]): List of available promotions.
 
     Returns:
         list[dict[str, Any]]: List of created order objects.
@@ -195,7 +169,19 @@ def process_mock_orders(
             payment = random.choice(payments)
             payment_id = payment.get("id")
 
+            # Initialize token manager for auth-required requests
+            auth_token_manager = AuthTokenManager(
+                email=user, password=DEFAULT_USER_PASSWORD, auth_api_url=auth_api_url
+            )
+
             # Randomly select promotion (if available)
+            promotions_response_data = make_http_request(
+                url=f"{API_BASE_URL}/api/promotions",
+                method="GET",
+                use_auth=True,
+                auth_token_manager=auth_token_manager,
+            )
+            promotions = promotions_response_data.get("data", {}).get("promotions", [])
             promotion_id = None
             if promotions:
                 promotion = random.choice(promotions)
@@ -213,19 +199,16 @@ def process_mock_orders(
                 order_payload["promotion_id"] = promotion_id
 
             # Make the API request
-            auth_token_manager = AuthTokenManager(
-                email=user, password=DEFAULT_USER_PASSWORD, auth_api_url=auth_api_url
-            )
-            response_data = make_http_request(
+            order_response_data = make_http_request(
                 url=orders_api_url,
                 method="POST",
                 data=order_payload,
                 use_auth=True,
                 auth_token_manager=auth_token_manager,
             )
-            order_id = response_data["data"]["id"]
+            order_id = order_response_data.get("data", {}).get("id")
             logger.info(f"Order created successfully: {order_id}")
-            created_orders.append(response_data["data"])
+            created_orders.append(order_response_data.get("data", {}))
         except Exception as e:
             logger.error(f"Failed to mock order transaction for user {user}: {e}")
             continue
@@ -256,7 +239,6 @@ def order_transactions() -> list[dict[str, Any]]:
     users = get_users()
     books = get_available_books()
     payments = get_available_payments()
-    promotions = get_available_promotions()
 
     # Validate we have necessary data
     if not users:
@@ -271,8 +253,6 @@ def order_transactions() -> list[dict[str, Any]]:
         logger.warning("No payment methods available")
         return dg.MaterializeResult(metadata={"number_of_orders": 0})
 
-    created_orders = process_mock_orders(
-        users=users, books=books, payments=payments, promotions=promotions
-    )
+    created_orders = process_mock_orders(users=users, books=books, payments=payments)
 
     return created_orders
