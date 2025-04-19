@@ -54,6 +54,26 @@ class PromotionGenerationOpConfig(dg.Config):
     num_promotions: int = MAX_PROMOTIONS_PER_REQUEST
 
 
+@dg.op(
+    name="initialize_auth_token_manager",
+    description="Initialize the AuthTokenManager for use in other operations.",
+    out=dg.Out(description="Initialized AuthTokenManager"),
+)
+def initialize_auth_token_manager() -> AuthTokenManager:
+    """
+    Initialize the AuthTokenManager for use in other operations.
+
+    Returns:
+        AuthTokenManager: An initialized AuthTokenManager instance.
+    """
+    auth_api_url = f"{API_BASE_URL}/auth/login"
+    auth_token_manager = AuthTokenManager(
+        email=ADMIN_EMAIL, password=ADMIN_PASSWORD, auth_api_url=auth_api_url
+    )
+    logger.info("Initialized AuthTokenManager")
+    return auth_token_manager
+
+
 def generate_promotion_name() -> tuple[str, PromotionType]:
     """
     Generate a random promotion name appropriate for a book marketplace.
@@ -128,11 +148,15 @@ def generate_promotion_name() -> tuple[str, PromotionType]:
 @dg.op(
     name="get_active_promotions",
     description="Get all currently active promotions from the API.",
+    ins={"auth_token_manager": dg.In(description="Initialized AuthTokenManager")},
     out=dg.Out(description="List of active promotions"),
 )
-def get_active_promotions() -> list[dict[str, Any]]:
+def get_active_promotions(auth_token_manager: AuthTokenManager) -> list[dict[str, Any]]:
     """
     Get all currently active promotions from the API.
+
+    Args:
+        auth_token_manager (AuthTokenManager): The AuthTokenManager instance used for authentication.
 
     Returns:
         List[Dict[str, Any]]: List of active promotions.
@@ -141,7 +165,9 @@ def get_active_promotions() -> list[dict[str, Any]]:
 
     try:
         logger.info("Fetching active promotions")
-        response_data = make_http_request(url=promotions_url, method="GET")
+        response_data = make_http_request(
+            url=promotions_url, method="GET", use_auth=True, auth_token_manager=auth_token_manager
+        )
 
         if response_data:
             promotions = response_data.get("data", {}).get("promotions", [])
@@ -394,24 +420,24 @@ def generate_promotions(
     description="Create promotions via the Rainbow API.",
     ins={
         "promotion_data": dg.In(description="List of promotion data to create"),
+        "auth_token_manager": dg.In(description="Initialized AuthTokenManager"),
     },
     out=dg.Out(description="List of creation results"),
 )
-def create_promotions(promotion_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def create_promotions(
+    promotion_data: list[dict[str, Any]], auth_token_manager: AuthTokenManager
+) -> list[dict[str, Any]]:
     """
     Create promotions via the Rainbow API.
 
     Args:
         promotion_data (list[dict[str, Any]]): List of promotion data to create.
+        auth_token_manager (AuthTokenManager): The initialized AuthTokenManager.
 
     Returns:
         list[dict[str, Any]]: List of creation results.
     """
     create_url = f"{API_BASE_URL}/api/promotions"
-    auth_api_url = f"{API_BASE_URL}/auth/login"
-    auth_token_manager = AuthTokenManager(
-        email=ADMIN_EMAIL, password=ADMIN_PASSWORD, auth_api_url=auth_api_url
-    )
     creation_results = []
 
     for promotion in promotion_data:
@@ -467,16 +493,18 @@ def promotion_creations() -> list[dict[str, Any]]:
     A graph asset that creates mock promotions and creates them via the API.
 
     This asset:
-    1. Fetches currently active promotions
-    2. Determines which promotion types are available for creation
-    3. Generates promotion data for available types
-    4. Creates new promotions via the API
+    1. Initializes the AuthTokenManager
+    2. Fetches currently active promotions
+    3. Determines which promotion types are available for creation
+    4. Generates promotion data for available types
+    5. Creates new promotions via the API
 
     Returns:
         list[dict[str, Any]]: The creation results containing information about successful or failed promotions.
     """
-    active_promotions = get_active_promotions()
+    auth_token_manager = initialize_auth_token_manager()
+    active_promotions = get_active_promotions(auth_token_manager)
     available_types = determine_available_promotion_types(active_promotions)
     promotions = generate_promotions(available_types)
-    creation_results = create_promotions(promotions)
+    creation_results = create_promotions(promotions, auth_token_manager)
     return creation_results

@@ -109,6 +109,7 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
         table_name = table["name"]
         columns = table.get("columns")
         incremental_field = table.get("incremental_field")
+        primary_key = table.get("primary_key")
         initial_value = table.get("initial_value")
         chunk_size = int(table.get("chunk_size", "50000"))
         write_disposition = table.get("write_disposition", "append")
@@ -120,7 +121,9 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
             table_dlt_source.apply_hints(
                 columns=columns,
                 incremental=dlt.sources.incremental(
-                    cursor_path=incremental_field, initial_value=initial_value
+                    cursor_path=incremental_field,
+                    initial_value=initial_value,
+                    primary_key=primary_key,
                 ),
                 write_disposition=write_disposition,
             )
