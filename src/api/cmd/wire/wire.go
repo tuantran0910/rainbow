@@ -103,6 +103,7 @@ func InitializeOrderController(db *gorm.DB) (*controllers.OrderController, error
 		repositories.NewPromotionRepository,
 		repositories.NewBookRepository,
 		repositories.NewInventoryRepository,
+		repositories.NewUserPromotionRepository,
 		services.NewOrderService,
 		controllers.NewOrderController,
 	)

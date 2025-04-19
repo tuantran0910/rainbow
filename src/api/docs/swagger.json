@@ -1553,7 +1553,15 @@
     },
     "/promotions": {
       "get": {
-        "description": "Get all promotions that are currently active (within their start and end date range)",
+        "description": "Get all promotions that are currently active (within their start and end date range). If user_id is provided, returns only promotions available for that user.",
+        "parameters": [
+          {
+            "description": "User ID to filter available promotions",
+            "in": "query",
+            "name": "user_id",
+            "type": "string"
+          }
+        ],
         "produces": [
           "application/json"
         ],

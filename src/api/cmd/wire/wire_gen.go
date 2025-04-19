@@ -83,7 +83,8 @@ func InitializeOrderController(db *gorm.DB) (*controllers.OrderController, error
 	iInventoryRepository := repositories.NewInventoryRepository(db)
 	iPromotionRepository := repositories.NewPromotionRepository(db)
 	iUserRepository := repositories.NewUserRepository(db)
-	iOrderService := services.NewOrderService(db, iOrderRepository, iBookRepository, iInventoryRepository, iPromotionRepository, iUserRepository)
+	iUserPromotionRepository := repositories.NewUserPromotionRepository(db)
+	iOrderService := services.NewOrderService(db, iOrderRepository, iBookRepository, iInventoryRepository, iPromotionRepository, iUserRepository, iUserPromotionRepository)
 	orderController := controllers.NewOrderController(iOrderService)
 	return orderController, nil
 }

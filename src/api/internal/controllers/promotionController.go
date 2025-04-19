@@ -24,17 +24,28 @@ func NewPromotionController(promotionService services.IPromotionService) *Promot
 // GetAllPromotions godoc
 //
 //	@Summary		Get all active promotions
-//	@Description	Get all promotions that are currently active (within their start and end date range)
+//	@Description	Get all promotions that are currently active (within their start and end date range). If user_id is provided, returns only promotions available for that user.
 //	@Tags			Promotion
 //	@Produce		json
-//	@Success		200	{object}	response.APIResponse
-//	@Failure		500	{object}	response.APIResponse
+//	@Param			user_id	query		string	false	"User ID to filter available promotions"
+//	@Success		200		{object}	response.APIResponse
+//	@Failure		500		{object}	response.APIResponse
 //	@Router			/promotions [get]
 func (pc *PromotionController) GetAllPromotions(ctx *gin.Context) {
 	responseHeaders := headers.NewHeaders(nil, ctx)
 
+	currentUserId, ok := ctx.Get("user_id")
+	if !ok {
+		response.
+			NewAPIResponse().
+			SetStatusCode(http.StatusInternalServerError).
+			SetMessage("Cannot get the current user's ID").
+			Respond(ctx)
+		return
+	}
+
 	reqCtx := ctx.Request.Context()
-	promotions, err := pc.promotionService.GetAllPromotions(reqCtx)
+	promotions, err := pc.promotionService.GetAllPromotions(reqCtx, currentUserId.(*uuid.UUID))
 	if err != nil {
 		response.
 			NewAPIResponse().
