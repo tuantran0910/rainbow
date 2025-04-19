@@ -1,13 +1,17 @@
 import random
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from enum import Enum
 from typing import Any
 from typing import Optional
 
 import dagster as dg
 
+from assets.helpers import AuthTokenManager
 from assets.helpers import make_http_request
+from constants import ADMIN_EMAIL
+from constants import ADMIN_PASSWORD
 from constants import API_BASE_URL
 from constants import BOOK_CLUB_SALE_MAX_DAYS
 from constants import BOOK_CLUB_SALE_MIN_DAYS
@@ -61,17 +65,17 @@ def generate_promotion_name() -> tuple[str, PromotionType]:
     current_month = datetime.now().month
     seasonal_prefix = ""
 
-    # Spring: March-May (3-5)
-    if 3 <= current_month <= 5:
+    # Spring: January-March (1-3)
+    if current_month in [1, 2, 3]:
         seasonal_prefix = "Spring"
-    # Summer: June-August (6-8)
-    elif 6 <= current_month <= 8:
+    # Summer: April-June (4-6)
+    elif current_month in [4, 5, 6]:
         seasonal_prefix = "Summer"
-    # Fall: September-November (9-11)
-    elif 9 <= current_month <= 11:
+    # Fall: July-September (7-9)
+    elif current_month in [7, 8, 9]:
         seasonal_prefix = "Fall"
-    # Winter: December-February (12, 1-2)
-    else:
+    # Winter: October-December (10-12)
+    elif current_month in [10, 11, 12]:
         seasonal_prefix = "Winter"
 
     # Determine type of promotion
@@ -83,7 +87,7 @@ def generate_promotion_name() -> tuple[str, PromotionType]:
             PromotionType.BOOK_CLUB,
             PromotionType.REGULAR,
         ],
-        weights=[0.2, 0.25, 0.2, 0.15, 0.2],  # Probabilities for each type
+        weights=[0.2, 0.25, 0.2, 0.15, 0.2],
         k=1,
     )[0]
 
@@ -105,8 +109,7 @@ def generate_promotion_name() -> tuple[str, PromotionType]:
         prefixes = ["Book Lovers", "Readers", "Book Club", "Literature", "Bookworm", "Knowledge"]
         suffixes = ["Membership", "Rewards", "Program", "Club", "Benefits", "Advantage"]
         return f"{random.choice(prefixes)} {random.choice(suffixes)}", promo_type
-
-    else:  # REGULAR
+    else:
         prefixes = [
             "Bestseller",
             "Reading",
@@ -134,24 +137,23 @@ def get_active_promotions() -> list[dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: List of active promotions.
     """
-    promotions_url = f"{API_BASE_URL}/promotions"
+    promotions_url = f"{API_BASE_URL}/api/promotions"
 
     try:
         logger.info("Fetching active promotions")
-        response = make_http_request(promotions_url, method="GET")
+        response_data = make_http_request(url=promotions_url, method="GET")
 
-        if response and response.get("status_code") == 200 and response.get("data"):
-            promotions = response.get("data", {}).get("promotions", [])
+        if response_data:
+            promotions = response_data.get("data", {}).get("promotions", [])
             logger.info(f"Successfully fetched {len(promotions)} active promotions")
             return promotions
         else:
             logger.error(
-                f"Failed to fetch active promotions: {response.get('message', 'Unknown error')}"
+                f"Failed to fetch active promotions: {response_data.get('message', 'Unknown error')}"
             )
             return []
     except Exception as e:
-        logger.error(f"Error fetching active promotions: {e}")
-        return []
+        raise dg.DagsterError(f"Failed to fetch active promotions: {e}")
 
 
 def get_promotion_type_from_name(name: str) -> Optional[PromotionType]:
@@ -185,7 +187,6 @@ def get_promotion_type_from_name(name: str) -> Optional[PromotionType]:
     ):
         return PromotionType.BOOK_CLUB
 
-    # Default to REGULAR if no specific indicators
     return PromotionType.REGULAR
 
 
@@ -247,18 +248,15 @@ def generate_promotions(
     """
     promotions: list[dict[str, Any]] = []
 
-    # If no promotion types are available, return empty list
     if not available_types:
         logger.info("No promotion types available for creation")
         return promotions
 
-    # Choose a random number between 1 and the min of configured max or available types count
     num_promotions = min(
         random.randint(1, min(config.num_promotions, MAX_PROMOTIONS_PER_REQUEST)),
         len(available_types),
     )
 
-    # Randomly select types to create from available types
     promotion_types_to_create = random.sample(list(available_types), num_promotions)
 
     for promo_type in promotion_types_to_create:
@@ -300,7 +298,7 @@ def generate_promotions(
             suffixes = ["Membership", "Rewards", "Program", "Club", "Benefits", "Advantage"]
             promotion_name = f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
-        else:  # REGULAR
+        else:
             prefixes = [
                 "Bestseller",
                 "Reading",
@@ -323,16 +321,13 @@ def generate_promotions(
             # Flash sales and weekend deals often have higher discounts
             if promo_type in [PromotionType.FLASH_SALE, PromotionType.WEEKEND_DEAL]:
                 min_discount = max(20.0, MIN_PERCENTAGE_DISCOUNT)
-                discount_value = round(random.uniform(min_discount, MAX_PERCENTAGE_DISCOUNT), 2)
+                discount_value = int(random.uniform(min_discount, MAX_PERCENTAGE_DISCOUNT))
             else:
-                discount_value = round(
-                    random.uniform(MIN_PERCENTAGE_DISCOUNT, MAX_PERCENTAGE_DISCOUNT), 2
+                discount_value = int(
+                    random.uniform(MIN_PERCENTAGE_DISCOUNT, MAX_PERCENTAGE_DISCOUNT)
                 )
         else:
-            # Fixed discount in VND
-            discount_value = round(
-                random.uniform(MIN_FIXED_DISCOUNT_VND, MAX_FIXED_DISCOUNT_VND), 0
-            )
+            discount_value = int(random.uniform(MIN_FIXED_DISCOUNT_VND, MAX_FIXED_DISCOUNT_VND))
 
         # Set start date within the next 6 hours
         now = datetime.now()
@@ -357,8 +352,7 @@ def generate_promotions(
             duration_days = random.randint(BOOK_CLUB_SALE_MIN_DAYS, BOOK_CLUB_SALE_MAX_DAYS)
             end_date = start_date + timedelta(days=duration_days)
 
-        else:  # REGULAR
-            # Regular promotions have standard duration
+        else:
             duration_days = random.randint(REGULAR_SALE_MIN_DAYS, REGULAR_SALE_MAX_DAYS)
             end_date = start_date + timedelta(days=duration_days)
 
@@ -376,13 +370,18 @@ def generate_promotions(
             # Regular and seasonal promotions
             max_uses = random.randint(MIN_PROMOTION_USES, MAX_PROMOTION_USES)
 
+        # Format dates in RFC3339 format with timezone (Z notation for UTC)
+        # This matches the Go time format "2006-01-02T15:04:05Z07:00"
+        start_date_utc = start_date.replace(tzinfo=timezone.utc)
+        end_date_utc = end_date.replace(tzinfo=timezone.utc)
+
         # Construct promotion data
         promotion = {
             "name": promotion_name,
             "discount_type": discount_type,
             "discount_value": discount_value,
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
+            "start_date": start_date_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end_date": end_date_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "max_uses": max_uses,
         }
         promotions.append(promotion)
@@ -408,7 +407,11 @@ def create_promotions(promotion_data: list[dict[str, Any]]) -> list[dict[str, An
     Returns:
         list[dict[str, Any]]: List of creation results.
     """
-    create_url = f"{API_BASE_URL}/promotions"
+    create_url = f"{API_BASE_URL}/api/promotions"
+    auth_api_url = f"{API_BASE_URL}/auth/login"
+    auth_token_manager = AuthTokenManager(
+        email=ADMIN_EMAIL, password=ADMIN_PASSWORD, auth_api_url=auth_api_url
+    )
     creation_results = []
 
     for promotion in promotion_data:
@@ -416,36 +419,37 @@ def create_promotions(promotion_data: list[dict[str, Any]]) -> list[dict[str, An
 
         try:
             logger.info(f"Creating promotion: {promotion_name}")
-            creation_result = make_http_request(create_url, method="POST", data=promotion)
-            if creation_result:
+            promotion_response = make_http_request(
+                url=create_url,
+                method="POST",
+                data=promotion,
+                use_auth=True,
+                auth_token_manager=auth_token_manager,
+            )
+            if promotion_response:
                 creation_results.append(
                     {
                         "name": promotion_name,
-                        "status_code": creation_result.get("status_code", 201),
-                        "message": creation_result.get("message", "Promotion created successfully"),
+                        "status_code": promotion_response.get("status_code", 201),
+                        "message": promotion_response.get(
+                            "message", "Promotion created successfully"
+                        ),
                     }
                 )
                 logger.info(f"Successfully created promotion: {promotion_name}")
             else:
                 logger.error(
-                    f"Failed to create promotion {promotion_name}: {creation_result.get('error')}"
+                    f"Failed to create promotion {promotion_name}: {promotion_response.get('error') if promotion_response else 'Unknown error'}"
                 )
                 creation_results.append(
                     {
                         "name": promotion_name,
-                        "status_code": creation_result.get("status_code", 400),
-                        "message": creation_result.get("message", "Failed to create promotion"),
+                        "status_code": 400,
+                        "message": "Failed to create promotion",
                     }
                 )
         except Exception as e:
-            logger.error(f"Failed to create promotion {promotion_name}: {e}")
-            creation_results.append(
-                {
-                    "name": promotion_name,
-                    "status_code": 500,
-                    "message": str(e),
-                }
-            )
+            raise dg.DagsterError(f"Failed to create promotion: {e}")
 
     return creation_results
 
