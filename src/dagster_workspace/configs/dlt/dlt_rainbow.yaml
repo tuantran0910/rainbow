@@ -39,6 +39,8 @@ resources:
           incremental_field: updated_at
         - name: users
           incremental_field: updated_at
+        - name: sellers
+          incremental_field: updated_at
   destination:
     type: clickhouse
     credentials:
