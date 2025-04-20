@@ -1,0 +1,398 @@
+version: 2
+
+sources:
+  - name: rainbow
+    description: This is a replica of the PostgreSQL's database rainbow used by our app.
+    schema: raw
+    tables:
+      - name: categories
+        description: >
+          This table contains information about the categories of books available in the marketplace.
+        columns:
+          - name: id
+            description: Primary key of the categories table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: secondary_id
+            description: Secondary identifier for the category, used for external references
+            data_type: STRING
+          - name: name
+            description: Name of the category
+            data_type: STRING
+            tests:
+              - not_null
+          - name: slug
+            description: URL-friendly version of the category name
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the category was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the category was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the category is active
+            data_type: DATETIME64
+
+      - name: users
+        description: >
+          This table contains information about the users of the application, including customers and administrators.
+        columns:
+          - name: id
+            description: Primary key of the users table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: email
+            description: Email address of the user, used for login
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: password
+            description: Hashed password of the user
+            data_type: STRING
+          - name: first_name
+            description: First name of the user
+            data_type: STRING
+            tests:
+              - not_null
+          - name: last_name
+            description: Last name of the user
+            data_type: STRING
+            tests:
+              - not_null
+          - name: last_login
+            description: Timestamp of the user's last login
+            data_type: DATETIME64
+          - name: is_active
+            description: Flag indicating if the user account is active
+            data_type: BOOL
+          - name: phone_number
+            description: Phone number of the user
+            data_type: STRING
+          - name: role
+            description: Role of the user (USER or ADMIN)
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the user was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the user was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the user is active
+            data_type: DATETIME64
+
+      - name: authors
+        description: >
+          This table contains information about book authors.
+        columns:
+          - name: id
+            description: Primary key of the authors table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: secondary_id
+            description: Secondary identifier for the author, used for external references
+            data_type: STRING
+          - name: name
+            description: Name of the author
+            data_type: STRING
+            tests:
+              - not_null
+          - name: slug
+            description: URL-friendly version of the author name
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the author was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the author was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the author is active
+            data_type: DATETIME64
+
+      - name: sellers
+        description: >
+          This table contains information about book sellers in the marketplace.
+        columns:
+          - name: id
+            description: Primary key of the sellers table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: secondary_id
+            description: Secondary identifier for the seller, used for external references
+            data_type: STRING
+          - name: name
+            description: Name of the seller
+            data_type: STRING
+            tests:
+              - not_null
+          - name: link
+            description: URL to the seller's website or profile
+            data_type: STRING
+          - name: logo
+            description: URL to the seller's logo image
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the seller was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the seller was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the seller is active
+            data_type: DATETIME64
+
+      - name: books
+        description: >
+          This table contains information about the books available in the marketplace.
+        columns:
+          - name: id
+            description: Primary key of the books table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: secondary_id
+            description: Secondary identifier for the book, used for external references
+            data_type: STRING
+          - name: category_id
+            description: Foreign key to the categories table
+            data_type: STRING
+            tests:
+              - not_null
+          - name: seller_id
+            description: Foreign key to the sellers table
+            data_type: STRING
+            tests:
+              - not_null
+          - name: name
+            description: Title of the book
+            data_type: STRING
+            tests:
+              - not_null
+          - name: description
+            description: Detailed description of the book
+            data_type: STRING
+          - name: price
+            description: Current selling price of the book
+            data_type: DECIMAL
+            tests:
+              - not_null
+          - name: original_price
+            description: Original price of the book before any discounts
+            data_type: DECIMAL
+          - name: rating_average
+            description: Average rating of the book (0-5 scale)
+            data_type: DECIMAL
+          - name: review_count
+            description: Number of reviews for the book
+            data_type: INT64
+          - name: page_count
+            description: Number of pages in the book
+            data_type: INT64
+          - name: sold_count
+            description: Number of copies sold
+            data_type: INT64
+          - name: created_at
+            description: Timestamp when the book was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the book was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the book is active
+            data_type: DATETIME64
+
+      - name: orders
+        description: >
+          This table contains information about customer orders.
+        columns:
+          - name: id
+            description: Primary key of the orders table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: Foreign key to the users table (customer who placed the order)
+            data_type: STRING
+            tests:
+              - not_null
+          - name: payment_id
+            description: Foreign key to the payments table
+            data_type: STRING
+            tests:
+              - not_null
+          - name: promotion_id
+            description: Foreign key to the promotions table (optional)
+            data_type: STRING
+          - name: shipping_address
+            description: Shipping address for the order
+            data_type: STRING
+          - name: total_amount
+            description: Total amount of the order
+            data_type: DECIMAL
+          - name: created_at
+            description: Timestamp when the order was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the order was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the order is active
+            data_type: DATETIME64
+
+      - name: order_items
+        description: >
+          This table contains the individual items within an order.
+        columns:
+          - name: id
+            description: Primary key of the order_items table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: order_id
+            description: Foreign key to the orders table
+            data_type: STRING
+            tests:
+              - not_null
+          - name: book_id
+            description: Foreign key to the books table
+            data_type: STRING
+            tests:
+              - not_null
+          - name: quantity
+            description: Quantity of the book ordered
+            data_type: INT64
+            tests:
+              - not_null
+          - name: unit_price
+            description: Price per unit at the time of purchase
+            data_type: DECIMAL
+            tests:
+              - not_null
+          - name: discount
+            description: Discount amount applied to this item
+            data_type: DECIMAL
+            tests:
+              - not_null
+          - name: created_at
+            description: Timestamp when the order item was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the order item was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the order item is active
+            data_type: DATETIME64
+
+      - name: payments
+        description: >
+          This table contains information about payment methods.
+        columns:
+          - name: id
+            description: Primary key of the payments table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: method
+            description: Payment method (CASH, CREDIT_CARD, DEBIT_CARD, TRANSFER)
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the payment method was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the payment method was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the payment method is active
+            data_type: DATETIME64
+
+      - name: promotions
+        description: >
+          This table contains information about promotional discounts.
+        columns:
+          - name: id
+            description: Primary key of the promotions table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: name
+            description: Name of the promotion
+            data_type: STRING
+            tests:
+              - not_null
+          - name: discount_type
+            description: Type of discount (PERCENTAGE or FIXED)
+            data_type: STRING
+          - name: discount_value
+            description: Value of the discount (percentage or fixed amount)
+            data_type: DECIMAL
+          - name: start_date
+            description: Start date and time of the promotion
+            data_type: DATETIME64
+          - name: end_date
+            description: End date and time of the promotion
+            data_type: DATETIME64
+          - name: max_uses
+            description: Maximum number of times the promotion can be used
+            data_type: INT64
+          - name: used_count
+            description: Number of times the promotion has been used
+            data_type: INT64
+          - name: created_at
+            description: Timestamp when the promotion was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the promotion was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the promotion is active
+            data_type: DATETIME64
+
+      - name: inventories
+        description: >
+          This table contains information about book inventory levels.
+        columns:
+          - name: id
+            description: Primary key of the inventories table
+            data_type: STRING
+            tests:
+              - unique
+              - not_null
+          - name: book_id
+            description: Foreign key to the books table
+            data_type: STRING
+            tests:
+              - not_null
+              - unique
+          - name: stock
+            description: Current stock level of the book
+            data_type: INT64
+            tests:
+              - not_null
+          - name: last_restocked_at
+            description: Timestamp when the book was last restocked
+            data_type: DATETIME64
+          - name: created_at
+            description: Timestamp when the inventory record was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the inventory record was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp, NULL if the inventory record is active
+            data_type: DATETIME64
