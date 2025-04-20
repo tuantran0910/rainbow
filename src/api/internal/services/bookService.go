@@ -202,7 +202,6 @@ func (ps *bookService) UpdateBook(
 			}
 
 			if len(bookToUpdate) > 0 {
-				bookToUpdate["id"] = bookId
 				if err := bookRepository.UpdateBook(ctx, bookId, bookToUpdate); err != nil {
 					return err
 				}
