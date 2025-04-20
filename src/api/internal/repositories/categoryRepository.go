@@ -23,7 +23,7 @@ type ICategoryRepository interface {
 	UpdateCategory(
 		ctx context.Context,
 		id interface{},
-		category *models.Category,
+		category map[string]interface{},
 		isSecondary bool,
 	) error
 	DeleteCategory(ctx context.Context, categoryId uuid.UUID) error
@@ -116,7 +116,7 @@ func (cr *categoryRepository) CreateCategory(ctx context.Context, category *mode
 func (cr *categoryRepository) UpdateCategory(
 	ctx context.Context,
 	id interface{},
-	category *models.Category,
+	category map[string]interface{},
 	isSecondary bool,
 ) error {
 	query := cr.db.WithContext(ctx).Model(&models.Category{})
