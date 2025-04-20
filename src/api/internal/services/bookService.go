@@ -209,7 +209,9 @@ func (ps *bookService) UpdateBook(
 
 				// Get the updated book
 				updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
-				return err
+				if err != nil {
+					return err
+				}
 			}
 
 			// Update inventory if stock is provided and different from the existing one
@@ -229,10 +231,19 @@ func (ps *bookService) UpdateBook(
 				if err := inventoryRepository.UpdateInventory(ctx, inventory.ID, inventoryToUpdate); err != nil {
 					return err
 				}
+
+				// Fetch the book again to get the updated inventory
+				updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
+				if err != nil {
+					return err
+				}
+				return nil
 			}
 
-			// Fallback to return the original book
-			updatedBook = book
+			// Fallback to return the original book if no updates were made
+			if updatedBook == nil {
+				updatedBook = book
+			}
 			return nil
 		},
 	)
