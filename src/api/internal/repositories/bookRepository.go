@@ -17,7 +17,7 @@ type IBookRepository interface {
 	GetBookById(ctx context.Context, id interface{}, isSecondary bool) (*models.Book, error)
 	CreateBook(ctx context.Context, book *models.Book) error
 	AddAuthorToBook(ctx context.Context, bookAuthor *models.BookAuthor) error
-	UpdateBook(ctx context.Context, bookId uuid.UUID, book *models.Book) error
+	UpdateBook(ctx context.Context, bookId uuid.UUID, book map[string]interface{}) error
 	DeleteBook(ctx context.Context, bookId uuid.UUID) error
 	CountBooks(ctx context.Context) (int64, error)
 }
@@ -111,7 +111,7 @@ func (pr *bookRepository) AddAuthorToBook(
 func (pr *bookRepository) UpdateBook(
 	ctx context.Context,
 	bookId uuid.UUID,
-	book *models.Book,
+	book map[string]interface{},
 ) error {
 	result := pr.db.WithContext(ctx).
 		Model(&models.Book{}).

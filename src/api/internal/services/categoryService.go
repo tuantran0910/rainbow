@@ -171,20 +171,29 @@ func (cs *categoryService) UpdateCategory(
 					idStr)
 			}
 
-			var categoryToUpdate models.Category
-			if categoryRequest.SecondaryID != nil {
-				categoryToUpdate.SecondaryID = *categoryRequest.SecondaryID
+			categoryToUpdate := map[string]interface{}{}
+			if categoryRequest.SecondaryID != nil &&
+				*categoryRequest.SecondaryID != category.SecondaryID {
+				categoryToUpdate["secondary_id"] = *categoryRequest.SecondaryID
 			}
 			if categoryRequest.Name != nil && *categoryRequest.Name != category.Name {
-				categoryToUpdate.Name = *categoryRequest.Name
+				categoryToUpdate["name"] = *categoryRequest.Name
+				categoryToUpdate["slug"] = slug.Make(*categoryRequest.Name)
 			}
-			if err := categoryRepository.UpdateCategory(ctx, id, &categoryToUpdate, isSecondary); err != nil {
+
+			if len(categoryToUpdate) > 0 {
+				if err := categoryRepository.UpdateCategory(ctx, id, categoryToUpdate, isSecondary); err != nil {
+					return err
+				}
+
+				// Get the updated category
+				updatedCategory, err = categoryRepository.GetCategoryById(ctx, id, isSecondary)
 				return err
 			}
 
-			// Get the updated category
-			updatedCategory, err = categoryRepository.GetCategoryById(ctx, id, isSecondary)
-			return err
+			// Fallback to return the original category
+			updatedCategory = category
+			return nil
 		},
 	)
 	return updatedCategory, err

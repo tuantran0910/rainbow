@@ -128,29 +128,35 @@ func (ss *sellerService) UpdateSeller(
 					idStr)
 			}
 
-			var sellerToUpdate models.Seller
-			if sellerReq.SecondaryID != nil {
-				sellerToUpdate.SecondaryID = *sellerReq.SecondaryID
+			sellerToUpdate := map[string]interface{}{}
+			if sellerReq.SecondaryID != nil && *sellerReq.SecondaryID != seller.SecondaryID {
+				sellerToUpdate["secondary_id"] = *sellerReq.SecondaryID
 			}
 			if sellerReq.Name != nil && *sellerReq.Name != seller.Name {
-				sellerToUpdate.Name = *sellerReq.Name
-				sellerToUpdate.Link = fmt.Sprintf(
+				sellerToUpdate["name"] = *sellerReq.Name
+				sellerToUpdate["link"] = fmt.Sprintf(
 					"https://rainbow.tuantrann.work/sellers/%s-%s",
 					slug.Make(*sellerReq.Name),
 					uuid.New().String()[:8],
 				)
 			}
 			if sellerReq.Logo != nil && *sellerReq.Logo != seller.Logo {
-				sellerToUpdate.Logo = *sellerReq.Logo
+				sellerToUpdate["logo"] = *sellerReq.Logo
 			}
-			if err := sellerRepository.UpdateSeller(ctx, id, &sellerToUpdate, isSecondary); err != nil {
+
+			if len(sellerToUpdate) > 0 {
+				if err := sellerRepository.UpdateSeller(ctx, id, sellerToUpdate, isSecondary); err != nil {
+					return err
+				}
+
+				// Get the updated seller
+				updatedSeller, err = sellerRepository.GetSellerById(ctx, id, isSecondary)
 				return err
 			}
 
-			// Get the updated seller
-			var getErr error
-			updatedSeller, getErr = sellerRepository.GetSellerById(ctx, id, isSecondary)
-			return getErr
+			// Fallback to return the original seller
+			updatedSeller = seller
+			return nil
 		},
 	)
 	return updatedSeller, err

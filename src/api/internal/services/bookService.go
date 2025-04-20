@@ -175,55 +175,75 @@ func (ps *bookService) UpdateBook(
 				return fmt.Errorf("book not found")
 			}
 
-			// Update book fields
-			if bookRequest.Name != nil {
-				book.Name = *bookRequest.Name
+			// Update book fields if they are different from the existing ones and not nil
+			bookToUpdate := map[string]interface{}{}
+			if bookRequest.Name != nil && *bookRequest.Name != book.Name {
+				bookToUpdate["name"] = *bookRequest.Name
 			}
-			if bookRequest.Description != nil {
-				book.Description = *bookRequest.Description
+			if bookRequest.Description != nil && *bookRequest.Description != book.Description {
+				bookToUpdate["description"] = *bookRequest.Description
 			}
-			if bookRequest.Price != nil {
-				book.Price = *bookRequest.Price
+			if bookRequest.Price != nil && *bookRequest.Price != book.Price {
+				bookToUpdate["price"] = *bookRequest.Price
 			}
-			if bookRequest.OriginalPrice != nil {
-				book.OriginalPrice = *bookRequest.OriginalPrice
+			if bookRequest.OriginalPrice != nil &&
+				*bookRequest.OriginalPrice != book.OriginalPrice {
+				bookToUpdate["original_price"] = *bookRequest.OriginalPrice
 			}
-			if bookRequest.RatingAverage != nil {
-				book.RatingAverage = *bookRequest.RatingAverage
+			if bookRequest.RatingAverage != nil &&
+				*bookRequest.RatingAverage != book.RatingAverage {
+				bookToUpdate["rating_average"] = *bookRequest.RatingAverage
 			}
-			if bookRequest.ReviewCount != nil {
-				book.ReviewCount = *bookRequest.ReviewCount
+			if bookRequest.ReviewCount != nil && *bookRequest.ReviewCount != book.ReviewCount {
+				bookToUpdate["review_count"] = *bookRequest.ReviewCount
 			}
-			if bookRequest.PageCount != nil {
-				book.PageCount = *bookRequest.PageCount
-			}
-
-			// Update book
-			if err := bookRepository.UpdateBook(ctx, bookId, book); err != nil {
-				return err
+			if bookRequest.PageCount != nil && *bookRequest.PageCount != book.PageCount {
+				bookToUpdate["page_count"] = *bookRequest.PageCount
 			}
 
-			// Update inventory if stock is provided
-			if bookRequest.Stock != nil {
-				inventory, err := inventoryRepository.GetInventoryByBookID(ctx, bookId)
+			if len(bookToUpdate) > 0 {
+				if err := bookRepository.UpdateBook(ctx, bookId, bookToUpdate); err != nil {
+					return err
+				}
+
+				// Get the updated book
+				updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
 				if err != nil {
 					return err
 				}
-				if inventory == nil {
-					return fmt.Errorf("inventory not found")
-				}
-
-				inventory.Stock = *bookRequest.Stock
-				inventory.LastRestockedAt = time.Now()
-
-				if err := inventoryRepository.UpdateInventory(ctx, inventory.ID, inventory); err != nil {
-					return err
-				}
 			}
 
-			// Get the updated book
-			updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
-			return err
+			// Update inventory if stock is provided and different from the existing one
+			inventory, err := inventoryRepository.GetInventoryByBookID(ctx, bookId)
+			if err != nil {
+				return err
+			}
+			if inventory == nil {
+				return fmt.Errorf("inventory not found")
+			}
+
+			// Update inventory if stock is provided and different from the existing one
+			inventoryToUpdate := map[string]interface{}{}
+			if bookRequest.Stock != nil && *bookRequest.Stock != inventory.Stock {
+				inventoryToUpdate["stock"] = *bookRequest.Stock
+				inventoryToUpdate["last_restocked_at"] = time.Now()
+				if err := inventoryRepository.UpdateInventory(ctx, inventory.ID, inventoryToUpdate); err != nil {
+					return err
+				}
+
+				// Fetch the book again to get the updated inventory
+				updatedBook, err = bookRepository.GetBookById(ctx, bookId, false)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			// Fallback to return the original book if no updates were made
+			if updatedBook == nil {
+				updatedBook = book
+			}
+			return nil
 		},
 	)
 

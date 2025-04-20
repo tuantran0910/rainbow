@@ -171,12 +171,13 @@ func (as *authorService) UpdateAuthor(
 					idStr)
 			}
 
-			var authorToUpdate models.Author
-			if authorRequest.SecondaryID != nil {
-				authorToUpdate.SecondaryID = *authorRequest.SecondaryID
+			authorToUpdate := map[string]interface{}{}
+			if authorRequest.SecondaryID != nil &&
+				*authorRequest.SecondaryID != author.SecondaryID {
+				authorToUpdate["secondary_id"] = *authorRequest.SecondaryID
 			}
 			if authorRequest.Name != nil && *authorRequest.Name != author.Name {
-				authorToUpdate.Name = *authorRequest.Name
+				authorToUpdate["name"] = *authorRequest.Name
 				slugStr := slug.Make(*authorRequest.Name)
 				if slugStr != author.Slug {
 					existingAuthor, err := authorRepository.GetAuthorBySlug(ctx, slugStr)
@@ -186,16 +187,23 @@ func (as *authorService) UpdateAuthor(
 						}
 						return err
 					}
-					authorToUpdate.Slug = slugStr
+					authorToUpdate["slug"] = slugStr
 				}
 			}
-			if err := authorRepository.UpdateAuthor(ctx, id, &authorToUpdate, isSecondary); err != nil {
+
+			if len(authorToUpdate) > 0 {
+				if err := authorRepository.UpdateAuthor(ctx, id, authorToUpdate, isSecondary); err != nil {
+					return err
+				}
+
+				// Get the updated author
+				updatedAuthor, err = authorRepository.GetAuthorById(ctx, id, isSecondary)
 				return err
 			}
 
-			// Get the updated author
-			updatedAuthor, err = authorRepository.GetAuthorById(ctx, id, isSecondary)
-			return err
+			// Fallback to return the original author
+			updatedAuthor = author
+			return nil
 		},
 	)
 	return updatedAuthor, err

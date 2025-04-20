@@ -19,7 +19,12 @@ type ISellerRepository interface {
 	) ([]*models.Seller, *pagination.Pagination, error)
 	GetSellerById(ctx context.Context, id interface{}, isSecondary bool) (*models.Seller, error)
 	CreateSeller(ctx context.Context, seller *models.Seller) error
-	UpdateSeller(ctx context.Context, id interface{}, seller *models.Seller, isSecondary bool) error
+	UpdateSeller(
+		ctx context.Context,
+		id interface{},
+		seller map[string]interface{},
+		isSecondary bool,
+	) error
 	DeleteSeller(ctx context.Context, sellerId uuid.UUID) error
 }
 
@@ -96,7 +101,7 @@ func (sr *sellerRepository) CreateSeller(ctx context.Context, seller *models.Sel
 func (sr *sellerRepository) UpdateSeller(
 	ctx context.Context,
 	id interface{},
-	seller *models.Seller,
+	seller map[string]interface{},
 	isSecondary bool,
 ) error {
 	query := sr.db.WithContext(ctx).Model(&models.Seller{})

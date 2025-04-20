@@ -20,7 +20,12 @@ type IAuthorRepository interface {
 	GetAuthorById(ctx context.Context, id interface{}, isSecondary bool) (*models.Author, error)
 	GetAuthorBySlug(ctx context.Context, slug string) (*models.Author, error)
 	CreateAuthor(ctx context.Context, author *models.Author) error
-	UpdateAuthor(ctx context.Context, id interface{}, author *models.Author, isSecondary bool) error
+	UpdateAuthor(
+		ctx context.Context,
+		id interface{},
+		author map[string]interface{},
+		isSecondary bool,
+	) error
 	DeleteAuthor(ctx context.Context, authorId uuid.UUID) error
 }
 
@@ -111,7 +116,7 @@ func (ar *authorRepository) CreateAuthor(ctx context.Context, author *models.Aut
 func (ar *authorRepository) UpdateAuthor(
 	ctx context.Context,
 	id interface{},
-	author *models.Author,
+	author map[string]interface{},
 	isSecondary bool,
 ) error {
 	query := ar.db.WithContext(ctx).Model(&models.Author{})
