@@ -14,7 +14,11 @@ type IInventoryRepository interface {
 	WithTX(tx *gorm.DB) IInventoryRepository
 	GetInventoryByBookID(ctx context.Context, bookID uuid.UUID) (*models.Inventory, error)
 	CreateInventory(ctx context.Context, inventory *models.Inventory) error
-	UpdateInventory(ctx context.Context, inventoryId uuid.UUID, inventory *models.Inventory) error
+	UpdateInventory(
+		ctx context.Context,
+		inventoryId uuid.UUID,
+		inventory map[string]interface{},
+	) error
 }
 
 type inventoryRepository struct {
@@ -63,7 +67,7 @@ func (ir *inventoryRepository) CreateInventory(
 func (ir *inventoryRepository) UpdateInventory(
 	ctx context.Context,
 	inventoryId uuid.UUID,
-	inventory *models.Inventory,
+	inventory map[string]interface{},
 ) error {
 	if err := ir.db.WithContext(ctx).Model(&models.Inventory{}).Where("id = ?", inventoryId).Updates(inventory).Error; err != nil {
 		return fmt.Errorf("failed to update inventory with id %s: %w", inventoryId, err)

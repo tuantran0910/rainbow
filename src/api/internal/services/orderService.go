@@ -163,12 +163,16 @@ func (os *orderService) CreateOrder(
 
 			bookInventory := book.Inventory
 			bookInventory.Stock -= orderItem.Quantity
-			if err = inventoryRepository.UpdateInventory(ctx, book.Inventory.ID, &bookInventory); err != nil {
+			if err = inventoryRepository.UpdateInventory(ctx, book.Inventory.ID, map[string]interface{}{
+				"stock": bookInventory.Stock,
+			}); err != nil {
 				return err
 			}
 
 			book.SoldCount += orderItem.Quantity
-			if err = bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
+			if err = bookRepository.UpdateBook(ctx, book.ID, map[string]interface{}{
+				"sold_count": book.SoldCount,
+			}); err != nil {
 				return err
 			}
 		}
@@ -272,12 +276,16 @@ func (os *orderService) DeleteOrder(
 			}
 
 			book.Inventory.Stock += orderItem.Quantity
-			if err := inventoryRepository.UpdateInventory(ctx, book.Inventory.ID, &book.Inventory); err != nil {
+			if err := inventoryRepository.UpdateInventory(ctx, book.Inventory.ID, map[string]interface{}{
+				"stock": book.Inventory.Stock,
+			}); err != nil {
 				return err
 			}
 
 			book.SoldCount -= orderItem.Quantity
-			if err := bookRepository.UpdateBook(ctx, book.ID, book); err != nil {
+			if err := bookRepository.UpdateBook(ctx, book.ID, map[string]interface{}{
+				"sold_count": book.SoldCount,
+			}); err != nil {
 				return err
 			}
 		}
