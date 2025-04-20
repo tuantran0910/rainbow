@@ -1,7 +1,8 @@
 {{
     config(
-        materialized='ephemeral'
+        materialized='view'
     )
 }}
 
-{{ stg_model_sql(source('rainbow', 'categories')) }}
+SELECT *
+FROM {{ ref('raw_categories') }}

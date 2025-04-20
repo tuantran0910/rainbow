@@ -1,7 +1,8 @@
 {{
     config(
-        materialized='ephemeral'
+        materialized='view'
     )
 }}
 
-{{ stg_model_sql(source('rainbow', 'sellers')) }}
+SELECT *
+FROM {{ ref('raw_sellers') }}

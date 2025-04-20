@@ -1,4 +1,4 @@
-{% macro stg_model_sql(source) %}
+{% macro raw_model_sql(source) %}
 
     SELECT *
     EXCEPT(_dlt_load_id, _dlt_id),
