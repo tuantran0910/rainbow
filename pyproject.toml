@@ -43,7 +43,7 @@ max-complexity = 20
 dialect = "ansi"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
-exclude_rules = "L014,L016,L020,L026,L027,L028,L029,L031,L032,L034,L037,L042,L044,L051"
+exclude_rules = "L014,L016,L020,L026,L027,L028,L029,L031,L032,L034,L037,L042,L044,L051,CP03,AL02"
 runaway_limit = 100
 ignore = "parsing,templating"
 large_file_skip_byte_limit = 100000
@@ -91,4 +91,5 @@ dev = [
     "ipykernel>=6.29.5",
     "pre-commit>=4.1.0",
     "reorder-python-imports>=3.14.0",
+    "sqlfluff>=3.4.0",
 ]
