@@ -120,7 +120,7 @@ services:
       - api-network
 
   clickhouse:
-    image: clickhouse/clickhouse-server:24.12
+    image: clickhouse/clickhouse-server:25.3-alpine
     container_name: clickhouse
     hostname: ${CLICKHOUSE_HOST}
     ulimits:
