@@ -1,4 +1,5 @@
 {% macro get_common_params(lookback_in_days=1) %}
+
     {% set model_params = namespace() %}
 
     {# Define timestamp format #}
@@ -17,4 +18,5 @@
     ) %}
 
     {% do return(model_params) %}
+
 {% endmacro %}
