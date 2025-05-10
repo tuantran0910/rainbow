@@ -11,8 +11,8 @@ dependencies = [
     "dagster-dlt>=0.26.9",
     "dlt[clickhouse,postgres]>=1.9.0",
     "dagster-dbt>=0.26.9",
-    "dbt-clickhouse>=1.8.9",
-    "dbt-core>=1.8.9",
+    "dbt-clickhouse>=1.9.1",
+    "dbt-core>=1.9.0",
     "psutil>=7.0.0",
     "faker>=37.1.0",
 ]

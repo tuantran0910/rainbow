@@ -1,19 +1,19 @@
-{% macro dim_scd_type_2(stg_relation, unique_key, updated_at_field, except_columns_to_compare=[], lookback_in_days=1) %}
+{% macro dim_scd_type_2(stg_relation, unique_key, updated_at_field, surrogate_key_field_name, except_columns_to_compare=[], lookback_in_days=1) %}
 
-{# Get the columns from the staging model relation #}
-{% set stg_columns = adapter.get_columns_in_relation(stg_relation) %}
+    {# Get the columns from the staging model relation #}
+    {% set stg_columns = adapter.get_columns_in_relation(stg_relation) %}
 
-{# Create a list of columns to compare, excluding the specified ones #}
-{% set compare_columns = [] %}
-{% for column in stg_columns %}
-{% if column.name not in except_columns_to_compare and column.name != unique_key %}
-{% do compare_columns.append(column.name) %}
-{% endif %}
-{% endfor %}
+    {# Create a list of columns to compare, excluding the specified ones #}
+    {% set compare_columns = [] %}
+    {% for column in stg_columns %}
+    {% if column.name not in except_columns_to_compare and column.name != unique_key %}
+    {% do compare_columns.append(column.name) %}
+    {% endif %}
+    {% endfor %}
 
-{% set model_params = get_common_params(lookback_in_days) %}
+    {% set model_params = get_common_params(lookback_in_days) %}
 
-{% if is_incremental() %}
+    {% if is_incremental() %}
         WITH
             stg_data AS (
                 SELECT *
@@ -23,7 +23,7 @@
 
             new_records AS (
                 SELECT
-                    {{ dbt_utils.generate_surrogate_key(['current.' ~ unique_key, 'current.' ~ updated_at_field]) }} AS surrogate_key,
+                    {{ dbt_utils.generate_surrogate_key(['current.' ~ unique_key, 'current.' ~ updated_at_field]) }} AS {{ surrogate_key_field_name }},
                     current.* EXCEPT (valid_from, valid_to, is_current),
                     CURRENT_TIMESTAMP() AS valid_from,
                     toDateTime64('9999-12-31 23:59:59.999999', 6) AS valid_to,
@@ -68,7 +68,7 @@
         )
 
         SELECT
-            {{ dbt_utils.generate_surrogate_key(['stg_data.' ~ unique_key, 'stg_data.' ~ updated_at_field]) }} AS surrogate_key,
+            {{ dbt_utils.generate_surrogate_key(['stg_data.' ~ unique_key, 'stg_data.' ~ updated_at_field]) }} AS {{ surrogate_key_field_name }},
             stg_data.* EXCEPT (valid_from, valid_to, is_current),
             CURRENT_TIMESTAMP() AS valid_from,
             toDateTime64('9999-12-31 23:59:59.999999', 6) AS valid_to,

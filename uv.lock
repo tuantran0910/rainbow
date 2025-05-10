@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version < '3.12'",
@@ -42,7 +41,7 @@ dependencies = [
     { name = "parsedatetime" },
     { name = "python-slugify" },
     { name = "pytimeparse" },
-    { name = "tzdata", marker = "sys_platform == 'win32'" },
+    { name = "tzdata", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/29/77/6f5df1c68bf056f5fdefc60ccc616303c6211e71cd6033c830c12735f605/agate-1.9.1.tar.gz", hash = "sha256:bc60880c2ee59636a2a80cd8603d63f995be64526abf3cbba12f00767bcd5b3d", size = 202303 }
 wheels = [
@@ -459,7 +458,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
@@ -646,10 +645,10 @@ dependencies = [
     { name = "grpcio-health-checking" },
     { name = "jinja2" },
     { name = "protobuf" },
-    { name = "psutil", marker = "sys_platform == 'win32'" },
+    { name = "psutil", marker = "platform_system == 'Windows'" },
     { name = "python-dotenv" },
     { name = "pytz" },
-    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "pywin32", marker = "platform_system == 'Windows'" },
     { name = "requests" },
     { name = "rich" },
     { name = "setuptools" },
@@ -660,7 +659,7 @@ dependencies = [
     { name = "tomli" },
     { name = "toposort" },
     { name = "tqdm" },
-    { name = "tzdata", marker = "sys_platform == 'win32'" },
+    { name = "tzdata", marker = "platform_system == 'Windows'" },
     { name = "universal-pathlib" },
     { name = "watchdog" },
 ]
@@ -777,8 +776,8 @@ requires-dist = [
     { name = "dagster-dlt", specifier = ">=0.26.9" },
     { name = "dagster-obstore", specifier = ">=0.2.3" },
     { name = "dagster-postgres", specifier = ">=0.26.9" },
-    { name = "dbt-clickhouse", specifier = ">=1.8.9" },
-    { name = "dbt-core", specifier = ">=1.8.9" },
+    { name = "dbt-clickhouse", specifier = ">=1.9.1" },
+    { name = "dbt-core", specifier = ">=1.9.0" },
     { name = "dlt", extras = ["clickhouse", "postgres"], specifier = ">=1.9.0" },
     { name = "faker", specifier = ">=37.1.0" },
     { name = "psutil", specifier = ">=7.0.0" },
@@ -795,8 +794,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dbt-clickhouse", specifier = ">=1.8.7" },
-    { name = "dbt-core", specifier = ">=1.8.9" },
+    { name = "dbt-clickhouse", specifier = ">=1.9.1" },
+    { name = "dbt-core", specifier = ">=1.9.0" },
 ]
 
 [[package]]
@@ -818,7 +817,7 @@ wheels = [
 
 [[package]]
 name = "dbt-clickhouse"
-version = "1.8.9"
+version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "clickhouse-connect" },
@@ -826,9 +825,9 @@ dependencies = [
     { name = "dbt-core" },
     { name = "setuptools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/4c/af581516020db1e6acde1aad69b48b79f8e328ed60cf2784dc09bb6ee8b8/dbt_clickhouse-1.8.9.tar.gz", hash = "sha256:0efe5a000c1d2588713d90169f4e915de240f0c4bcf93f89635c853114cd13a1", size = 69917 }
+sdist = { url = "https://files.pythonhosted.org/packages/36/77/1ca2082159677a7582dd5c5745d20bef1245ae44df34248f23babd0191d0/dbt_clickhouse-1.9.1.tar.gz", hash = "sha256:6e42494e24d2089d6da0d4c05828911855202af46342c5f6c9a8ae6b79100ff9", size = 74838 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/6a/e230083df84319d273de5a45f9ce1a1de645e23ef855bfb2849c1f5bcd8b/dbt_clickhouse-1.8.9-py2.py3-none-any.whl", hash = "sha256:bf40225e720da7d86e7d0c7df6a562d4647bff2cb34517dab08262ae9dcf737e", size = 67636 },
+    { url = "https://files.pythonhosted.org/packages/5a/ce/1b8cf9be767ae08b4913a2fecb1ae9332f2e7e591bb3068c8165b66d7dfc/dbt_clickhouse-1.9.1-py2.py3-none-any.whl", hash = "sha256:1d84a9411cf4f812c1852f13f2e8a6ee422fb8f0eba908e45c66cc27cdc946d3", size = 69601 },
 ]
 
 [[package]]
@@ -856,7 +855,7 @@ wheels = [
 
 [[package]]
 name = "dbt-core"
-version = "1.8.9"
+version = "1.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agate" },
@@ -867,9 +866,7 @@ dependencies = [
     { name = "dbt-extractor" },
     { name = "dbt-semantic-interfaces" },
     { name = "jinja2" },
-    { name = "logbook" },
     { name = "mashumaro", extra = ["msgpack"] },
-    { name = "minimal-snowplow-tracker" },
     { name = "networkx" },
     { name = "packaging" },
     { name = "pathspec" },
@@ -877,12 +874,13 @@ dependencies = [
     { name = "pytz" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "snowplow-tracker" },
     { name = "sqlparse" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/40/79/1e742f9f1195015b953a37d7913f6a1e5cbd48ee68073d7f31b0f2eb404c/dbt_core-1.8.9.tar.gz", hash = "sha256:763a69b0fa4551ceff7a98b88b4f7af05eff0db959086373369b30b342bb5b26", size = 824457 }
+sdist = { url = "https://files.pythonhosted.org/packages/84/23/4950bc072a95d14ec8fe454017951b0884484884c03e59f7cd8c434c91ad/dbt_core-1.9.4.tar.gz", hash = "sha256:783dde19c4e8a22e82ec927963779a9cc5249d746b9e3beb8ec10adc5cabd6db", size = 867021 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b9/7c/57d8500eb9d8b3484c81ca66859d130b605db1a591fe4d676849793591ba/dbt_core-1.8.9-py3-none-any.whl", hash = "sha256:d376cf9c6eb13ed1e2a654e164bf84f4e66c57621d1681733835e49bb9cb1683", size = 900465 },
+    { url = "https://files.pythonhosted.org/packages/23/c3/10f0a021139929d48f371cdbadab0cdcd3fc558c63fc75b51d9e99e0026b/dbt_core-1.9.4-py3-none-any.whl", hash = "sha256:9af5e426a3d574b0c912e64f998f0d96d9ddddb768365c7fb4f6d12893210620", size = 946067 },
 ]
 
 [[package]]
@@ -910,7 +908,7 @@ wheels = [
 
 [[package]]
 name = "dbt-semantic-interfaces"
-version = "0.5.1"
+version = "0.7.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -923,9 +921,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/1b/c7516c333db7a287fded9083209063731d9095e4958c9cda7c73b17178c7/dbt_semantic_interfaces-0.5.1.tar.gz", hash = "sha256:3a497abef1ba8112affdf804b26bfdcd5468ed95cc924b509068e18d371c7c4d", size = 76089 }
+sdist = { url = "https://files.pythonhosted.org/packages/53/67/86c4c068d1c6371928064bb9fe44eb8fbc4e15bb101e924d2e596c6fa511/dbt_semantic_interfaces-0.7.4.tar.gz", hash = "sha256:dcedda6702ecabb633aa4e8ab3b1eb7f9c4301dcc0026076a4a0ef64f9e59cf0", size = 90809 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/31/ec1943c95ea18eabfcf7d6c882e7265e245f749dc465101343028eac33b8/dbt_semantic_interfaces-0.5.1-py3-none-any.whl", hash = "sha256:b95ff3a6721dc30f6278cb84933d95e0ef27766e67eeb6bb41906242e77f7c9b", size = 119672 },
+    { url = "https://files.pythonhosted.org/packages/a3/4d/9e0eec04821154c51c05dab77bc3eed95337c42f471d6ffe7b4a699e8cb1/dbt_semantic_interfaces-0.7.4-py3-none-any.whl", hash = "sha256:63965478ef27056f20a8c9a0f59b1355ebbc15133c1a6f0d368d93996a31dd5d", size = 141981 },
 ]
 
 [[package]]
@@ -1548,7 +1546,7 @@ name = "ipykernel"
 version = "6.29.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "appnope", marker = "sys_platform == 'darwin'" },
+    { name = "appnope", marker = "platform_system == 'Darwin'" },
     { name = "comm" },
     { name = "debugpy" },
     { name = "ipython" },
@@ -1725,12 +1723,6 @@ wheels = [
 ]
 
 [[package]]
-name = "logbook"
-version = "1.5.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/2f/d9/16ac346f7c0102835814cc9e5b684aaadea101560bb932a2403bd26b2320/Logbook-1.5.3.tar.gz", hash = "sha256:66f454ada0f56eae43066f604a222b09893f98c1adc18df169710761b8f32fe8", size = 85783 }
-
-[[package]]
 name = "lz4"
 version = "4.4.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1900,22 +1892,12 @@ wheels = [
 ]
 
 [[package]]
-name = "minimal-snowplow-tracker"
-version = "0.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "requests" },
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/9f/004f810169a48ed5c520279d98327e7793b6491f09d42cb2c5636c994f34/minimal-snowplow-tracker-0.0.2.tar.gz", hash = "sha256:acabf7572db0e7f5cbf6983d495eef54081f71be392330eb3aadb9ccb39daaa4", size = 12542 }
-
-[[package]]
 name = "mkdocs"
 version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
     { name = "ghp-import" },
     { name = "jinja2" },
     { name = "markdown" },
@@ -3465,6 +3447,19 @@ wheels = [
 ]
 
 [[package]]
+name = "snowplow-tracker"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ff/77/1ab6e5bafb9c80d8128f065a355377a04ac5b3c38eb719d920a9909d346e/snowplow_tracker-1.1.0.tar.gz", hash = "sha256:95d8fdc8bd542fd12a0b9a076852239cbaf0599eda8721deaf5f93f7138fe755", size = 34135 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/10/1c76269cbf2d6e127f4415044d9ddb0295858230678bbf4bfba905593c82/snowplow_tracker-1.1.0-py3-none-any.whl", hash = "sha256:24ea32ddac9cca547421bf9ab162f5f33c00711c6ef118ad5f78093cee962224", size = 44128 },
+]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.40"
 source = { registry = "https://pypi.org/simple" }
@@ -3768,7 +3763,7 @@ name = "tqdm"
 version = "4.67.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737 }
 wheels = [
@@ -3846,7 +3841,7 @@ name = "tzlocal"
 version = "5.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "sys_platform == 'win32'" },
+    { name = "tzdata", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761 }
 wheels = [

@@ -10,8 +10,7 @@ default:
       <<: *common
       host: localhost
       user: dbt
-      # password: "{{ env_var('CLICKHOUSE_DBT_PASSWORD') }}"
-      password: Rainb0w2024!DataDBT
+      password: "{{ env_var('CLICKHOUSE_DBT_PASSWORD') }}"
       schema: raw
     production:
       <<: *common

@@ -5,6 +5,6 @@ description = "Rainbow dbt for data transformation and data modeling."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "dbt-clickhouse>=1.8.7",
-    "dbt-core>=1.8.9",
+    "dbt-clickhouse>=1.9.1",
+    "dbt-core>=1.9.0",
 ]
