@@ -181,3 +181,14 @@ tmp/
 
 # Visual Studio Code
 .vscode/
+
+# Terraform
+**/.terraform/*
+*.auto.tfvars
+*.tfoverride
+.terraformrc
+terraform.rc
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
