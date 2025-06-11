@@ -36,7 +36,11 @@ resource "google_project_service" "required_apis" {
     "sqladmin.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
-    "servicenetworking.googleapis.com"
+    "servicenetworking.googleapis.com",
+    "gkehub.googleapis.com",
+    "anthos.googleapis.com",
+    "mesh.googleapis.com",
+    "dns.googleapis.com"
   ])
 
   service            = each.value

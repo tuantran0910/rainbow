@@ -1,0 +1,51 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: dagster-ssl-cert
+  namespace: dagster
+spec:
+  domains:
+    - dagster.tuantrann.work
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dagster-ingress
+  namespace: dagster
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: dagster-ingress-ip
+    networking.gke.io/managed-certificates: dagster-ssl-cert
+    networking.gke.io/v1beta1.FrontendConfig: dagster-frontend-config
+spec:
+  rules:
+    - host: dagster.tuantrann.work
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dagster-webserver
+                port:
+                  number: 3000
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: dagster-frontend-config
+  namespace: dagster
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+  sslPolicy: dagster-ssl-policy
+---
+apiVersion: networking.gke.io/v1beta1
+kind: SSLPolicy
+metadata:
+  name: dagster-ssl-policy
+  namespace: dagster
+spec:
+  minTlsVersion: '1.2'
+  profile: MODERN

@@ -1,0 +1,17 @@
+# Dagster Application Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dagster
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - name: dagster
+    repo: https://dagster-io.github.io/helm
+    version: 1.10.19
+    releaseName: dagster
+    valuesFile: values.yaml
+resources:
+  - service-account.yaml
+  - database.yaml
+  - storage.yaml
+  - ingress.yaml

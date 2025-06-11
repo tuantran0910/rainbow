@@ -1,0 +1,166 @@
+global:
+  serviceAccountName: dagster
+
+nameOverride: dagster
+fullnameOverride: dagster
+
+####################################################################################################
+# Dagster Webserver Configuration
+####################################################################################################
+dagsterWebserver:
+  replicaCount: 1
+  workspace:
+    enabled: false
+  dbStatementTimeout: 300
+  dbPoolRecycle: 300
+  dbPoolMaxOverflow: 10
+  labels:
+    app: dagster
+    component: dagster-webserver
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  service:
+    type: NodePort
+    port: 3000
+    annotations:
+      cloud.google.com/neg: '{"ingress": true}'
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:1.33.9
+      command:
+        - /cloud_sql_proxy
+        - -instances=rainbow-data-production:us-central1:rainbow-data-production-db=tcp:5432
+        - -ip_address_types=PRIVATE
+        - -enable_iam_login
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+
+####################################################################################################
+# Compute Log Manager: GCS Configuration for log storage
+####################################################################################################
+computeLogManager:
+  type: GCSComputeLogManager
+  config:
+    gcsComputeLogManager:
+      bucket: rainbow-data-production-dagster
+      localDir: /tmp/dagster-logs
+      prefix: compute-logs
+      uploadInterval: 30
+
+####################################################################################################
+# Dagster User Deployment
+####################################################################################################
+dagster-user-deployments:
+  enabled: false
+
+####################################################################################################
+# Scheduler Configuration
+####################################################################################################
+scheduler:
+  type: DagsterDaemonScheduler
+
+####################################################################################################
+# Run Launcher: Kubernetes-based job execution
+####################################################################################################
+runLauncher:
+  type: K8sRunLauncher
+  config:
+    k8sRunLauncher:
+      labels:
+        app: dagster
+        component: dagster-run-launcher
+      resources:
+        limits:
+          cpu: 250m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      runK8sConfig:
+        jobSpecConfig:
+          ttlSecondsAfterFinished: 300
+
+####################################################################################################
+# PostgreSQL: Configuration values for postgresql
+####################################################################################################
+postgresql:
+  enabled: false
+  postgresqlHost: localhost
+  postgresqlPort: 5432
+  postgresqlUsername: dagster-sa@rainbow-data-production.iam
+  postgresqlPassword: ''
+  postgresqlDatabase: dagster
+
+generatePostgresqlPasswordSecret: false
+
+####################################################################################################
+# Redis: Configuration values for Redis. Can be used instead of RabbitMQ.
+####################################################################################################
+redis:
+  enabled: true
+
+####################################################################################################
+# Dagster Daemon: Background processes for schedules, sensors, and run coordination
+####################################################################################################
+dagsterDaemon:
+  enabled: true
+  replicaCount: 1
+  runCoordinator:
+    type: QueuedRunCoordinator
+    config:
+      maxConcurrentRuns: 5
+  labels:
+    app: dagster
+    component: dagster-daemon
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:1.33.9
+      command:
+        - /cloud_sql_proxy
+        - -instances=rainbow-data-production:us-central1:rainbow-data-production-db=tcp:5432
+        - -ip_address_types=PRIVATE
+        - -enable_iam_login
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+
+####################################################################################################
+# Service Account Configuration
+####################################################################################################
+serviceAccount:
+  create: false
+  annotations:
+    iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
+
+####################################################################################################
+# Ingress: Enable for external access
+####################################################################################################
+ingress:
+  enabled: false
