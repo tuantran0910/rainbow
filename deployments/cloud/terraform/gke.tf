@@ -30,6 +30,10 @@ resource "google_container_cluster" "primary" {
     }
   }
 
+  enterprise_config {
+    desired_tier = "STANDARD"
+  }
+
   depends_on = [
     google_project_service.required_apis,
     google_compute_subnetwork.main
@@ -41,11 +45,12 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "${local.project_id}-node-pool"
   location   = local.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 1
+  node_count = 3
 
   node_config {
     preemptible  = false
-    machine_type = "e2-small"
+    machine_type = "e2-medium"
+    disk_size_gb = 20
 
     service_account = google_service_account.gke_node_sa.email
     oauth_scopes = [
