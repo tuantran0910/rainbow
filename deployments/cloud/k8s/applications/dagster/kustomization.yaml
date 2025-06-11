@@ -7,7 +7,7 @@ helmGlobals:
 helmCharts:
   - name: dagster
     repo: https://dagster-io.github.io/helm
-    version: 1.10.19
+    version: 1.10.18
     releaseName: dagster
     valuesFile: values.yaml
 resources:

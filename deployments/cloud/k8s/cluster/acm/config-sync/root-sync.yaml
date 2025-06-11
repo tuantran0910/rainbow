@@ -8,7 +8,7 @@ spec:
   git:
     repo: https://github.com/tuantran0910/rainbow.git
     branch: main
-    dir: deployments/cloud/k8s/cluster
+    dir: deployments/cloud/k8s
     auth: none
   override:
     enableShellInRendering: false
