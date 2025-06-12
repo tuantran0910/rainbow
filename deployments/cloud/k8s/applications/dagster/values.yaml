@@ -16,7 +16,6 @@ dagsterWebserver:
   dbPoolMaxOverflow: 10
   labels:
     app: dagster
-    component: dagster-webserver
   resources:
     limits:
       cpu: 500m
@@ -82,7 +81,6 @@ runLauncher:
     k8sRunLauncher:
       labels:
         app: dagster
-        component: dagster-run-launcher
       resources:
         limits:
           cpu: 250m
@@ -124,7 +122,6 @@ dagsterDaemon:
       maxConcurrentRuns: 5
   labels:
     app: dagster
-    component: dagster-daemon
   resources:
     limits:
       cpu: 500m
