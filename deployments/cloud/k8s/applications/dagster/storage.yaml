@@ -6,7 +6,7 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: rainbow-data-production
 spec:
-  name: rainbow-data-production-dagster
+  resourceID: rainbow-data-production-dagster
   location: us-central1
   storageClass: standard
   lifecycleRule:
