@@ -31,7 +31,10 @@ resource "google_service_account" "config_connector" {
 
 resource "google_project_iam_member" "config_connector_bindings" {
   for_each = toset([
-    "roles/editor"
+    "roles/editor",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.workloadIdentityPoolAdmin"
   ])
 
   project = local.project_id
