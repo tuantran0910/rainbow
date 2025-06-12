@@ -54,7 +54,8 @@ resource "google_gke_hub_feature_membership" "configmanagement_feature_member" {
 
   configmanagement {
     config_sync {
-      enabled = true
+      enabled       = true
+      source_format = "unstructured"
       git {
         sync_repo   = "https://github.com/tuantran0910/rainbow"
         sync_branch = "main"
