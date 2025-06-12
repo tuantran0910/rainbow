@@ -8,6 +8,7 @@ fullnameOverride: dagster
 # Dagster Webserver Configuration
 ####################################################################################################
 dagsterWebserver:
+  replicaCount: 1
   workspace:
     enabled: false
   dbStatementTimeout: 300
@@ -116,7 +117,6 @@ redis:
 ####################################################################################################
 dagsterDaemon:
   enabled: true
-  replicaCount: 1
   runCoordinator:
     type: QueuedRunCoordinator
     config:
