@@ -29,6 +29,11 @@ resource "google_sql_database_instance" "main" {
     edition = "ENTERPRISE"
     tier    = "db-f1-micro"
 
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
+
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.main.id

@@ -30,15 +30,21 @@ dagsterWebserver:
       cloud.google.com/neg: '{"ingress": true}'
   extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloudsql-docker/gce-proxy:1.33.9
-      command:
-        - /cloud_sql_proxy
-        - -instances=rainbow-data-production:us-central1:rainbow-data-production-db=tcp:5432
-        - -ip_address_types=PRIVATE
-        - -enable_iam_login
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+      args:
+        - --structured-logs
+        - --port=5432
+        - --auto-iam-authn
+        - rainbow-data-production:us-central1:rainbow-data-production-db
       securityContext:
+        runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
       resources:
         limits:
           cpu: 100m
@@ -132,15 +138,21 @@ dagsterDaemon:
       memory: 256Mi
   extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloudsql-docker/gce-proxy:1.33.9
-      command:
-        - /cloud_sql_proxy
-        - -instances=rainbow-data-production:us-central1:rainbow-data-production-db=tcp:5432
-        - -ip_address_types=PRIVATE
-        - -enable_iam_login
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+      args:
+        - --structured-logs
+        - --port=5432
+        - --auto-iam-authn
+        - rainbow-data-production:us-central1:rainbow-data-production-db
       securityContext:
+        runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
       resources:
         limits:
           cpu: 100m
