@@ -44,3 +44,23 @@ resource "google_service_account_iam_member" "config_connector_workload_identity
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${local.project_id}.svc.id.goog[cnrm-system/cnrm-controller-manager]"
 }
+
+resource "google_gke_hub_feature_membership" "configmanagement_feature_member" {
+  location = "global"
+
+  feature             = google_gke_hub_feature.config_management.name
+  membership          = google_gke_hub_membership.membership.name
+  membership_location = google_gke_hub_membership.membership.location
+
+  configmanagement {
+    config_sync {
+      enabled = true
+      git {
+        sync_repo   = "https://github.com/tuantran0910/rainbow.git"
+        sync_branch = "main"
+        policy_dir  = "deployments/cloud/k8s"
+        secret_type = "none"
+      }
+    }
+  }
+}
