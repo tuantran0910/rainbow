@@ -46,6 +46,7 @@ dagsterWebserver:
         requests:
           cpu: 50m
           memory: 64Mi
+  checkDbReadyInitContainer: false
 
 ####################################################################################################
 # Compute Log Manager: GCS Configuration for log storage
@@ -147,6 +148,7 @@ dagsterDaemon:
         requests:
           cpu: 50m
           memory: 64Mi
+  checkDbReadyInitContainer: false
 
 ####################################################################################################
 # Service Account Configuration
