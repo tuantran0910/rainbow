@@ -56,7 +56,7 @@ resource "google_gke_hub_feature_membership" "configmanagement_feature_member" {
     config_sync {
       enabled = true
       git {
-        sync_repo   = "https://github.com/tuantran0910/rainbow.git"
+        sync_repo   = "https://github.com/tuantran0910/rainbow"
         sync_branch = "main"
         policy_dir  = "deployments/cloud/k8s"
         secret_type = "none"
