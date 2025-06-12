@@ -24,10 +24,31 @@ resource "google_container_cluster" "primary" {
     master_ipv4_cidr_block  = "172.16.0.0/28"
   }
 
+  network_policy {
+    enabled  = true
+    provider = "CALICO"
+  }
+
   addons_config {
     config_connector_config {
       enabled = true
     }
+    http_load_balancing {
+      disabled = false
+    }
+    network_policy_config {
+      disabled = false
+    }
+    horizontal_pod_autoscaling {
+      disabled = false
+    }
+    gke_backup_agent_config {
+      enabled = true
+    }
+  }
+
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD"
   }
 
   enterprise_config {
