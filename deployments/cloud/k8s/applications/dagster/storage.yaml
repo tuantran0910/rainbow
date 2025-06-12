@@ -9,10 +9,9 @@ spec:
   name: rainbow-data-production-dagster
   location: us-central1
   storageClass: standard
-  lifecycle:
-    rule:
-      - action:
-          type: Delete
-        condition:
-          age: 365
+  lifecycleRule:
+    - action:
+        type: Delete
+      condition:
+        age: 365
   publicAccessPrevention: enforced
