@@ -165,8 +165,8 @@ dagsterDaemon:
 ####################################################################################################
 serviceAccount:
   create: false
-  annotations:
-    iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
+  # annotations:
+  #   iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
 
 ####################################################################################################
 # Ingress: Enable for external access
