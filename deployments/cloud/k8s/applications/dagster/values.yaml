@@ -7,7 +7,7 @@ fullnameOverride: dagster
 dagsterWebserver:
   replicaCount: 1
   workspace:
-    enabled: false
+    enabled: true
   dbStatementTimeout: 300
   dbPoolRecycle: 300
   dbPoolMaxOverflow: 10
