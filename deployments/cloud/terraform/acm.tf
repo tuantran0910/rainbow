@@ -34,7 +34,10 @@ resource "google_project_iam_member" "config_connector_bindings" {
     "roles/editor",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountTokenCreator",
-    "roles/iam.workloadIdentityPoolAdmin"
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/iam.serviceAccountUser",
+    "roles/serviceusage.serviceUsageConsumer",
+    "roles/resourcemanager.projectIamAdmin"
   ])
 
   project = local.project_id
