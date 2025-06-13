@@ -1,6 +1,3 @@
-global:
-  serviceAccountName: dagster
-
 nameOverride: dagster
 fullnameOverride: dagster
 
@@ -164,9 +161,10 @@ dagsterDaemon:
 # Service Account Configuration
 ####################################################################################################
 serviceAccount:
-  create: false
-  # annotations:
-  #   iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
+  create: true
+  name: dagster
+  annotations:
+    iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
 
 ####################################################################################################
 # Ingress: Enable for external access
