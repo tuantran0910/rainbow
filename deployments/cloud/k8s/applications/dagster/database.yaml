@@ -8,7 +8,7 @@ metadata:
 spec:
   resourceID: dagster
   instanceRef:
-    name: rainbow-data-production-db
+    external: rainbow-data-production-db
 ---
 apiVersion: sql.cnrm.cloud.google.com/v1beta1
 kind: SQLUser
@@ -19,6 +19,6 @@ metadata:
     cnrm.cloud.google.com/project-id: rainbow-data-production
 spec:
   instanceRef:
-    name: rainbow-data-production-db
+    external: rainbow-data-production-db
   resourceID: dagster-sa@rainbow-data-production.iam
   type: CLOUD_IAM_SERVICE_ACCOUNT
