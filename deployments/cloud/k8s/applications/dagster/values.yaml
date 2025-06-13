@@ -30,12 +30,11 @@ dagsterWebserver:
       cloud.google.com/neg: '{"ingress": true}'
   extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
         - --structured-logs
-        - --port=5432
-        - --auto-iam-authn
-        - rainbow-data-production:us-central1:rainbow-data-production-db
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -139,12 +138,11 @@ dagsterDaemon:
       memory: 256Mi
   extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
         - --structured-logs
-        - --port=5432
-        - --auto-iam-authn
-        - rainbow-data-production:us-central1:rainbow-data-production-db
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
