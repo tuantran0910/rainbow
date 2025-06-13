@@ -138,6 +138,7 @@ dagsterDaemon:
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
         - --structured-logs
+        - --auto-iam-authn
         - --private-ip
         - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
       securityContext:
