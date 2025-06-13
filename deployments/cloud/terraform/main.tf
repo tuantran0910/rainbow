@@ -42,7 +42,10 @@ resource "google_project_service" "required_apis" {
     "mesh.googleapis.com",
     "dns.googleapis.com",
     "anthosconfigmanagement.googleapis.com",
-    "networkservices.googleapis.com"
+    "networkservices.googleapis.com",
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sts.googleapis.com"
   ])
 
   service            = each.value
