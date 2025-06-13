@@ -67,8 +67,7 @@ computeLogManager:
 # Dagster User Deployment
 ####################################################################################################
 dagster-user-deployments:
-  enabled: false
-  enableSubchart: false
+  enabled: true
 
 ####################################################################################################
 # Scheduler Configuration
