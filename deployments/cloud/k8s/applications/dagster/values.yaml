@@ -166,7 +166,7 @@ dagsterDaemon:
 # Service Account Configuration
 ####################################################################################################
 serviceAccount:
-  create: true
+  create: false
   annotations:
     iam.gke.io/gcp-service-account: dagster-sa@rainbow-data-production.iam.gserviceaccount.com
 
