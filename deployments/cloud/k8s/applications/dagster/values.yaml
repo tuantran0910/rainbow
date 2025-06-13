@@ -40,6 +40,7 @@ dagsterWebserver:
         runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
+        fsGroup: 65532
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
         capabilities:
@@ -148,6 +149,7 @@ dagsterDaemon:
         runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
+        fsGroup: 65532
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
         capabilities:
