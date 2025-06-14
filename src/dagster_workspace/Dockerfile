@@ -43,13 +43,13 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     if [ "$ENVIRONMENT" = "cloud" ]; then \
         echo "Installing cloud dependencies..." && \
-        uv sync --group cloud --no-dev --no-cache --python ${PYTHON_VERSION}; \
+        uv sync --group cloud --no-dev --no-cache --python ${PYTHON_VERSION} --active; \
     elif [ "$ENVIRONMENT" = "local" ]; then \
         echo "Installing local dependencies..." && \
-        uv sync --group local --no-cache --python ${PYTHON_VERSION}; \
+        uv sync --group local --no-cache --python ${PYTHON_VERSION} --active; \
     else \
         echo "Unknown environment: $ENVIRONMENT. Defaulting to local..." && \
-        uv sync --group local --no-cache --python ${PYTHON_VERSION}; \
+        uv sync --group local --no-cache --python ${PYTHON_VERSION} --active; \
     fi
 
 # Place entry points in the environment at the front of the path
@@ -64,6 +64,7 @@ RUN apt-get remove -y gcc g++ build-essential && \
 COPY . .
 
 # Switch back to non-root user
+RUN chown -R 1000:1000 ${DAGSTER_WORKSPACE} ${VIRTUAL_ENV}
 USER 1000
 
 # Expose the port
