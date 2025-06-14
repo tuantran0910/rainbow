@@ -97,28 +97,67 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
-      - name: Create GitHub tag
-        run: |
-          # Create a new git tag with the CalVer version
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: v${{ steps.calver.outputs.calver_tag }}
+          name: Dagster Workspace v${{ steps.calver.outputs.calver_tag }}
+          body: |
+            # Dagster Workspace Release v${{ steps.calver.outputs.calver_tag }}
 
-          TAG_NAME="v${{ steps.calver.outputs.calver_tag }}"
-          echo "Creating GitHub tag: $TAG_NAME"
+            🚀 **New Dagster Workspace release is now available!**
 
-          # Create annotated tag with build information
-          git tag -a "$TAG_NAME" -m "Dagster Workspace Release ${{ steps.calver.outputs.calver_tag }}
+            ## 📦 Docker Images
 
-          🐳 Docker Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
-          🏗️  Build Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          🌍 Environment: cloud
-          🐍 Python Version: 3.12
-          📦 Triggered by: ${{ github.actor }}
-          🔗 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            ### Production Cloud Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ```
 
-          # Push the tag
-          git push origin "$TAG_NAME"
-          echo "✅ Successfully created and pushed tag: $TAG_NAME"
+            ## 🔧 Build Information
+
+            - **📅 Build Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            - **🌍 Environment**: Cloud (BigQuery + PostgreSQL)
+            - **🐍 Python Version**: 3.12
+            - **📦 Built by**: ${{ github.actor }}
+            - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ## 🏗️ Dependencies
+
+            ### Core Dependencies
+            - Dagster >= 1.10.20
+            - Dagster DBT >= 0.26.20
+            - Dagster PostgreSQL >= 0.26.20
+            - DBT Core >= 1.9.8
+
+            ### Cloud Dependencies
+            - DLT with BigQuery support
+            - DBT BigQuery >= 1.9.2
+
+            ## 🚀 Usage
+
+            ### Docker Run
+            ```bash
+            docker run -p 4000:4000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+            ```
+
+            ### Docker Compose
+            ```yaml
+            services:
+              dagster:
+                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+                ports:
+                  - "4000:4000"
+                environment:
+                  - DAGSTER_POSTGRES_HOST=your-postgres-host
+            ```
+
+            ---
+
+            **Full Changelog**: Compare with [previous releases](https://github.com/${{ github.repository }}/releases)
+          draft: false
+          prerelease: false
 
       - name: Output build information
         run: |
@@ -127,5 +166,7 @@ jobs:
           echo "🏷️  Docker Image Tags:"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          echo "🏷️  GitHub Tag: v${{ steps.calver.outputs.calver_tag }}"
-          echo "🧹 Trigger tag 'release-dagster-workspace' has been cleaned up"
+          echo "🎉 GitHub Release: Dagster Workspace v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.calver.outputs.calver_tag }}"
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Trigger tag '$TRIGGER_TAG' has been cleaned up"
