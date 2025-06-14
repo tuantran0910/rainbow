@@ -46,3 +46,7 @@ spec:
             requests:
               cpu: 50m
               memory: 64Mi
+      volumes:
+        - name: workspace-volume
+          persistentVolumeClaim:
+            claimName: dagster-workspace-pvc
