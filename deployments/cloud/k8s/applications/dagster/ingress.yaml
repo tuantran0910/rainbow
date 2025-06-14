@@ -26,7 +26,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: dagster-webserver
+                name: dagster-dagster-webserver
                 port:
                   number: 3000
 ---
