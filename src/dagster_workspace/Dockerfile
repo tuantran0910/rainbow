@@ -70,6 +70,7 @@ USER 1000
 EXPOSE 4000
 
 # Run the Dagster GRPC server (only for local environment)
-if [ "$ENVIRONMENT" = "local" ]; then
-    CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]
+RUN if [ "$ENVIRONMENT" = "local" ]; then \
+    echo "Starting Dagster GRPC server"; \
+    dagster code-server start -h 0.0.0.0 -p 4000 -m definitions; \
 fi
