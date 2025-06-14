@@ -93,17 +93,6 @@ dagster-user-deployments:
       labels:
         app: dagster
         owner: tuan.tran
-      volumes:
-        - name: workspace-volume
-          persistentVolumeClaim:
-            claimName: dagster-workspace-pvc
-      volumeMounts:
-        - name: workspace-volume
-          mountPath: /opt/dagster/app
-          subPath: repo/src/dagster_workspace
-        - name: workspace-volume
-          mountPath: /opt/dagster/app/dbt
-          subPath: repo/src/dbt/cloud
       resources:
         limits:
           cpu: 500m
@@ -135,37 +124,6 @@ dagster-user-deployments:
             requests:
               cpu: 50m
               memory: 64Mi
-        - name: workspace-git-sync
-          image: registry.k8s.io/git-sync/git-sync:v4.0.0
-          args:
-            - --repo=https://github.com/tuantran0910/rainbow
-            - --depth=1
-            - --period=60s
-            - --ref=main
-            - --root=/git-sync
-            - --link=repo
-          volumeMounts:
-            - name: workspace-volume
-              mountPath: /git-sync
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            runAsGroup: 65532
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            capabilities:
-              drop:
-                - ALL
-          resources:
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 50m
-              memory: 64Mi
-      deploymentStrategy:
-        type: Recreate
-        rollingUpdate: {}
 
 ####################################################################################################
 # Scheduler Configuration
