@@ -105,6 +105,16 @@ services:
     environment:
       DAGSTER_CURRENT_IMAGE: dagster-workspace
       API_BASE_URL: http://${API_HOST}:${SERVER_PORT}
+    entrypoint:
+      - dagster
+      - code-server
+      - start
+      - -h
+      - 0.0.0.0
+      - -p
+      - 4000
+      - -m
+      - definitions
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
       - ${DAGSTER_DBT_PROJ_DIR:-../../src/dbt/local}:/opt/dagster/app/dbt
