@@ -46,6 +46,17 @@ jobs:
           echo "Generated CalVer tag: $CALVER_TAG"
           echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
 
+      - name: Clean up trigger tag
+        run: |
+          # Delete the trigger tag both locally and remotely early in the process
+          # This ensures cleanup happens even if later steps fail
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Cleaning up trigger tag: $TRIGGER_TAG"
+
+          # Delete the remote tag
+          git push origin --delete "$TRIGGER_TAG"
+          echo "✅ Successfully deleted remote trigger tag: $TRIGGER_TAG"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -117,3 +128,4 @@ jobs:
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "🏷️  GitHub Tag: v${{ steps.calver.outputs.calver_tag }}"
+          echo "🧹 Trigger tag 'release-dagster-workspace' has been cleaned up"
