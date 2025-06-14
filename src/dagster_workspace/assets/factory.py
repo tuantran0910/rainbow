@@ -24,8 +24,8 @@ def build_dlt_pipelines() -> dg.Definitions:
     """
     assets_configs = load_assets_configs(dagster_product="dlt")
     if not assets_configs:
-        logger.error("No asset configurations found")
-        raise ValueError("No asset configurations found")
+        logger.info("No asset configurations found")
+        return dg.Definitions()
 
     base_name = assets_configs.get("name")
     asset_group = assets_configs.get("group_name", "dlt")
