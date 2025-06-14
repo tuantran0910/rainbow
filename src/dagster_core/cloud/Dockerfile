@@ -18,7 +18,11 @@ RUN mkdir -p $DAGSTER_HOME
 
 # Install additional system dependencies
 USER root
-RUN apt-get update && apt-get install -y libpq-dev gcc \
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    g++ \
+    build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Use the virtual environment automatically
@@ -35,7 +39,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 
 # Post cleanup
-RUN apt-get remove -y gcc && \
+RUN apt-get remove -y gcc g++ build-essential && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
 
