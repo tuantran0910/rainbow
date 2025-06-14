@@ -1,0 +1,13 @@
+[project]
+name = "dagster-core-local"
+version = "0.1.0"
+description = "Rainbow Dagster Core - Local"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dagster>=1.10.20",
+    "dagster-graphql>=1.10.20",
+    "dagster-postgres>=0.26.20",
+    "dagster-webserver>=1.10.20",
+    "dagster-obstore>=0.2.3",
+]

@@ -1,0 +1,141 @@
+name: Build Dagster Core Images
+
+on:
+  push:
+    tags:
+      - release-dagster-core
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/dagster-core
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate CalVer tag
+        id: calver
+        run: |
+          # Get current date in YYYY.MM.DD format
+          DATE=$(date +%Y.%m.%d)
+
+          # Get existing tags for today to determine the build number
+          EXISTING_TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/container/dagster-core/versions" \
+            | jq -r '.[] | select(.metadata.container.tags[]? | startswith("'$DATE'")) | .metadata.container.tags[]' \
+            | grep "^$DATE\." | sort -V | tail -1 || echo "")
+
+          if [ -z "$EXISTING_TAGS" ]; then
+            # No existing tags for today, start with .0
+            BUILD_NUMBER=0
+          else
+            # Extract the build number and increment
+            BUILD_NUMBER=$(echo "$EXISTING_TAGS" | cut -d'.' -f4)
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+          fi
+
+          CALVER_TAG="${DATE}.${BUILD_NUMBER}"
+          echo "Generated CalVer tag: $CALVER_TAG"
+          echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
+
+      - name: Clean up trigger tag
+        run: |
+          # Delete the trigger tag both locally and remotely early in the process
+          # This ensures cleanup happens even if later steps fail
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Cleaning up trigger tag: $TRIGGER_TAG"
+
+          # Delete the remote tag
+          git push origin --delete "$TRIGGER_TAG"
+          echo "✅ Successfully deleted remote trigger tag: $TRIGGER_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.calver.outputs.calver_tag }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.description=Cloud deployment with BigQuery
+            org.opencontainers.image.vendor=Rainbow
+            org.opencontainers.image.version=${{ steps.calver.outputs.calver_tag }}
+            dagster.environment=cloud
+            dagster.calver=${{ steps.calver.outputs.calver_tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/dagster_core
+          file: ./src/dagster_core/Dockerfile
+          build-args: |
+            ENVIRONMENT=cloud
+            PYTHON_VERSION=3.12
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: v${{ steps.calver.outputs.calver_tag }}
+          name: Dagster Core v${{ steps.calver.outputs.calver_tag }}
+          body: |
+            # Dagster Core Release v${{ steps.calver.outputs.calver_tag }}
+
+            🚀 **New Dagster Core release is now available!**
+
+            ## 📦 Docker Images
+
+            ### Production Cloud Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ```
+
+            ## 🔧 Build Information
+
+            - **📅 Build Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            - **🌍 Environment**: Cloud (BigQuery + PostgreSQL)
+            - **🐍 Python Version**: 3.12
+            - **📦 Built by**: ${{ github.actor }}
+            - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            ---
+
+            **Full Changelog**: Compare with [previous releases](https://github.com/${{ github.repository }}/releases)
+          draft: false
+          prerelease: false
+
+      - name: Output build information
+        run: |
+          echo "🚀 Successfully built and pushed Dagster core image!"
+          echo "📅 CalVer Tag: ${{ steps.calver.outputs.calver_tag }}"
+          echo "🏷️  Docker Image Tags:"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "🎉 GitHub Release: Dagster Core v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.calver.outputs.calver_tag }}"
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Trigger tag '$TRIGGER_TAG' has been cleaned up"

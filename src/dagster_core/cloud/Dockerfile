@@ -39,9 +39,6 @@ RUN apt-get remove -y gcc && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# Copy Dagster instance YAML
-COPY dagster.yaml workspace.yaml $DAGSTER_HOME
-
 # Switch back to non-root user
 RUN chown -R 1000:1000 ${DAGSTER_HOME} ${VIRTUAL_ENV}
 USER 1000
