@@ -60,8 +60,9 @@ RUN apt-get remove -y gcc g++ build-essential && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# Copy all application code
+# Copy all application code and the dbt project
 COPY . .
+COPY ../dbt/cloud dbt/
 
 # Switch back to non-root user
 RUN chown -R 1000:1000 ${DAGSTER_WORKSPACE} ${VIRTUAL_ENV}
