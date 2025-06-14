@@ -163,8 +163,6 @@ dagster-user-deployments:
             requests:
               cpu: 50m
               memory: 64Mi
-      deploymentStrategy:
-        type: Recreate
 
 ####################################################################################################
 # Scheduler Configuration
