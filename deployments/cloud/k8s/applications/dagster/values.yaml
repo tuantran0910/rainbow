@@ -104,6 +104,13 @@ dagster-user-deployments:
         - name: workspace-volume
           mountPath: /opt/dagster/app/dbt
           subPath: rainbow/src/dbt/cloud
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
       sidecarContainers:
         - name: cloud-sql-proxy
           image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
@@ -128,6 +135,8 @@ dagster-user-deployments:
             requests:
               cpu: 50m
               memory: 64Mi
+      deploymentStrategy:
+        type: Recreate
 
 ####################################################################################################
 # Scheduler Configuration
