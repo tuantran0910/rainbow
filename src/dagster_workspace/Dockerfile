@@ -13,14 +13,10 @@ LABEL org.opencontainers.image.description="Rainbow Dagster Workspace - ${ENVIRO
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DAGSTER_WORKSPACE=/opt/dagster/app \
-    DAGSTER_DBT_WORKSPACE=/opt/dagster/dbt
+    DAGSTER_WORKSPACE=/opt/dagster/app
 
 # Set working directory
 WORKDIR $DAGSTER_WORKSPACE
-
-# Create a directory for dbt
-RUN mkdir -p $DAGSTER_DBT_WORKSPACE
 
 # Install additional system dependencies
 USER root
@@ -62,7 +58,6 @@ RUN apt-get remove -y gcc g++ build-essential && \
 
 # Copy all application code and the dbt project
 COPY . .
-COPY ../dbt/cloud dbt/
 
 # Switch back to non-root user
 RUN chown -R 1000:1000 ${DAGSTER_WORKSPACE} ${VIRTUAL_ENV}
