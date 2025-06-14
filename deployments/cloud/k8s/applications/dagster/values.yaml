@@ -9,6 +9,7 @@ dagsterWebserver:
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
     tag: 2025.06.14.1
+    pullPolicy: Always
   service:
     type: NodePort
     port: 3000
@@ -84,12 +85,8 @@ dagster-user-deployments:
       image:
         repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
         tag: 2025.06.14.1
+        pullPolicy: Always
       codeServerArgs:
-        - start
-        - -h
-        - 0.0.0.0
-        - -p
-        - 4000
         - -m
         - definitions
       port: 4000
