@@ -26,20 +26,46 @@ jobs:
         run: |
           # Get current date in YYYY.MM.DD format
           DATE=$(date +%Y.%m.%d)
+          echo "Generating CalVer tag for date: $DATE"
 
-          # Get existing tags for today to determine the build number
-          EXISTING_TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/packages/container/dagster-workspace/versions" \
-            | jq -r '.[] | select(.metadata.container.tags[]? | startswith("'$DATE'")) | .metadata.container.tags[]' \
-            | grep "^$DATE\." | sort -V | tail -1 || echo "")
+          # Try to get existing tags for today to determine the build number
+          # First, try the GitHub Container Registry API
+          echo "Checking for existing tags..."
+
+          EXISTING_TAGS=""
+
+          # Method 1: Try GitHub Container Registry API
+          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/container/dagster-workspace/versions" 2>/dev/null || echo "[]")
+
+          if [ "$API_RESPONSE" != "[]" ] && [ -n "$API_RESPONSE" ]; then
+            echo "API Response received, parsing tags..."
+            EXISTING_TAGS=$(echo "$API_RESPONSE" | jq -r '
+              try (
+                .[] |
+                select(.metadata.container.tags != null) |
+                .metadata.container.tags[] |
+                select(startswith("'$DATE'."))
+              ) catch empty
+            ' 2>/dev/null | sort -V | tail -1 || echo "")
+          fi
+
+          # Method 2: Fallback - check git tags as secondary method
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No container tags found, checking git tags as fallback..."
+            EXISTING_TAGS=$(git tag -l | grep "^dagster-workspace/" | sed 's/dagster-workspace\///' | grep "^$DATE\." | sort -V | tail -1 || echo "")
+          fi
 
           if [ -z "$EXISTING_TAGS" ]; then
-            # No existing tags for today, start with .0
+            echo "No existing tags found for today, starting with .0"
             BUILD_NUMBER=0
           else
+            echo "Found existing tag: $EXISTING_TAGS"
             # Extract the build number and increment
             BUILD_NUMBER=$(echo "$EXISTING_TAGS" | cut -d'.' -f4)
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            echo "Incrementing build number to: $BUILD_NUMBER"
           fi
 
           CALVER_TAG="${DATE}.${BUILD_NUMBER}"
