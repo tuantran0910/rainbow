@@ -141,9 +141,8 @@ dagster-user-deployments:
             - --repo=https://github.com/tuantran0910/rainbow
             - --depth=1
             - --period=60s
-            - --branch=main
+            - --ref=main
             - --root=/git
-            - --link
           volumeMounts:
             - name: workspace-volume
               mountPath: /git
@@ -163,6 +162,8 @@ dagster-user-deployments:
             requests:
               cpu: 50m
               memory: 64Mi
+      deploymentStrategy:
+        type: Recreate
 
 ####################################################################################################
 # Scheduler Configuration
