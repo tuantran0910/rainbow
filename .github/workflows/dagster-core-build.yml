@@ -85,8 +85,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./src/dagster_core
-          file: ./src/dagster_core/Dockerfile
+          context: ./src/dagster_core/cloud
+          file: ./src/dagster_core/cloud/Dockerfile
           build-args: |
             ENVIRONMENT=cloud
             PYTHON_VERSION=3.12
