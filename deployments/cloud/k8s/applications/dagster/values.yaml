@@ -37,6 +37,13 @@ dagsterWebserver:
     requests:
       cpu: 200m
       memory: 256Mi
+  readinessProbe:
+    httpGet:
+      path: /server_info
+      port: 3000
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 3
   extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
