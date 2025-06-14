@@ -16,3 +16,5 @@ resources:
   - storage.yaml
   - ingress.yaml
   - secret.yaml
+  - pvc.yaml
+  - git-sync.yaml

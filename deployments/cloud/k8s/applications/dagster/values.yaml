@@ -6,13 +6,29 @@ fullnameOverride: dagster
 ####################################################################################################
 dagsterWebserver:
   replicaCount: 1
+  image:
+    repository: ghcr.io/tuantran0910/rainbow/dagster-core
+    tag: 2025.06.14.1
+  service:
+    type: NodePort
+    port: 3000
+    annotations:
+      cloud.google.com/neg: '{"ingress": true}'
   workspace:
     enabled: true
+    servers:
+      - host: rainbow-dagster-workspace
+        port: 4000
+        name: rainbow-dagster-workspace
   dbStatementTimeout: 300
   dbPoolRecycle: 300
   dbPoolMaxOverflow: 10
+  deploymentLabels:
+    app: dagster
+    owner: tuan.tran
   labels:
     app: dagster
+    owner: tuan.tran
   resources:
     limits:
       cpu: 500m
@@ -20,11 +36,6 @@ dagsterWebserver:
     requests:
       cpu: 200m
       memory: 256Mi
-  service:
-    type: NodePort
-    port: 3000
-    annotations:
-      cloud.google.com/neg: '{"ingress": true}'
   extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
@@ -68,6 +79,58 @@ computeLogManager:
 ####################################################################################################
 dagster-user-deployments:
   enabled: true
+  deployments:
+    - name: rainbow-dagster-workspace
+      image:
+        repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
+        tag: 2025.06.14.0
+      codeServerArgs:
+        - start
+        - -h
+        - 0.0.0.0
+        - -p
+        - 4000
+        - -m
+        - definitions
+      port: 4000
+      labels:
+        app: dagster
+        owner: tuan.tran
+      volumes:
+        - name: workspace-volume
+          persistentVolumeClaim:
+            claimName: dagster-workspace-pvc
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /opt/dagster/app
+          subPath: rainbow/src/dagster_workspace
+        - name: workspace-volume
+          mountPath: /opt/dagster/app/dbt
+          subPath: rainbow/src/dbt/cloud
+      sidecarContainers:
+        - name: cloud-sql-proxy
+          image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+          args:
+            - --structured-logs
+            - --auto-iam-authn
+            - --private-ip
+            - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
 
 ####################################################################################################
 # Scheduler Configuration
@@ -84,6 +147,7 @@ runLauncher:
     k8sRunLauncher:
       labels:
         app: dagster
+        owner: tuan.tran
       resources:
         limits:
           cpu: 250m
@@ -113,12 +177,16 @@ generatePostgresqlPasswordSecret: false
 ####################################################################################################
 dagsterDaemon:
   enabled: true
+  image:
+    repository: ghcr.io/tuantran0910/rainbow/dagster-core
+    tag: 2025.06.14.1
   runCoordinator:
     type: QueuedRunCoordinator
     config:
       maxConcurrentRuns: 5
   labels:
     app: dagster
+    owner: tuan.tran
   resources:
     limits:
       cpu: 500m

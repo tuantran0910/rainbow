@@ -69,5 +69,7 @@ USER 1000
 # Expose the port
 EXPOSE 4000
 
-# Run the Dagster GRPC server
-CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]
+# Run the Dagster GRPC server (only for local environment)
+if [ "$ENVIRONMENT" = "local" ]; then
+    CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]
+fi
