@@ -8,7 +8,6 @@ resource "google_compute_disk" "dagster_workspace_disk" {
   labels = {
     component = "dagster"
     env       = "production"
-    owner     = "tuan.tran"
   }
 
   depends_on = [
