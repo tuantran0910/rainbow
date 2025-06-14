@@ -61,7 +61,7 @@ COPY dbt dbt
 RUN echo "Installing dbt packages for ${ENVIRONMENT} environment..." && \
     dbt deps --project-dir dbt/${ENVIRONMENT} && \
     echo "Generating dbt manifest for ${ENVIRONMENT} environment..." && \
-    dbt parse --project-dir dbt/${ENVIRONMENT} --profiles-dir && \
+    dbt parse --project-dir dbt/${ENVIRONMENT} --profiles-dir dbt/${ENVIRONMENT} && \
     echo "dbt manifest generated successfully"
 
 # Copy all application code
