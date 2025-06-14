@@ -8,9 +8,10 @@ from dagster_dbt import DbtProject
 
 from assets.translators import CustomDagsterDbtTranslator
 from constants import DAGSTER_DBT_TARGET_PROFILE
+from constants import ENVIRONMENT
 
 # Points to the dbt project path
-dbt_project_dir = Path(__file__).absolute().parent.parent / "dbt"
+dbt_project_dir = Path(__file__).absolute().parent.parent / "dbt" / ENVIRONMENT
 dbt_project = DbtProject(project_dir=dbt_project_dir, target=DAGSTER_DBT_TARGET_PROFILE)
 
 # References the dbt project object

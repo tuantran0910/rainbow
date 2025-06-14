@@ -55,6 +55,7 @@ BOOK_CLUB_SALE_MIN_DAYS = int(os.getenv("BOOK_CLUB_SALE_MIN_DAYS", "14"))
 BOOK_CLUB_SALE_MAX_DAYS = int(os.getenv("BOOK_CLUB_SALE_MAX_DAYS", "30"))
 
 # Dagster Resources
+ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 DAGSTER_ASSETS_CONFIG_DIR = Path(os.getenv("DAGSTER_ASSETS_CONFIG_DIR", "/opt/dagster/app/configs"))
 DAGSTER_DBT_TARGET_PROFILE = os.getenv("DAGSTER_DBT_TARGET_PROFILE", "production")
 DAGSTER_ASSETS_OWNER = "tntuan0910@gmail.com"
