@@ -156,7 +156,7 @@ jobs:
             ## 🔧 Build Information
 
             - **📅 Build Date**: ${{ steps.build_date.outputs.build_date }}
-            - **🌍 Environment**: Cloud (BigQuery + PostgreSQL)
+            - **🌍 Environment**: Cloud
             - **🐍 Python Version**: 3.12
             - **📦 Built by**: ${{ github.actor }}
             - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
