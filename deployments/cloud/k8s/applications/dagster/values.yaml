@@ -100,10 +100,10 @@ dagster-user-deployments:
       volumeMounts:
         - name: workspace-volume
           mountPath: /opt/dagster/app
-          subPath: src/dagster_workspace
+          subPath: repo/src/dagster_workspace
         - name: workspace-volume
           mountPath: /opt/dagster/app/dbt
-          subPath: src/dbt/cloud
+          subPath: repo/src/dbt/cloud
       resources:
         limits:
           cpu: 500m
@@ -142,11 +142,11 @@ dagster-user-deployments:
             - --depth=1
             - --period=60s
             - --ref=main
-            - --root=/git
+            - --root=/git-sync
             - --link=repo
           volumeMounts:
             - name: workspace-volume
-              mountPath: /git/repo
+              mountPath: /git-sync
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
