@@ -97,6 +97,12 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
+      - name: Generate build date
+        id: build_date
+        run: |
+          BUILD_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2.1.0
         with:
@@ -117,7 +123,7 @@ jobs:
 
             ## 🔧 Build Information
 
-            - **📅 Build Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            - **📅 Build Date**: ${{ steps.build_date.outputs.build_date }}
             - **🌍 Environment**: Cloud (BigQuery + PostgreSQL)
             - **🐍 Python Version**: 3.12
             - **📦 Built by**: ${{ github.actor }}
