@@ -39,13 +39,4 @@ spec:
   redirectToHttps:
     enabled: true
     responseCodeName: MOVED_PERMANENTLY_DEFAULT
-  sslPolicy: dagster-ssl-policy
----
-apiVersion: networking.gke.io/v1beta1
-kind: SSLPolicy
-metadata:
-  name: dagster-ssl-policy
-  namespace: dagster
-spec:
-  minTlsVersion: '1.2'
-  profile: MODERN
+  sslPolicy: rainbow-ssl-policy

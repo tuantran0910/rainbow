@@ -109,12 +109,6 @@ postgresql:
 generatePostgresqlPasswordSecret: false
 
 ####################################################################################################
-# Redis: Configuration values for Redis. Can be used instead of RabbitMQ.
-####################################################################################################
-redis:
-  enabled: true
-
-####################################################################################################
 # Dagster Daemon: Background processes for schedules, sensors, and run coordination
 ####################################################################################################
 dagsterDaemon:

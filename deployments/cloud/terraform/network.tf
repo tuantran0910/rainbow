@@ -1,3 +1,4 @@
+# Router
 resource "google_compute_router" "router" {
   name    = "${local.project_id}-router"
   region  = local.region
