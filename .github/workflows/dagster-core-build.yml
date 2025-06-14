@@ -100,7 +100,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: v${{ steps.calver.outputs.calver_tag }}
+          tag_name: dagster-core/${{ steps.calver.outputs.calver_tag }}
           name: Dagster Core v${{ steps.calver.outputs.calver_tag }}
           body: |
             # Dagster Core Release v${{ steps.calver.outputs.calver_tag }}
@@ -136,6 +136,6 @@ jobs:
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "🎉 GitHub Release: Dagster Core v${{ steps.calver.outputs.calver_tag }}"
-          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/dagster-core/${{ steps.calver.outputs.calver_tag }}"
           TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
           echo "🧹 Trigger tag '$TRIGGER_TAG' has been cleaned up"
