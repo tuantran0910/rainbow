@@ -143,9 +143,10 @@ dagster-user-deployments:
             - --period=60s
             - --ref=main
             - --root=/git
+            - --link=repo
           volumeMounts:
             - name: workspace-volume
-              mountPath: /git
+              mountPath: /git/repo
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
