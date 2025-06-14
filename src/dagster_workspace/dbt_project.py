@@ -12,13 +12,22 @@ from constants import ENVIRONMENT
 
 # Points to the dbt project path
 dbt_project_dir = Path(__file__).absolute().parent / "dbt" / ENVIRONMENT
-dbt_project = DbtProject(project_dir=dbt_project_dir, target=DAGSTER_DBT_TARGET_PROFILE)
 
-# References the dbt project object
-dbt_resource = DbtCliResource(project_dir=dbt_project)
 
-# Compiles the dbt project & allow Dagster to build an asset graph
-dbt_project.prepare_if_dev()
+def get_dbt_project() -> DbtProject:
+    """
+    Initialize and prepare the dbt project.
+
+    Returns:
+        DbtProject: The initialized dbt project.
+    """
+    dbt_project = DbtProject(project_dir=dbt_project_dir, target=DAGSTER_DBT_TARGET_PROFILE)
+
+    # Prepare the project if in development mode
+    # This should be safe now since we generate manifest during build
+    dbt_project.prepare_if_dev()
+
+    return dbt_project
 
 
 def build_dbt_project() -> dg.Definitions:
@@ -28,6 +37,10 @@ def build_dbt_project() -> dg.Definitions:
     Returns:
         dg.Definitions: Dagster definitions containing the configured assets.
     """
+
+    # Initialize dbt project and resource inside the function
+    dbt_project = get_dbt_project()
+    dbt_resource = DbtCliResource(project_dir=dbt_project)
 
     # Create a dbt asset using the dbt project
     @dbt_assets(

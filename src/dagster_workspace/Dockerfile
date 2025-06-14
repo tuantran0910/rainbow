@@ -56,7 +56,15 @@ RUN apt-get remove -y gcc g++ build-essential && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# Copy all application code and the dbt project
+# Copy the dbt project and generate the manifest
+COPY dbt dbt
+RUN echo "Installing dbt packages for ${ENVIRONMENT} environment..." && \
+    dbt deps --project-dir dbt/${ENVIRONMENT} && \
+    echo "Generating dbt manifest for ${ENVIRONMENT} environment..." && \
+    dbt parse --project-dir dbt/${ENVIRONMENT} --profiles-dir && \
+    echo "dbt manifest generated successfully"
+
+# Copy all application code
 COPY . .
 
 # Switch back to non-root user

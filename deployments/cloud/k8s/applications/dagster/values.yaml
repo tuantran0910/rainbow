@@ -98,6 +98,8 @@ dagster-user-deployments:
         - definitions
       port: 4000
       env:
+        - name: ENVIRONMENT
+          value: cloud
         - name: DB_HOST
           value: 127.0.0.1
         - name: DB_PORT
