@@ -11,14 +11,14 @@ class PostgresResource(dg.ConfigurableResource):
         port (int): The port of the PostgreSQL database.
         database (str): The name of the PostgreSQL database.
         user (str): The user of the PostgreSQL database.
-        password (str): The password of the PostgreSQL database.
+        password (str | None): The password of the PostgreSQL database.
     """
 
     host: str
     port: int
     database: str
     user: str
-    password: str
+    password: str | None = None
 
     def get_conn(self) -> psycopg2.connect:
         """
@@ -32,7 +32,7 @@ class PostgresResource(dg.ConfigurableResource):
             port=self.port,
             database=self.database,
             user=self.user,
-            password=self.password,
+            password=self.password or "",
         )
 
     def fetchall(self, query: str, params: tuple = ()) -> list[tuple]:

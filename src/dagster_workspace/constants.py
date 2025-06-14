@@ -69,8 +69,8 @@ DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
 DAGSTER_MOCKING_ASSET_GROUP = "mocking"
 
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
-DB_PORT = os.getenv("DB_PORT", "5432")
+DB_PORT = int(os.getenv("DB_PORT", "5432"))
 
-RAINBOW_DB_NAME = os.getenv("API_DB_NAME")
-RAINBOW_DB_USER = os.getenv("DB_USER")
-RAINBOW_DB_PASSWORD = os.getenv("DB_PASSWORD")
+RAINBOW_DB_NAME = os.getenv("API_DB_NAME", "rainbow")
+RAINBOW_DB_USER = os.getenv("API_DB_USER", "rainbow")
+RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")
