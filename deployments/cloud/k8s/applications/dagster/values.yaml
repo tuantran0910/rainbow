@@ -90,6 +90,11 @@ dagster-user-deployments:
         - -m
         - definitions
       port: 4000
+      env:
+        - name: DB_HOST
+          value: 127.0.0.1
+        - name: DB_PORT
+          value: '5432'
       labels:
         app: dagster
         owner: tuan.tran

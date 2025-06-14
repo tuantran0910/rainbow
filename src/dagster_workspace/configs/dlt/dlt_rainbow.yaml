@@ -1,4 +1,5 @@
 name: dlt_rainbow
+enabled: false
 group_name: dlt_rainbow
 job:
   name: dlt_rainbow_job

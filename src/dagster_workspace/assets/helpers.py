@@ -45,8 +45,8 @@ def load_assets_configs(
     for yaml_file in config_dir.glob("*.y*ml"):
         try:
             with open(yaml_file, encoding="utf-8") as file:
-                file_configs = yaml.safe_load(file)
-                if file_configs:
+                file_configs: dict[str, Any] = yaml.safe_load(file)
+                if file_configs and file_configs.get("enabled", True):
                     loaded_configs.update(file_configs)
         except yaml.YAMLError as e:
             logger.error(f"Error parsing YAML file {yaml_file}: {e}")
