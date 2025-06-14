@@ -4,14 +4,4 @@ version = "0.1.0"
 description = "Rainbow Dagster Core - Cloud"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "dagster>=1.10.20",
-    "dagster-postgres>=0.26.20",
-    "dagster-webserver>=1.10.20",
-    "dagster-k8s>=0.26.20",
-    "dagster-celery[flower,redis,kubernetes]>=0.26.20",
-    "dagster-celery-k8s>=0.26.20",
-    "dagster-gcp>=0.26.20",
-    "dagster-graphql>=1.10.20",
-    "grpcio==1.57.0",
-]
+dependencies = []

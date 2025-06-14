@@ -1,6 +1,6 @@
 # Define the base image
-ARG PYTHON_VERSION=3.12
-FROM python:${PYTHON_VERSION}-slim
+ARG DAGSTER_VERSION=1.10.20
+FROM dagster/dagster-celery-k8s:${DAGSTER_VERSION}
 
 # Label the image
 LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
 ENV VIRTUAL_ENV=/opt/venv
 
 # Copy the dependency file and install dependencies
+ARG PYTHON_VERSION=3.12
 COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 COPY pyproject.toml .
 RUN --mount=type=cache,target=/root/.cache/uv \
