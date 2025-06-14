@@ -17,4 +17,3 @@ resources:
   - ingress.yaml
   - secret.yaml
   - pvc.yaml
-  - git-sync.yaml
