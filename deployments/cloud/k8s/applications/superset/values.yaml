@@ -78,8 +78,6 @@ supersetNode:
         requests:
           cpu: 50m
           memory: 64Mi
-  deploymentLabels:
-    owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
     runAsNonRoot: true
@@ -120,8 +118,6 @@ supersetWorker:
         requests:
           cpu: 50m
           memory: 64Mi
-  deploymentLabels:
-    owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
     runAsNonRoot: true
@@ -161,8 +157,6 @@ supersetCeleryBeat:
         requests:
           cpu: 50m
           memory: 64Mi
-  deploymentLabels:
-    owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
     runAsNonRoot: true
