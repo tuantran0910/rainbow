@@ -79,7 +79,6 @@ supersetNode:
           cpu: 50m
           memory: 64Mi
   deploymentLabels:
-    app: superset
     owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
@@ -122,7 +121,6 @@ supersetWorker:
           cpu: 50m
           memory: 64Mi
   deploymentLabels:
-    app: superset
     owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
@@ -164,7 +162,6 @@ supersetCeleryBeat:
           cpu: 50m
           memory: 64Mi
   deploymentLabels:
-    app: superset
     owner: tuan.tran
   podSecurityContext:
     fsGroup: 65532
