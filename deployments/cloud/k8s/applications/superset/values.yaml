@@ -31,6 +31,8 @@ image:
 service:
   type: NodePort
   port: 8088
+  nodePort:
+    http: 30088
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
 
