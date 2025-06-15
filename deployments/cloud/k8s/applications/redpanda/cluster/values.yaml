@@ -43,6 +43,9 @@ serviceAccount:
     iam.gke.io/gcp-service-account: redpanda-sa@rainbow-data-production.iam.gserviceaccount.com
   name: redpanda
 
+rbac:
+  enabled: false
+
 listeners:
   kafka:
     port: 9092
