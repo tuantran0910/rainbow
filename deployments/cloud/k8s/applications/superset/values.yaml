@@ -19,7 +19,7 @@ extraConfigs:
 
 configOverrides:
   extend_timeout: |
-    SUPERSET_WEBSERVER_TIMEOUT: 150
+    SUPERSET_WEBSERVER_TIMEOUT = 150
   secret: |
     SECRET_KEY = "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
 
