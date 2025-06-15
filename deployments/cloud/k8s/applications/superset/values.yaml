@@ -3,6 +3,8 @@ fullnameOverride: superset
 extraLabels:
   owner: tuan.tran
 
+runAsUser: 1000
+
 serviceAccountName: superset
 serviceAccount:
   create: false
