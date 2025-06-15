@@ -35,7 +35,7 @@ extraConfigs:
   import_datasources.yaml: |
     databases:
     - database_name: superset
-      sqlalchemy_uri: postgresql://superset-sa%40rainbow-data-production.iam@localhost:5432/rainbow-data-production
+      sqlalchemy_uri: postgresql+psycopg2://superset-sa%40rainbow-data-production.iam@localhost:5432/rainbow-data-production
 
 configOverrides:
   extend_timeout: |
@@ -75,7 +75,7 @@ supersetNode:
     # redis_password: ""
     db_host: 127.0.0.1
     db_port: 5432
-    db_user: superset
+    db_user: superset-sa@rainbow-data-production.iam
     db_pass: ''
     db_name: superset
   initContainers:
