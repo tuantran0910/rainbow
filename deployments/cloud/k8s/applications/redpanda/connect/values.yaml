@@ -1,0 +1,10 @@
+replicas: 1
+labels:
+  app: redpanda-connect
+  owner: tuan.tran
+
+annotations:
+  iam.gke.io/gcp-service-account: redpanda-sa@rainbow-data-production.iam.gserviceaccount.com
+
+serviceAccountCreate: yes
+serviceAccount: redpanda

@@ -1,0 +1,18 @@
+# Redpanda Application Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: redpanda
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - name: strimzi-operator
+    repo: https://strimzi.io/charts
+    version: 0.46.0
+    releaseName: strimzi-kafka-operator
+    valuesFile: values.yaml
+resources:
+  - connect.yaml
+  - connectors.yaml
+# TODO: Remove this once we want to re-enable Kafka Connect
+commonAnnotations:
+  configmanagement.gke.io/managed: disabled

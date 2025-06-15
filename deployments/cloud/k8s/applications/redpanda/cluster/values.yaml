@@ -1,0 +1,89 @@
+nameOverride: redpanda
+fullnameOverride: redpanda
+commonLabels:
+  app: redpanda
+  owner: tuan.tran
+
+image:
+  repository: docker.redpanda.com/redpandadata/redpanda
+  tag: v25.1.5
+
+console:
+  enabled: false
+
+tls:
+  enabled: false
+
+external:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1000Mi
+  requests:
+    cpu: 0.5
+    memory: 500Mi
+
+storage:
+  persistentVolume:
+    size: 5Gi
+    labels:
+      app: redpanda
+      owner: tuan.tran
+    storageClass: redpanda-storage
+    nameOverride: redpanda-cluster-storage
+
+statefulset:
+  replicas: 3
+
+serviceAccount:
+  create: false
+  annotations:
+    iam.gke.io/gcp-service-account: redpanda-sa@rainbow-data-production.iam.gserviceaccount.com
+  name: redpanda
+
+listeners:
+  kafka:
+    port: 9092
+    external:
+      default:
+        port: 9092
+        advertisedPorts: [31092]
+
+  admin:
+    port: 9644
+    external:
+      default:
+        port: 9644
+        advertisedPorts: [31644]
+
+  http:
+    enabled: true
+    port: 8082
+    external:
+      default:
+        port: 8083
+        advertisedPorts: [30082]
+
+  schemaRegistry:
+    enabled: true
+    port: 8081
+    external:
+      default:
+        port: 8084
+        advertisedPorts: [30081]
+
+config:
+  cluster:
+    group_initial_rebalance_delay: 3s
+    default_topic_replications: 3
+    log_retention_bytes: -1
+    log_retention_ms: 604800000
+    log_cleanup_policy: [delete]
+  tunable:
+    log_segment_size_min: 16777216   # 16MB
+    log_segment_size_max: 268435456  # 256MB
+    compacted_log_segment_size: 67108864  # 64MB
+    max_compacted_log_segment_size: 536870912  # 512MB
+    kafka_connection_rate_limit: 1000

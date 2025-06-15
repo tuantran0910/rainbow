@@ -1,0 +1,14 @@
+# Redpanda Application Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: redpanda
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - name: redpanda
+    repo: https://charts.redpanda.com
+    version: 5.10.2
+    releaseName: redpanda
+    valuesFile: values.yaml
+resources:
+  - storage.yaml
