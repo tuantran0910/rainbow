@@ -1,0 +1,24 @@
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLDatabase
+metadata:
+  name: superset-database
+  namespace: superset
+  annotations:
+    cnrm.cloud.google.com/project-id: rainbow-data-production
+spec:
+  resourceID: superset
+  instanceRef:
+    external: rainbow-data-production-db
+---
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLUser
+metadata:
+  name: superset-user
+  namespace: superset
+  annotations:
+    cnrm.cloud.google.com/project-id: rainbow-data-production
+spec:
+  instanceRef:
+    external: rainbow-data-production-db
+  resourceID: superset-sa@rainbow-data-production.iam
+  type: CLOUD_IAM_SERVICE_ACCOUNT

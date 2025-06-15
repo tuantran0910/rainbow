@@ -1,0 +1,42 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: superset-ssl-cert
+  namespace: superset
+spec:
+  domains:
+    - superset.tuantrann.work
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: superset-ingress
+  namespace: superset
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: superset-ingress-ip
+    networking.gke.io/managed-certificates: superset-ssl-cert
+    networking.gke.io/v1beta1.FrontendConfig: superset-frontend-config
+spec:
+  rules:
+    - host: superset.tuantrann.work
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: superset
+                port:
+                  number: 8088
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: superset-frontend-config
+  namespace: superset
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+  sslPolicy: rainbow-ssl-policy

@@ -1,0 +1,16 @@
+# Superset Application Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: superset
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - name: superset
+    repo: https://apache.github.io/superset
+    version: 0.14.2
+    releaseName: superset
+    valuesFile: values.yaml
+resources:
+  - service-account.yaml
+  - database.yaml
+  - ingress.yaml

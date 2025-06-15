@@ -1,0 +1,230 @@
+nameOverride: superset
+fullnameOverride: superset
+extraLabels:
+  app: superset
+  owner: tuan.tran
+
+serviceAccountName: superset
+serviceAccount:
+  create: false
+  annotations:
+    iam.gke.io/gcp-service-account: superset-sa@rainbow-data-production.iam.gserviceaccount.com
+
+extraConfigs:
+  import_datasources.yaml: |
+    databases:
+    - database_name: superset
+      sqlalchemy_uri: postgresql://superset-sa%40rainbow-data-production.iam@localhost:5432/rainbow-data-production
+
+configOverrides:
+  configs: |
+    SQLALCHEMY_POOL_SIZE: 20
+    SQLALCHEMY_POOL_TIMEOUT: 300
+    SUPERSET_WEBSERVER_TIMEOUT: 150
+
+image:
+  repository: apachesuperset.docker.scarf.sh/apache/superset
+  tag: 4.1.2
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8088
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1
+    memory: 2Gi
+
+supersetNode:
+  replicas:
+    replicaCount: 1
+  connections:
+    # TODO: Change from Redis to Dragonfly
+    # redis_host: dragonfly-master.dragonfly.svc.cluster.local
+    # redis_port: 6379
+    # redis_user: superset
+    # redis_password: ""
+    db_host: 127.0.0.1
+    db_port: 5432
+    db_user: superset
+    db_pass: ''
+    db_name: superset
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+      args:
+        - --structured-logs
+        - --auto-iam-authn
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  deploymentLabels:
+    app: superset
+    owner: tuan.tran
+  podSecurityContext:
+    fsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ALL]
+
+supersetWorker:
+  replicas:
+    replicaCount: 1
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+      args:
+        - --structured-logs
+        - --auto-iam-authn
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop: [ALL]
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  deploymentLabels:
+    app: superset
+    owner: tuan.tran
+  podSecurityContext:
+    fsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ALL]
+
+supersetCeleryBeat:
+  enabled: true
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+      args:
+        - --structured-logs
+        - --auto-iam-authn
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop: [ALL]
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  deploymentLabels:
+    app: superset
+    owner: tuan.tran
+  podSecurityContext:
+    fsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ALL]
+
+init:
+  createAdmin: true
+  adminUser:
+    username: admin
+    firstname: Rainbow
+    lastname: Data
+    email: rainbow@tuantrann.work
+    password: rainbow
+  extraContainers:
+    - name: cloud-sql-proxy
+      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+      args:
+        - --structured-logs
+        - --auto-iam-authn
+        - --private-ip
+        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop: [ALL]
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  podSecurityContext:
+    fsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ALL]
+
+postgresql:
+  enabled: false
