@@ -48,17 +48,17 @@ rbac:
 
 listeners:
   kafka:
-    port: 9092
+    port: 9093
     external:
       default:
-        port: 9092
+        port: 9094
         advertisedPorts: [31092]
 
   admin:
     port: 9644
     external:
       default:
-        port: 9644
+        port: 9645
         advertisedPorts: [31644]
 
   http:
