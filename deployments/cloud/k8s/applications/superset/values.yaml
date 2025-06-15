@@ -56,7 +56,7 @@ supersetNode:
     db_user: superset
     db_pass: ''
     db_name: superset
-  initContainers:
+  extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -97,7 +97,7 @@ supersetNode:
 supersetWorker:
   replicas:
     replicaCount: 1
-  initContainers:
+  extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -136,7 +136,7 @@ supersetWorker:
 
 supersetCeleryBeat:
   enabled: true
-  initContainers:
+  extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -181,7 +181,7 @@ init:
     lastname: Data
     email: rainbow@tuantrann.work
     password: rainbow
-  initContainers:
+  extraContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
