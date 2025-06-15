@@ -18,12 +18,10 @@ extraConfigs:
       sqlalchemy_uri: postgresql://superset-sa%40rainbow-data-production.iam@localhost:5432/rainbow-data-production
 
 configOverrides:
-  configs: |
-    SQLALCHEMY_POOL_SIZE: 20
-    SQLALCHEMY_POOL_TIMEOUT: 300
+  extend_timeout: |
     SUPERSET_WEBSERVER_TIMEOUT: 150
   secret: |
-    SECRET_KEY: "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
+    SECRET_KEY = "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
 
 image:
   repository: apachesuperset.docker.scarf.sh/apache/superset
