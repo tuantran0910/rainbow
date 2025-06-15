@@ -35,7 +35,7 @@ storage:
     nameOverride: redpanda-cluster-storage
 
 statefulset:
-  replicas: 3
+  replicas: 1
 
 serviceAccount:
   create: false
@@ -44,6 +44,9 @@ serviceAccount:
   name: redpanda
 
 rbac:
+  enabled: false
+
+tests:
   enabled: false
 
 listeners:
