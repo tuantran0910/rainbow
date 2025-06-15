@@ -2,6 +2,3 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: redpanda
-# TODO: Remove this once we want to re-enable Kafka UI
-commonAnnotations:
-  configmanagement.gke.io/managed: disabled

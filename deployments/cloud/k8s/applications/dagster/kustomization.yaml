@@ -16,6 +16,3 @@ resources:
   - storage.yaml
   - ingress.yaml
   - secret.yaml
-# TODO: Remove this once we want to re-enable Dagster
-commonAnnotations:
-  configmanagement.gke.io/managed: disabled
