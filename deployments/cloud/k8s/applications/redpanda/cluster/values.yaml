@@ -19,6 +19,7 @@ external:
 resources:
   cpu:
     cores: 1
+    overprovision: true
   memory:
     enable_memory_locking: true
     container:
