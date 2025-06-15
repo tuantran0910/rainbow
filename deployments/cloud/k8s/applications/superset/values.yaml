@@ -35,7 +35,7 @@ extraConfigs:
   import_datasources.yaml: |
     databases:
     - database_name: superset
-      sqlalchemy_uri: postgresql+psycopg2://superset-sa%40rainbow-data-production.iam@localhost:5432/rainbow-data-production
+      sqlalchemy_uri: postgresql+psycopg2://superset-sa%40rainbow-data-production.iam@localhost:5432/superset
 
 configOverrides:
   extend_timeout: |
