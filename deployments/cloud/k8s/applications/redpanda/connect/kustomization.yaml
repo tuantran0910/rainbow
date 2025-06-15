@@ -5,7 +5,7 @@ namespace: redpanda
 helmGlobals:
   chartHome: /tmp/charts
 helmCharts:
-  - name: strimzi-operator
+  - name: strimzi
     repo: https://strimzi.io/charts
     version: 0.46.0
     releaseName: strimzi-kafka-operator

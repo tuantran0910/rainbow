@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: redpanda
 resources:
   - cluster/
-  - connect/
-  - ui/
+  # - connect/
+  # - ui/
   - service-account.yaml
