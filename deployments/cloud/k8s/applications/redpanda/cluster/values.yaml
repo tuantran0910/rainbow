@@ -1,7 +1,6 @@
 nameOverride: redpanda
 fullnameOverride: redpanda
 commonLabels:
-  app: redpanda
   owner: tuan.tran
 
 image:
