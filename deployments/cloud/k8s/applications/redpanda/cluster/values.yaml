@@ -81,7 +81,6 @@ config:
     log_retention_bytes: -1
     log_retention_ms: 604800000
     log_cleanup_policy: [delete]
-  tunable:
     log_segment_size_min: 16777216   # 16MB
     log_segment_size_max: 268435456  # 256MB
     compacted_log_segment_size: 67108864  # 64MB
