@@ -19,11 +19,11 @@ external:
 
 resources:
   cpu:
-    cores: 1
+    cores: 0.5
   memory:
     enable_memory_locking: true
     container:
-      max: 2Gi
+      max: 1Gi
 
 storage:
   persistentVolume:
