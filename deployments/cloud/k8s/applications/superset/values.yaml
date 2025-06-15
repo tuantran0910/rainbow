@@ -1,7 +1,6 @@
 nameOverride: superset
 fullnameOverride: superset
 extraLabels:
-  app: superset
   owner: tuan.tran
 
 serviceAccountName: superset
