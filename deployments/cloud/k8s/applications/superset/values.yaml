@@ -58,7 +58,7 @@ supersetNode:
     db_user: superset
     db_pass: ''
     db_name: superset
-  extraContainers:
+  initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -66,6 +66,7 @@ supersetNode:
         - --auto-iam-authn
         - --private-ip
         - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      restartPolicy: Always
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -99,7 +100,7 @@ supersetNode:
 supersetWorker:
   replicas:
     replicaCount: 1
-  extraContainers:
+  initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -107,6 +108,7 @@ supersetWorker:
         - --auto-iam-authn
         - --private-ip
         - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      restartPolicy: Always
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -138,7 +140,7 @@ supersetWorker:
 
 supersetCeleryBeat:
   enabled: true
-  extraContainers:
+  initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -146,6 +148,7 @@ supersetCeleryBeat:
         - --auto-iam-authn
         - --private-ip
         - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      restartPolicy: Always
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -183,7 +186,7 @@ init:
     lastname: Data
     email: rainbow@tuantrann.work
     password: rainbow
-  extraContainers:
+  initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
       args:
@@ -191,6 +194,7 @@ init:
         - --auto-iam-authn
         - --private-ip
         - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+      restartPolicy: Always
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
