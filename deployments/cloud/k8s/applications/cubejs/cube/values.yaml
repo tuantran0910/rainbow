@@ -59,7 +59,6 @@ config:
           type: RuntimeDefault
       volumeMounts:
         - name: git-data
-          readOnly: true
           mountPath: /git
         - name: sparse-checkout-config
           mountPath: /git-sparse-checkout
