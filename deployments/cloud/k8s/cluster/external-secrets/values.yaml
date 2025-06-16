@@ -3,6 +3,16 @@ fullnameOverride: external-secrets
 commonLabels:
   owner: tuan.tran
 
+webhook:
+  create: false
+
+certController:
+  create: false
+
+crds:
+  conversion:
+    enabled: false
+
 serviceAccount:
   create: false
   name: external-secrets
