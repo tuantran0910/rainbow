@@ -4,3 +4,4 @@ resources:
   - external-secrets/
   - namespaces.yaml
   - config-connector.yaml
+  - secretstore.yaml

@@ -11,5 +11,4 @@ helmCharts:
     valuesFile: values.yaml
     includeCRDs: true
 resources:
-  - secretstore.yaml
   - service-account.yaml
