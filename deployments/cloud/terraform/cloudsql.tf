@@ -34,6 +34,26 @@ resource "google_sql_database_instance" "main" {
       value = "on"
     }
 
+    database_flags {
+      name  = "cloudsql.logical_decoding"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "wal_level"
+      value = "logical"
+    }
+
+    database_flags {
+      name  = "max_replication_slots"
+      value = "10"
+    }
+
+    database_flags {
+      name  = "max_wal_senders"
+      value = "10"
+    }
+
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.main.id
