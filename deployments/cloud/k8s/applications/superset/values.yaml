@@ -44,8 +44,8 @@ configOverrides:
     SECRET_KEY = "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
 
 image:
-  repository: apachesuperset.docker.scarf.sh/apache/superset
-  tag: 4.1.2
+  repository: ghcr.io/tuantran0910/rainbow/superset
+  tag: 2025.06.16.0
   pullPolicy: IfNotPresent
 
 service:
