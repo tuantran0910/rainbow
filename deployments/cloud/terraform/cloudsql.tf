@@ -27,7 +27,7 @@ resource "google_sql_database_instance" "main" {
 
   settings {
     edition = "ENTERPRISE"
-    tier    = "db-f1-micro"
+    tier    = "db-custom-2-3840"
 
     database_flags {
       name  = "cloudsql.iam_authentication"
@@ -35,8 +35,8 @@ resource "google_sql_database_instance" "main" {
     }
 
     database_flags {
-      name  = "wal_level"
-      value = "logical"
+      name  = "cloudsql.logical_decoding"
+      value = "on"
     }
 
     database_flags {
