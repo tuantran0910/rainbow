@@ -33,7 +33,6 @@ data "google_secret_manager_secret_version" "datastream_password" {
 
 # Datastream Private Connectivity
 resource "google_datastream_private_connection" "datastream_private_connection" {
-  name         = "datastream-private-connection"
   location     = "us-central1"
   display_name = "Private Connection for Datastream"
 
@@ -56,7 +55,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
   postgresql_profile {
     hostname = google_sql_database_instance.main.private_ip_address
     username = local.datastream_username
-    password = data.google_secret_manager_secret_version.datastream_password.data
+    password = data.google_secret_manager_secret_version.datastream_password.secret_data
     database = each.key
   }
 
@@ -77,7 +76,6 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
 }
 
 resource "google_datastream_connection_profile" "bq_destination" {
-  name                  = "bigquery-destination"
   location              = local.region
   display_name          = "BigQuery Destination"
   connection_profile_id = "bigquery-destination"
@@ -94,7 +92,6 @@ resource "google_datastream_stream" "stream" {
   for_each = local.datastream_databases_mapping
 
   stream_id     = "${each.key}-stream"
-  name          = "${each.key}-stream"
   location      = local.region
   display_name  = "CloudSQL Streaming from ${each.key} to BigQuery"
   desired_state = "RUNNING"
@@ -102,6 +99,8 @@ resource "google_datastream_stream" "stream" {
   labels = {
     "owner" = "tuan-tran"
   }
+
+  backfill_all {}
 
   source_config {
     source_connection_profile = google_datastream_connection_profile.cloudsql_source[each.key].id
@@ -169,5 +168,5 @@ resource "google_sql_database" "databases" {
 resource "google_sql_user" "datastream_user" {
   name     = local.datastream_username
   instance = google_sql_database_instance.main.name
-  password = data.google_secret_manager_secret_version.datastream_password.data
+  password = data.google_secret_manager_secret_version.datastream_password.secret_data
 }
