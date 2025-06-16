@@ -103,6 +103,10 @@ api:
     limits:
       cpu: 500m
       memory: 1024Mi
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
 
 worker:
   serviceAccount:
@@ -117,3 +121,7 @@ worker:
     limits:
       cpu: 500m
       memory: 1024Mi
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
