@@ -24,3 +24,8 @@ metadata:
   name: cnrm-system
   labels:
     name: cnrm-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: external-secrets

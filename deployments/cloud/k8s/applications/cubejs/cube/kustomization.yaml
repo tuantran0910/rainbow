@@ -12,4 +12,4 @@ helmCharts:
     valuesFile: values.yaml
 resources:
   - configmap.yaml
-  - secret.yaml
+  - external-secret.yaml
