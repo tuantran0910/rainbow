@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sparse-checkout-config
+data:
+  sparse-checkout: |
+    src/cube/

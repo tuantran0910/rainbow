@@ -16,6 +16,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: cube
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: cnrm-system
   labels:
     name: cnrm-system

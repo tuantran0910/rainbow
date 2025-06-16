@@ -1,0 +1,12 @@
+# Cubejs Application Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cube
+helmGlobals:
+  chartHome: /tmp/charts
+helmCharts:
+  - name: cubejs
+    repo: https://gadsme.github.io/charts
+    version: 3.0.0
+    releaseName: cube
+    valuesFile: values.yaml

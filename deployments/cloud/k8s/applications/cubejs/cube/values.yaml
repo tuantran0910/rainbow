@@ -1,0 +1,115 @@
+nameOverride: cube
+fullnameOverride: cube
+commonLabels:
+  owner: tuan.tran
+
+extraEnvVars:
+  - name: DBT_GCS_PROJECT
+    value: rainbow-data-production
+  - name: DBT_GCS_BUCKET
+    value: rainbow-data-production-dbt
+
+image:
+  repository: cubejs/cube
+  tag: v1.3.21
+  pullPolicy: IfNotPresent
+
+config:
+  apiPort: 4000
+  pgSqlPort: 15432
+  sqlUser: cubejs
+  sqlPasswordFromSecret:
+    name: cube
+    key: apiPassword
+  schemaPath: model
+  rollupOnly: false
+  scheduledRefreshTimezones: Asia/Ho_Chi_Minh
+  preAggregationsSchema: cube_pre_aggregations
+  concurrency: 4
+  volumes:
+    - name: git-data
+      emptyDir: {}
+    - name: sparse-checkout-config
+      configMap:
+        name: sparse-checkout-config
+  volumeMounts:
+    - name: git-data
+      readOnly: true
+      mountPath: /cube/conf/model
+      subPath: model/src/cube
+  initContainers:
+    - image: registry.k8s.io/git-sync/git-sync:v4.3.0
+      name: git-sync
+      restartPolicy: Always
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        privileged: false
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: git-data
+          readOnly: true
+          mountPath: /git
+        - name: sparse-checkout-config
+          mountPath: /git-sparse-checkout
+      env:
+        - name: GITSYNC_REPO
+          value: https://github.com/tuantran0910/rainbow
+        - name: GITSYNC_BRANCH
+          value: main
+        - name: GITSYNC_ROOT
+          value: /git
+        - name: GITSYNC_LINK
+          value: model
+        - name: GITSYNC_SPARSE_CHECKOUT_FILE
+          value: /git-sparse-checkout/sparse-checkout
+
+datasources:
+  default:
+    type: bigquery
+    bigquery:
+      projectId: rainbow-data-production
+      location: us-central1
+    export:
+      type: gcp
+      name: rainbow-data-production-cubejs
+
+api:
+  serviceAccount:
+    create: false
+    name: cube
+    annotations:
+      iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+
+worker:
+  serviceAccount:
+    create: false
+    name: cube
+    annotations:
+      iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1024Mi
