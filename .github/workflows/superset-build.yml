@@ -1,0 +1,183 @@
+name: Build Superset Image
+
+on:
+  push:
+    tags:
+      - release-superset
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/superset
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate CalVer tag
+        id: calver
+        run: |
+          # Get current date in YYYY.MM.DD format
+          DATE=$(date +%Y.%m.%d)
+          echo "Generating CalVer tag for date: $DATE"
+
+          # Try to get existing tags for today to determine the build number
+          # First, try the GitHub Container Registry API
+          echo "Checking for existing tags..."
+
+          EXISTING_TAGS=""
+
+          # Method 1: Try GitHub Container Registry API (tags without prefix)
+          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/container/superset/versions" 2>/dev/null || echo "[]")
+
+          if [ "$API_RESPONSE" != "[]" ] && [ -n "$API_RESPONSE" ]; then
+            echo "API Response received, parsing container tags..."
+            EXISTING_TAGS=$(echo "$API_RESPONSE" | jq -r '
+              try (
+                .[] |
+                select(.metadata.container.tags != null) |
+                .metadata.container.tags[] |
+                select(startswith("'$DATE'."))
+              ) catch empty
+            ' 2>/dev/null | sort -V | tail -1 || echo "")
+          fi
+
+          # Method 2: Fallback - check GitHub release tags (with prefix)
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No container tags found, checking GitHub release tags as fallback..."
+            # Get GitHub release tags and strip the prefix for comparison
+            EXISTING_TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" 2>/dev/null \
+              | jq -r '.[] | select(.tag_name | startswith("superset/")) | .tag_name' \
+              | sed 's/superset\///' \
+              | grep "^$DATE\." | sort -V | tail -1 || echo "")
+          fi
+
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No existing tags found for today, starting with .0"
+            BUILD_NUMBER=0
+          else
+            echo "Found existing tag: $EXISTING_TAGS"
+            # Extract the build number and increment
+            BUILD_NUMBER=$(echo "$EXISTING_TAGS" | cut -d'.' -f4)
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            echo "Incrementing build number to: $BUILD_NUMBER"
+          fi
+
+          CALVER_TAG="${DATE}.${BUILD_NUMBER}"
+          echo "Generated CalVer tag: $CALVER_TAG"
+          echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
+
+      - name: Clean up trigger tag
+        run: |
+          # Delete the trigger tag both locally and remotely early in the process
+          # This ensures cleanup happens even if later steps fail
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Cleaning up trigger tag: $TRIGGER_TAG"
+
+          # Delete the remote tag
+          git push origin --delete "$TRIGGER_TAG"
+          echo "✅ Successfully deleted remote trigger tag: $TRIGGER_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.calver.outputs.calver_tag }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.description=Custom Superset image with additional dependencies
+            org.opencontainers.image.vendor=Rainbow
+            org.opencontainers.image.version=${{ steps.calver.outputs.calver_tag }}
+            superset.calver=${{ steps.calver.outputs.calver_tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/superset
+          file: ./src/superset/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Generate build date
+        id: build_date
+        run: |
+          BUILD_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: superset/${{ steps.calver.outputs.calver_tag }}
+          name: Superset v${{ steps.calver.outputs.calver_tag }}
+          body: |
+            # Superset Release v${{ steps.calver.outputs.calver_tag }}
+
+            🚀 **New Superset release is now available!**
+
+            ## 📦 Docker Images
+
+            ### Custom Superset Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ```
+
+            ## 🔧 Build Information
+
+            - **📅 Build Date**: ${{ steps.build_date.outputs.build_date }}
+            - **🔧 Base Image**: apache/superset:4.1.2
+            - **📦 Built by**: ${{ github.actor }}
+            - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ## 📝 Custom Dependencies
+
+            This custom Superset image includes:
+            - Authlib==1.5.2 for enhanced authentication
+            - psycopg2-binary==2.9.10 for PostgreSQL connectivity
+            - MySQL client libraries
+            - Build tools for compiling native extensions
+
+            ---
+
+            **Full Changelog**: Compare with [previous releases](https://github.com/${{ github.repository }}/releases)
+          draft: false
+          prerelease: false
+
+      - name: Output build information
+        run: |
+          echo "🚀 Successfully built and pushed Superset image!"
+          echo "📅 CalVer Tag: ${{ steps.calver.outputs.calver_tag }}"
+          echo "🏷️  Docker Image Tags:"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "🎉 GitHub Release: Superset v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/superset/${{ steps.calver.outputs.calver_tag }}"
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Trigger tag '$TRIGGER_TAG' has been cleaned up"
