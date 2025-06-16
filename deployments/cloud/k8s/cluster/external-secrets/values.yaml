@@ -1,0 +1,32 @@
+nameOverride: external-secrets
+fullnameOverride: external-secrets
+commonLabels:
+  owner: tuan.tran
+
+serviceAccount:
+  create: false
+  name: external-secrets
+  annotations:
+    iam.gke.io/gcp-service-account: external-secrets-sa@rainbow-data-production.iam.gserviceaccount.com
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault

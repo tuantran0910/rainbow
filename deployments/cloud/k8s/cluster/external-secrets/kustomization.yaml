@@ -9,6 +9,7 @@ helmCharts:
     version: 0.17.0
     releaseName: external-secrets
     includeCRDs: true
+    valuesFile: values.yaml
 resources:
   - secretstore.yaml
   - service-account.yaml
