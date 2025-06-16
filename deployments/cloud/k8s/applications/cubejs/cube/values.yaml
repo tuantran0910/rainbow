@@ -9,6 +9,8 @@ extraEnvVars:
   - name: DBT_GCS_BUCKET
     value: rainbow-data-production-dbt
 
+extraEnvVarsFromSecret: cube-secret
+
 image:
   repository: cubejs/cube
   tag: v1.3.21
@@ -18,9 +20,6 @@ config:
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
-  sqlPasswordFromSecret:
-    name: cube
-    key: apiPassword
   schemaPath: model
   rollupOnly: false
   scheduledRefreshTimezones: Asia/Ho_Chi_Minh
