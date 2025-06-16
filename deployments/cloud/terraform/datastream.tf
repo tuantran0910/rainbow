@@ -15,20 +15,12 @@ locals {
 }
 
 # Google Secret Manager secret for datastream password
-resource "google_secret_manager_secret" "datastream_password" {
+data "google_secret_manager_secret" "datastream_password" {
   secret_id = "datastream-password"
-
-  replication {
-    auto {}
-  }
-
-  labels = {
-    "owner" = "tuan-tran"
-  }
 }
 
 data "google_secret_manager_secret_version" "datastream_password" {
-  secret = google_secret_manager_secret.datastream_password.secret_id
+  secret = data.google_secret_manager_secret.datastream_password.secret_id
 }
 
 # Datastream Private Connectivity
@@ -38,10 +30,12 @@ resource "google_datastream_private_connection" "datastream_private_connection" 
 
   vpc_peering_config {
     vpc    = google_compute_network.main.id
-    subnet = google_compute_subnetwork.main.id
+    subnet = "10.3.0.0/29"
   }
 
   private_connection_id = "datastream-private-connection"
+
+  depends_on = [google_project_service.required_apis]
 }
 
 # Connection Profile
@@ -64,6 +58,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
   }
 
   depends_on = [
+    google_project_service.required_apis,
     google_datastream_private_connection.datastream_private_connection,
     google_sql_database_instance.main,
     google_sql_database.databases,
@@ -81,6 +76,8 @@ resource "google_datastream_connection_profile" "bq_destination" {
   connection_profile_id = "bigquery-destination"
 
   bigquery_profile {}
+
+  depends_on = [google_project_service.required_apis]
 
   labels = {
     "owner" = "tuan-tran"
@@ -137,6 +134,7 @@ resource "google_datastream_stream" "stream" {
   }
 
   depends_on = [
+    google_project_service.required_apis,
     google_datastream_connection_profile.cloudsql_source,
     google_datastream_connection_profile.bq_destination,
     google_bigquery_dataset.datastream_dataset
@@ -150,6 +148,8 @@ resource "google_bigquery_dataset" "datastream_dataset" {
   location    = local.region
   dataset_id  = "${each.key}__datastream"
   description = "Dataset for real-time ingestion from CloudSQL ${each.key} to BigQuery"
+
+  depends_on = [google_project_service.required_apis]
 
   labels = {
     "owner" = "tuan-tran"

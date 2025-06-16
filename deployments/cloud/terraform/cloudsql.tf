@@ -35,11 +35,6 @@ resource "google_sql_database_instance" "main" {
     }
 
     database_flags {
-      name  = "cloudsql.logical_decoding"
-      value = "on"
-    }
-
-    database_flags {
       name  = "wal_level"
       value = "logical"
     }

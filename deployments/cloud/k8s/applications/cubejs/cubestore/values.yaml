@@ -1,0 +1,60 @@
+nameOverride: cubestore
+fullnameOverride: cubestore
+
+image:
+  repository: cubejs/cubestore
+  tag: v1.3.21
+  pullPolicy: IfNotPresent
+
+cloudStorage:
+  gcs:
+    bucket: rainbow-data-production-cubejs
+    subPath: cubestore
+
+exporter:
+  enabled: false
+
+router:
+  serviceAccount:
+    create: false
+    name: cube
+    annotations:
+      iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+workers:
+  workersCount: 1
+  serviceAccount:
+    create: false
+    name: cube
+    annotations:
+      iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+  initRouter:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      runAsUser: 65532
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
