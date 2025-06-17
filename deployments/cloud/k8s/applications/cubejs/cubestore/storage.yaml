@@ -8,3 +8,4 @@ allowVolumeExpansion: true
 parameters:
   tier: standard
   network: default
+  location: us-central1-a

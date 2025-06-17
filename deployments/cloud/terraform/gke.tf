@@ -45,6 +45,9 @@ resource "google_container_cluster" "primary" {
     gke_backup_agent_config {
       enabled = true
     }
+    gcp_filestore_csi_driver_config {
+      enabled = true
+    }
   }
 
   gateway_api_config {
