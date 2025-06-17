@@ -6,6 +6,11 @@ image:
   tag: v1.3.21
   pullPolicy: IfNotPresent
 
+remoteDir:
+  persistence:
+    size: 3Gi
+    storageClass: filestore-rwx
+
 cloudStorage:
   gcs:
     bucket: rainbow-data-production-cubejs
