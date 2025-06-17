@@ -5,7 +5,7 @@ namespace: cube
 helmGlobals:
   chartHome: /tmp/charts
 helmCharts:
-  - name: cubejs
+  - name: cubestore
     repo: https://gadsme.github.io/charts
     version: 1.0.0
     releaseName: cubestore
