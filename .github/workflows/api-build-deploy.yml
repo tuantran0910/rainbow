@@ -78,8 +78,8 @@ jobs:
           fi
 
           CALVER_TAG="${DATE}.${BUILD_NUMBER}"
-          # Create DNS-compatible version for Cloud Run tags (replace dots with hyphens)
-          CALVER_TAG_DNS=$(echo "$CALVER_TAG" | sed 's/\./-/g')
+          # Create DNS-compatible version for Cloud Run tags (replace dots with hyphens and add 'v' prefix)
+          CALVER_TAG_DNS="v$(echo "$CALVER_TAG" | sed 's/\./-/g')"
           
           echo "Generated CalVer tag: $CALVER_TAG"
           echo "DNS-compatible tag: $CALVER_TAG_DNS"
