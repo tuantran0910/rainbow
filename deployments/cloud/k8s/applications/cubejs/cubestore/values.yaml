@@ -6,9 +6,10 @@ image:
   tag: v1.3.21
   pullPolicy: IfNotPresent
 
+# Disable shared remoteDir persistence to avoid ReadWriteMany issues
 remoteDir:
   persistence:
-    size: 3Gi
+    enabled: false
 
 cloudStorage:
   gcs:
@@ -24,10 +25,13 @@ router:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  # Each router pod gets its own PVC automatically
   persistence:
     enabled: true
     size: 3Gi
     storageClass: "standard-rwo"
+    accessModes:
+      - ReadWriteOnce
   resources:
     requests:
       cpu: 100m
@@ -43,10 +47,13 @@ workers:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  # Each worker pod gets its own PVC automatically  
   persistence:
     enabled: true
     size: 3Gi
     storageClass: "standard-rwo"
+    accessModes:
+      - ReadWriteOnce
   resources:
     requests:
       cpu: 100m
