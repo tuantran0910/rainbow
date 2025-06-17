@@ -191,7 +191,7 @@ jobs:
         uses: softprops/action-gh-release@v2.1.0
         with:
           tag_name: api/${{ steps.calver.outputs.calver_tag }}
-          name: API v${{ steps.calver.outputs.calver_tag }}
+          name: Rainbow API v${{ steps.calver.outputs.calver_tag }}
           body: |
             # Rainbow API Release v${{ steps.calver.outputs.calver_tag }}
 
@@ -225,7 +225,7 @@ jobs:
             - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             
             ## 🧪 API Health Check
-            
+
             ```bash
             curl ${{ steps.deploy.outputs.service_url }}/health
             ```
