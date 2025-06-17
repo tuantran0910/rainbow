@@ -48,7 +48,8 @@ resource "google_project_service" "required_apis" {
     "iamcredentials.googleapis.com",
     "sts.googleapis.com",
     "datastream.googleapis.com",
-    "cloudresourcemanager.googleapis.com"
+    "cloudresourcemanager.googleapis.com",
+    "artifactregistry.googleapis.com"
   ])
 
   service            = each.value
