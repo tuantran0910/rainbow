@@ -213,7 +213,7 @@ jobs:
 
             ### Google Artifact Registry (Production)
             ```bash
-            docker pull ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/api:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/api:${{ steps.calver.outputs.calver_tag_dns }}
             docker pull ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/api:latest
             ```
 
