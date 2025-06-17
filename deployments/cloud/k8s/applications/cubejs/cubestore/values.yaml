@@ -24,6 +24,10 @@ router:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  persistence:
+    enabled: true
+    size: 3Gi
+    storageClass: "standard-rwo"
   resources:
     requests:
       cpu: 100m
@@ -39,6 +43,10 @@ workers:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
+  persistence:
+    enabled: true
+    size: 3Gi
+    storageClass: "standard-rwo"
   resources:
     requests:
       cpu: 100m
