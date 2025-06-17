@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/api
   GCP_PROJECT_ID: rainbow-data-production
-  GCP_REGION: us-central1
+  GCP_REGION: us-east1
   CLOUD_RUN_SERVICE: rainbow-api
 
 jobs:
