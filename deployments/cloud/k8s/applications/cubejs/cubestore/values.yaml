@@ -9,7 +9,6 @@ image:
 remoteDir:
   persistence:
     size: 3Gi
-    storageClass: filestore-rwx
 
 cloudStorage:
   gcs:
