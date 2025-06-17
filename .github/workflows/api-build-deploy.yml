@@ -78,8 +78,13 @@ jobs:
           fi
 
           CALVER_TAG="${DATE}.${BUILD_NUMBER}"
+          # Create DNS-compatible version for Cloud Run tags (replace dots with hyphens)
+          CALVER_TAG_DNS=$(echo "$CALVER_TAG" | sed 's/\./-/g')
+          
           echo "Generated CalVer tag: $CALVER_TAG"
+          echo "DNS-compatible tag: $CALVER_TAG_DNS"
           echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
+          echo "calver_tag_dns=$CALVER_TAG_DNS" >> $GITHUB_OUTPUT
 
       - name: Clean up trigger tag
         run: |
@@ -150,7 +155,7 @@ jobs:
             --image=${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/api:${{ steps.calver.outputs.calver_tag }} \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
-            --tag=${{ steps.calver.outputs.calver_tag }} \
+            --tag=${{ steps.calver.outputs.calver_tag_dns }} \
             --no-traffic
 
           echo "✅ Image deployment completed successfully!"
@@ -172,7 +177,7 @@ jobs:
           gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
-            --to-tags=${{ steps.calver.outputs.calver_tag }}=100
+            --to-tags=${{ steps.calver.outputs.calver_tag_dns }}=100
 
           echo "✅ Traffic routing completed!"
 
