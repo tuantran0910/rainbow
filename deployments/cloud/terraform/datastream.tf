@@ -30,7 +30,7 @@ resource "google_datastream_private_connection" "datastream_private_connection" 
 
   vpc_peering_config {
     vpc    = google_compute_network.main.id
-    subnet = "10.3.0.0/29"
+    subnet = "10.4.0.0/29"
   }
 
   private_connection_id = "datastream-private-connection"

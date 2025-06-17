@@ -1,9 +1,10 @@
 # Cloud Run API Service
 resource "google_cloud_run_v2_service" "api" {
-  name         = "rainbow-api"
-  location     = local.region
-  ingress      = "INGRESS_TRAFFIC_ALL"
-  launch_stage = "GA"
+  name                = "rainbow-api"
+  location            = local.cloud_run_region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  launch_stage        = "GA"
+  deletion_protection = false
 
   template {
     scaling {
@@ -24,45 +25,30 @@ resource "google_cloud_run_v2_service" "api" {
         value = "release"
       }
 
-      # env {
-      #   name  = "DB_HOST"
-      #   value = google_sql_database_instance.main.private_ip_address
-      # }
+      env {
+        name  = "DB_HOST"
+        value = google_sql_database_instance.main.private_ip_address
+      }
 
-      # env {
-      #   name  = "DB_NAME"
-      #   value = google_sql_database.main.name
-      # }
+      env {
+        name  = "DB_NAME"
+        value = google_sql_database.rainbow.name
+      }
 
-      # env {
-      #   name  = "DB_USER"
-      #   value = google_sql_user.app_user.name
-      # }
+      env {
+        name  = "DB_USER"
+        value = google_sql_user.api_user.name
+      }
 
-      # env {
-      #   name = "DB_PASSWORD"
-      #   value_source {
-      #     secret_key_ref {
-      #       secret  = google_secret_manager_secret.db_password.secret_id
-      #       version = "latest"
-      #     }
-      #   }
-      # }
+      env {
+        name  = "DB_PASSWORD"
+        value = data.google_secret_manager_secret_version.api_password.secret_data
+      }
 
-      # env {
-      #   name  = "DB_PORT"
-      #   value = "5432"
-      # }
-
-      # env {
-      #   name = "JWT_SECRET"
-      #   value_source {
-      #     secret_key_ref {
-      #       secret  = google_secret_manager_secret.jwt_secret.secret_id
-      #       version = "latest"
-      #     }
-      #   }
-      # }
+      env {
+        name  = "DB_PORT"
+        value = "5432"
+      }
 
       resources {
         limits = {
@@ -97,19 +83,6 @@ resource "google_cloud_run_v2_service" "api" {
   ]
 }
 
-# VPC Access Connector for Cloud Run to connect to private resources
-resource "google_vpc_access_connector" "main" {
-  name          = "${local.project_id}-vpc-connector"
-  region        = local.region
-  ip_cidr_range = "10.8.0.0/28"
-  network       = google_compute_network.main.name
-  max_instances = 3
-  min_instances = 2
-  machine_type  = "e2-micro"
-
-  depends_on = [google_project_service.required_apis]
-}
-
 # Service Account for Cloud Run
 resource "google_service_account" "api" {
   account_id   = "rainbow-api"
@@ -134,4 +107,17 @@ resource "google_project_iam_member" "api_secret_accessor" {
 output "api_service_name" {
   description = "The name of the Cloud Run service"
   value       = google_cloud_run_v2_service.api.name
+}
+
+# VPC Access Connector for Cloud Run to connect to private resources
+resource "google_vpc_access_connector" "main" {
+  name          = "cloud-run-vpc-connector"
+  region        = local.cloud_run_region
+  ip_cidr_range = "10.9.0.0/28"
+  network       = google_compute_network.main.name
+  max_instances = 3
+  min_instances = 2
+  machine_type  = "f1-micro"
+
+  depends_on = [google_project_service.required_apis]
 }
