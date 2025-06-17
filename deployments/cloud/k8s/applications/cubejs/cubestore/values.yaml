@@ -7,7 +7,7 @@ image:
   pullPolicy: IfNotPresent
 
 cloudStorage:
-  gcs:
+  gcp:
     bucket: rainbow-data-production-cubejs
     subPath: cubestore
 
@@ -20,8 +20,6 @@ router:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
-  persistence:
-    enabled: true
   resources:
     requests:
       cpu: 100m
@@ -37,8 +35,6 @@ workers:
     name: cube
     annotations:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
-  persistence:
-    enabled: true
   resources:
     requests:
       cpu: 100m
