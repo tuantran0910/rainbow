@@ -1,0 +1,232 @@
+name: Build and Deploy API to Cloud Run
+
+on:
+  push:
+    tags:
+      - release-api
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api
+  GCP_PROJECT_ID: rainbow-data-production
+  GCP_REGION: us-central1
+  CLOUD_RUN_SERVICE: rainbow-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate CalVer tag
+        id: calver
+        run: |
+          # Get current date in YYYY.MM.DD format
+          DATE=$(date +%Y.%m.%d)
+          echo "Generating CalVer tag for date: $DATE"
+
+          # Try to get existing tags for today to determine the build number
+          echo "Checking for existing tags..."
+
+          EXISTING_TAGS=""
+
+          # Method 1: Try GitHub Container Registry API
+          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/container/api/versions" 2>/dev/null || echo "[]")
+
+          if [ "$API_RESPONSE" != "[]" ] && [ -n "$API_RESPONSE" ]; then
+            echo "API Response received, parsing container tags..."
+            EXISTING_TAGS=$(echo "$API_RESPONSE" | jq -r '
+              try (
+                .[] |
+                select(.metadata.container.tags != null) |
+                .metadata.container.tags[] |
+                select(startswith("'$DATE'."))
+              ) catch empty
+            ' 2>/dev/null | sort -V | tail -1 || echo "")
+          fi
+
+          # Method 2: Fallback - check GitHub release tags
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No container tags found, checking GitHub release tags as fallback..."
+            EXISTING_TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" 2>/dev/null \
+              | jq -r '.[] | select(.tag_name | startswith("api/")) | .tag_name' \
+              | sed 's/api\///' \
+              | grep "^$DATE\." | sort -V | tail -1 || echo "")
+          fi
+
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No existing tags found for today, starting with .0"
+            BUILD_NUMBER=0
+          else
+            echo "Found existing tag: $EXISTING_TAGS"
+            BUILD_NUMBER=$(echo "$EXISTING_TAGS" | cut -d'.' -f4)
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            echo "Incrementing build number to: $BUILD_NUMBER"
+          fi
+
+          CALVER_TAG="${DATE}.${BUILD_NUMBER}"
+          echo "Generated CalVer tag: $CALVER_TAG"
+          echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
+
+      - name: Clean up trigger tag
+        run: |
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Cleaning up trigger tag: $TRIGGER_TAG"
+          git push origin --delete "$TRIGGER_TAG"
+          echo "✅ Successfully deleted remote trigger tag: $TRIGGER_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.calver.outputs.calver_tag }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.description=Rainbow Go API
+            org.opencontainers.image.vendor=Rainbow
+            org.opencontainers.image.version=${{ steps.calver.outputs.calver_tag }}
+            api.environment=production
+            api.calver=${{ steps.calver.outputs.calver_tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/api
+          file: ./src/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          echo "🚀 Deploying new image to Cloud Run (preserving Terraform configurations)..."
+
+          # Deploy only with image update - let Terraform manage all other configurations
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }} \
+            --region=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --tag=${{ steps.calver.outputs.calver_tag }} \
+            --no-traffic
+
+          echo "✅ Image deployment completed successfully!"
+          echo "ℹ️  All other configurations are managed by Terraform"
+
+          # Get the service URL
+          SERVICE_URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --format="value(status.url)")
+          
+          echo "🌐 Service URL: $SERVICE_URL"
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Route traffic to new revision
+        run: |
+          echo "🔄 Routing 100% traffic to new revision..."
+          
+          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --to-tags=${{ steps.calver.outputs.calver_tag }}=100
+
+          echo "✅ Traffic routing completed!"
+
+      - name: Generate build date
+        id: build_date
+        run: |
+          BUILD_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: api/${{ steps.calver.outputs.calver_tag }}
+          name: API v${{ steps.calver.outputs.calver_tag }}
+          body: |
+            # Rainbow API Release v${{ steps.calver.outputs.calver_tag }}
+
+            🚀 **New API release is now deployed to Cloud Run!**
+
+            ## 🌐 Deployment Information
+
+            - **🔗 Service URL**: ${{ steps.deploy.outputs.service_url }}
+            - **🏷️ Version**: ${{ steps.calver.outputs.calver_tag }}
+            - **🌍 Region**: ${{ env.GCP_REGION }}
+
+            ## 📦 Docker Images
+
+            ### Production Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ```
+
+            ## 🔧 Build Information
+
+            - **📅 Build Date**: ${{ steps.build_date.outputs.build_date }}
+            - **🐹 Go Version**: 1.23.2
+            - **📦 Built by**: ${{ github.actor }}
+            - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ## 🧪 API Health Check
+            
+            ```bash
+            curl ${{ steps.deploy.outputs.service_url }}/health
+            ```
+
+            ---
+
+            **Full Changelog**: Compare with [previous releases](https://github.com/${{ github.repository }}/releases)
+          draft: false
+          prerelease: false
+
+      - name: Output deployment information
+        run: |
+          echo "🚀 Successfully built and deployed API!"
+          echo "📅 CalVer Tag: ${{ steps.calver.outputs.calver_tag }}"
+          echo "🏷️  Docker Image Tags:"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
+          echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "🌐 Cloud Run Service: ${{ env.CLOUD_RUN_SERVICE }}"
+          echo "🔗 Service URL: ${{ steps.deploy.outputs.service_url }}"
+          echo "🎉 GitHub Release: API v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/api/${{ steps.calver.outputs.calver_tag }}"
+          TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          echo "🧹 Trigger tag '$TRIGGER_TAG' has been cleaned up"

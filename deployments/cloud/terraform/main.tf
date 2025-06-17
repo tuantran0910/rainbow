@@ -37,6 +37,7 @@ resource "google_project_service" "required_apis" {
     "run.googleapis.com",
     "secretmanager.googleapis.com",
     "servicenetworking.googleapis.com",
+    "vpcaccess.googleapis.com",
     "gkehub.googleapis.com",
     "anthos.googleapis.com",
     "mesh.googleapis.com",

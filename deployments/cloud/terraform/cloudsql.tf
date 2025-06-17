@@ -64,3 +64,21 @@ resource "google_sql_database_instance" "main" {
     prevent_destroy = false
   }
 }
+
+# Database for the API application
+resource "google_sql_database" "rainbow" {
+  name     = "rainbow"
+  instance = google_sql_database_instance.main.name
+}
+
+# Application user for the API
+resource "google_sql_user" "api_user" {
+  name     = "rainbow"
+  instance = google_sql_database_instance.main.name
+  password = data.google_secret_manager_secret_version.api_password.secret_data
+}
+
+# Reference the existing secret from Google Secret Manager
+data "google_secret_manager_secret_version" "api_password" {
+  secret = "api-password"
+}
