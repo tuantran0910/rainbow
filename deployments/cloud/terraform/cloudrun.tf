@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     containers {
-      image = "gcr.io/cloudrun/hello:latest"
+      image = "us-central1-docker.pkg.dev/rainbow-data-production/rainbow-docker/api:latest"
 
       ports {
         container_port = 5000
