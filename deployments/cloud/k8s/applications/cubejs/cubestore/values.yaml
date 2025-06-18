@@ -12,6 +12,8 @@ commonAnnotations:
   gke-gcsfuse/memory-request: "128Mi"
   gke-gcsfuse/cpu-limit: "1"
   gke-gcsfuse/memory-limit: "4Gi"
+  gke-gcsfuse/ephemeral-storage-request: "1Gi"
+  gke-gcsfuse/ephemeral-storage-limit: "2Gi"
 
 remoteDir:
   persistence:
