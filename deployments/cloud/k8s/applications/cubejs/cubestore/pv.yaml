@@ -13,7 +13,7 @@ spec:
     - implicit-dirs
   csi:
     driver: gcsfuse.csi.storage.gke.io
-    volumeHandle: cubestore
+    volumeHandle: rainbow-data-production-cubejs
     volumeAttributes:
       bucketName: rainbow-data-production-cubejs
   claimRef:
