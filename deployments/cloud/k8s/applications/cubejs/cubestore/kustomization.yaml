@@ -10,3 +10,6 @@ helmCharts:
     version: 1.0.0
     releaseName: cubestore
     valuesFile: values.yaml
+resources:
+  - pv.yaml
+  - storage.yaml

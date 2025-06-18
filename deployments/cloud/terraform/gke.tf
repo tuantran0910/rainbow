@@ -18,6 +18,12 @@ resource "google_container_cluster" "primary" {
     workload_pool = "${local.project_id}.svc.id.goog"
   }
 
+  node_config {
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+  }
+
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
@@ -33,16 +39,24 @@ resource "google_container_cluster" "primary" {
     config_connector_config {
       enabled = true
     }
+
     http_load_balancing {
       disabled = false
     }
+
     network_policy_config {
       disabled = false
     }
+
     horizontal_pod_autoscaling {
       disabled = false
     }
+
     gke_backup_agent_config {
+      enabled = true
+    }
+
+    gcs_fuse_csi_driver_config {
       enabled = true
     }
   }

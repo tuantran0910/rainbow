@@ -6,10 +6,19 @@ image:
   tag: v1.3.21
   pullPolicy: IfNotPresent
 
-cloudStorage:
-  gcp:
-    bucket: rainbow-data-production-cubejs
-    subPath: cubestore
+commonAnnotations:
+  gke-gcsfuse/volumes: "true"
+  gke-gcsfuse/cpu-request: "100m"
+  gke-gcsfuse/memory-request: "128Mi"
+  gke-gcsfuse/cpu-limit: "1"
+  gke-gcsfuse/memory-limit: "4Gi"
+
+remoteDir:
+  persistence:
+    accessModes:
+      - ReadWriteMany
+    size: 100Gi
+    storageClass: gcsfuse-static
 
 exporter:
   enabled: false
