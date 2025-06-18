@@ -71,7 +71,7 @@ supersetNode:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       restartPolicy: Always
       securityContext:
         runAsNonRoot: true
@@ -113,7 +113,7 @@ supersetWorker:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       restartPolicy: Always
       securityContext:
         runAsNonRoot: true
@@ -153,7 +153,7 @@ supersetCeleryBeat:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       restartPolicy: Always
       securityContext:
         runAsNonRoot: true
@@ -199,7 +199,7 @@ init:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       restartPolicy: Always
       securityContext:
         runAsNonRoot: true
