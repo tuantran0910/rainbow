@@ -22,7 +22,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 resource "google_sql_database_instance" "main" {
   name                = "${local.project_id}-db"
   database_version    = "POSTGRES_16"
-  region              = local.region
+  region              = local.cloud_sql_region
   deletion_protection = false
 
   settings {
