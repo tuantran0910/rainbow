@@ -1,15 +1,15 @@
 {{
     config(
-        materialized='incremental',
-        unique_key='surrogate_key',
-        incremental_strategy='delete+insert'
+        materialized='view',
     )
 }}
 
-{{ dim_scd_type_2(
-    stg_relation=ref('stg_users'),
-    except_columns_to_compare=['updated_at', 'created_at', 'deleted_at', 'created_at_tz_hcm', 'updated_at_tz_hcm'],
-    unique_key='id',
-    updated_at_field='updated_at_tz_hcm',
-    lookback_in_days=1,
-) }}
+{{
+    lambda_view(
+        batch_relation=model.alias ~ '__batch',
+        stream_stg_relation=ref('stg_users__stream'),
+        unique_key='id',
+        updated_date_field='updated_at_tz_hcm',
+        cutoff_days=1
+    )
+}}

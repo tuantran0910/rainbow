@@ -3,7 +3,8 @@ version: 2
 sources:
   - name: rainbow
     description: This is a replica of the PostgreSQL's database rainbow used by our app.
-    schema: raw
+    project: rainbow-data-production
+    dataset: raw
     tables:
       - name: categories
         description: >
@@ -426,3 +427,405 @@ sources:
           - name: deleted_at
             description: Soft delete timestamp, NULL if the book_author record is active
             data_type: DATETIME64
+
+  - name: rainbow_datastream
+    description: Real-time streaming data from DataStream CDC pipeline
+    project: rainbow-data-production 
+    dataset: raw__datastream
+    tables:
+      - name: categories
+        description: >
+          Real-time category data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the categories table
+            data_type: STRING
+          - name: secondary_id
+            description: Secondary identifier for the category
+            data_type: STRING
+          - name: name
+            description: Name of the category
+            data_type: STRING
+          - name: slug
+            description: URL-friendly version of the category name
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the category was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the category was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: users
+        description: >
+          Real-time user data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the users table
+            data_type: STRING
+          - name: email
+            description: Email address of the user
+            data_type: STRING
+          - name: password
+            description: Hashed password of the user
+            data_type: STRING
+          - name: first_name
+            description: First name of the user
+            data_type: STRING
+          - name: last_name
+            description: Last name of the user
+            data_type: STRING
+          - name: last_login
+            description: Timestamp of the user's last login
+            data_type: DATETIME64
+          - name: is_active
+            description: Flag indicating if the user account is active
+            data_type: BOOL
+          - name: phone_number
+            description: Phone number of the user
+            data_type: STRING
+          - name: role
+            description: Role of the user (USER or ADMIN)
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the user was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the user was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: authors
+        description: >
+          Real-time author data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the authors table
+            data_type: STRING
+          - name: secondary_id
+            description: Secondary identifier for the author
+            data_type: STRING
+          - name: name
+            description: Name of the author
+            data_type: STRING
+          - name: slug
+            description: URL-friendly version of the author name
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the author was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the author was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: sellers
+        description: >
+          Real-time seller data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the sellers table
+            data_type: STRING
+          - name: secondary_id
+            description: Secondary identifier for the seller
+            data_type: STRING
+          - name: name
+            description: Name of the seller
+            data_type: STRING
+          - name: link
+            description: URL to the seller's website or profile
+            data_type: STRING
+          - name: logo
+            description: URL to the seller's logo image
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the seller was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the seller was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: books
+        description: >
+          Real-time book data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the books table
+            data_type: STRING
+          - name: secondary_id
+            description: Secondary identifier for the book
+            data_type: STRING
+          - name: category_id
+            description: Foreign key to the categories table
+            data_type: STRING
+          - name: seller_id
+            description: Foreign key to the sellers table
+            data_type: STRING
+          - name: name
+            description: Title of the book
+            data_type: STRING
+          - name: description
+            description: Detailed description of the book
+            data_type: STRING
+          - name: price
+            description: Current selling price of the book
+            data_type: DECIMAL
+          - name: original_price
+            description: Original price of the book
+            data_type: DECIMAL
+          - name: rating_average
+            description: Average rating of the book
+            data_type: DECIMAL
+          - name: review_count
+            description: Number of reviews for the book
+            data_type: INT64
+          - name: created_at
+            description: Timestamp when the book was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the book was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: orders
+        description: >
+          Real-time order data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the orders table
+            data_type: STRING
+          - name: user_id
+            description: Foreign key to the users table
+            data_type: STRING
+          - name: promotion_id
+            description: Foreign key to the promotions table
+            data_type: STRING
+          - name: payment_id
+            description: Foreign key to the payments table
+            data_type: STRING
+          - name: total_amount
+            description: Total amount of the order
+            data_type: DECIMAL
+          - name: status
+            description: Current status of the order
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the order was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the order was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: order_items
+        description: >
+          Real-time order item data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the order_items table
+            data_type: STRING
+          - name: order_id
+            description: Foreign key to the orders table
+            data_type: STRING
+          - name: book_id
+            description: Foreign key to the books table
+            data_type: STRING
+          - name: quantity
+            description: Quantity of books ordered
+            data_type: INT64
+          - name: price
+            description: Price per unit at time of order
+            data_type: DECIMAL
+          - name: created_at
+            description: Timestamp when the order item was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the order item was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: book_authors
+        description: >
+          Real-time book-author relationship data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the book_authors table
+            data_type: STRING
+          - name: book_id
+            description: Foreign key to the books table
+            data_type: STRING
+          - name: author_id
+            description: Foreign key to the authors table
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the relationship was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the relationship was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: promotions
+        description: >
+          Real-time promotion data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the promotions table
+            data_type: STRING
+          - name: name
+            description: Name of the promotion
+            data_type: STRING
+          - name: description
+            description: Description of the promotion
+            data_type: STRING
+          - name: discount_type
+            description: Type of discount (PERCENTAGE, FIXED)
+            data_type: STRING
+          - name: discount_value
+            description: Value of the discount
+            data_type: DECIMAL
+          - name: price
+            description: Fixed price for promotion
+            data_type: DECIMAL
+          - name: start_date
+            description: Start date of the promotion
+            data_type: DATETIME64
+          - name: end_date
+            description: End date of the promotion
+            data_type: DATETIME64
+          - name: created_at
+            description: Timestamp when the promotion was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the promotion was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: payments
+        description: >
+          Real-time payment data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the payments table
+            data_type: STRING
+          - name: method
+            description: Payment method used
+            data_type: STRING
+          - name: created_at
+            description: Timestamp when the payment was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the payment was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN
+
+      - name: inventories
+        description: >
+          Real-time inventory data from DataStream CDC pipeline
+        columns:
+          - name: id
+            description: Primary key of the inventories table
+            data_type: STRING
+          - name: book_id
+            description: Foreign key to the books table
+            data_type: STRING
+          - name: quantity
+            description: Available quantity
+            data_type: INT64
+          - name: created_at
+            description: Timestamp when the inventory record was created
+            data_type: DATETIME64
+          - name: updated_at
+            description: Timestamp when the inventory was last updated
+            data_type: DATETIME64
+          - name: deleted_at
+            description: Soft delete timestamp
+            data_type: DATETIME64
+          - name: _metadata_timestamp
+            description: DataStream ingestion timestamp
+            data_type: TIMESTAMP
+          - name: _metadata_deleted
+            description: DataStream deletion indicator
+            data_type: BOOLEAN

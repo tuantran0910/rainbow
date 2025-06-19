@@ -1,10 +1,10 @@
 [project]
-name = "dbt"
+name = "dbt_cloud"
 version = "0.1.0"
 description = "Rainbow dbt for data transformation and data modeling."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "dbt-clickhouse>=1.9.1",
+    "dbt-bigquery>=1.9.1",
     "dbt-core>=1.9.0",
 ]

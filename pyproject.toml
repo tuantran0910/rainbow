@@ -79,7 +79,7 @@ additional_allowed_characters = ['.', '(', ')', '-']
 min_alias_length = 4
 
 [tool.uv.workspace]
-members = ["src/dbt", "src/dagster_core/local", "src/dagster_core/cloud", "src/dagster_workspace", "src/cube_core"]
+members = ["src/dagster_core/local", "src/dagster_core/cloud", "src/dagster_workspace", "src/dagster_workspace/dbt/cloud", "src/dagster_workspace/dbt/local", "src/cube_core"]
 
 [dependency-groups]
 docs = [

@@ -31,3 +31,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   rainbow_transformations:
     +schema: warehouse
+    staging:
+      batch:
+        +schema: warehouse_staging_batch
+      stream:
+        +schema: warehouse_staging_stream
+    intermediate:
+      batch_layer:
+        +schema: warehouse_batch
+      # Unified lambda views go to the main warehouse schema
+      +schema: warehouse

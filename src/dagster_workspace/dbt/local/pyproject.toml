@@ -1,5 +1,5 @@
 [project]
-name = "dbt"
+name = "dbt_local"
 version = "0.1.0"
 description = "Rainbow dbt for data transformation and data modeling."
 readme = "README.md"
