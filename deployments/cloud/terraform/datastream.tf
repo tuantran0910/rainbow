@@ -29,7 +29,7 @@ resource "google_datastream_private_connection" "datastream_private_connection" 
   display_name = "Private Connection for Datastream"
 
   vpc_peering_config {
-    vpc    = google_compute_network.main.id
+    vpc    = data.google_compute_network.main.id
     subnet = "10.4.0.0/29"
   }
 
@@ -47,7 +47,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
   connection_profile_id = "${each.key}-source-connection-profile"
 
   postgresql_profile {
-    hostname = google_sql_database_instance.main.private_ip_address
+    hostname = data.google_sql_database_instance.main.private_ip_address
     username = local.datastream_username
     password = data.google_secret_manager_secret_version.datastream_password.secret_data
     database = each.key
@@ -60,7 +60,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
   depends_on = [
     google_project_service.required_apis,
     google_datastream_private_connection.datastream_private_connection,
-    google_sql_database_instance.main,
+    data.google_sql_database_instance.main,
     google_sql_database.databases,
     google_sql_user.datastream_user
   ]
@@ -161,12 +161,12 @@ resource "google_sql_database" "databases" {
   for_each = local.datastream_databases_mapping
 
   name     = each.key
-  instance = google_sql_database_instance.main.name
+  instance = data.google_sql_database_instance.main.name
 }
 
 # Create datastream user with replication permissions
 resource "google_sql_user" "datastream_user" {
   name     = local.datastream_username
-  instance = google_sql_database_instance.main.name
-  password = data.google_secret_manager_secret_version.datastream_password.secret_data
+  instance = data.google_sql_database_instance.main.name
+  password_wo = data.google_secret_manager_secret_version.datastream_password.secret_data
 }

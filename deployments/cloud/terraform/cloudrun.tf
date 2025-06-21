@@ -26,18 +26,28 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
+        name  = "ENV"
+        value = "production"
+      }
+
+      env {
+        name  = "USE_CLOUD_SQL"
+        value = "true"
+      }
+
+      env {
         name  = "DB_HOST"
-        value = google_sql_database_instance.main.private_ip_address
+        value = data.google_sql_database_instance.main.private_ip_address
       }
 
       env {
         name  = "DB_NAME"
-        value = google_sql_database.rainbow.name
+        value = data.google_sql_database.rainbow.name
       }
 
       env {
         name  = "DB_USER"
-        value = google_sql_user.api_user.name
+        value = "rainbow"
       }
 
       env {
@@ -48,6 +58,31 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "DB_PORT"
         value = "5432"
+      }
+
+      env {
+        name  = "MIGRATIONS_DIR"
+        value = "/migrations"
+      }
+
+      env {
+        name  = "LOG_LEVEL"
+        value = "info"
+      }
+
+      env {
+        name  = "ENABLE_CONSOLE"
+        value = "false"
+      }
+
+      env {
+        name  = "JWT_SECRET"
+        value = data.google_secret_manager_secret_version.jwt_secret.secret_data
+      }
+
+      env {
+        name  = "SERVER_PORT"
+        value = "5000"
       }
 
       resources {
@@ -77,9 +112,9 @@ resource "google_cloud_run_v2_service" "api" {
 
   depends_on = [
     google_project_service.required_apis,
-    google_sql_database_instance.main,
-    google_sql_user.api_user,
-    data.google_secret_manager_secret_version.api_password
+    data.google_sql_database_instance.main,
+    data.google_secret_manager_secret_version.api_password,
+    data.google_secret_manager_secret_version.jwt_secret
   ]
 }
 
@@ -114,10 +149,15 @@ resource "google_vpc_access_connector" "main" {
   name          = "cloud-run-vpc-connector"
   region        = local.cloud_run_region
   ip_cidr_range = "10.9.0.0/28"
-  network       = google_compute_network.main.name
+  network       = data.google_compute_network.main.name
   max_instances = 3
   min_instances = 2
   machine_type  = "f1-micro"
 
   depends_on = [google_project_service.required_apis]
+}
+
+# Reference the existing JWT secret from Google Secret Manager
+data "google_secret_manager_secret_version" "jwt_secret" {
+  secret = "jwt-secret"
 }

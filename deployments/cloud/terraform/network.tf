@@ -2,7 +2,7 @@
 resource "google_compute_router" "router" {
   name    = "${local.project_id}-router"
   region  = local.region
-  network = google_compute_network.main.id
+  network = data.google_compute_network.main.id
 
   depends_on = [google_project_service.required_apis]
 }

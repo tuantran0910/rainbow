@@ -57,18 +57,16 @@ resource "google_project_service" "required_apis" {
   disable_on_destroy = false
 }
 
-# Basic VPC Network
-resource "google_compute_network" "main" {
-  name                    = "${local.project_id}-vpc"
-  auto_create_subnetworks = false
-  depends_on              = [google_project_service.required_apis]
+# VPC Network
+data "google_compute_network" "main" {
+  name = "${local.project_id}-vpc"
 }
 
 resource "google_compute_subnetwork" "main" {
   name          = "${local.project_id}-subnet"
   ip_cidr_range = "10.0.0.0/16"
   region        = local.region
-  network       = google_compute_network.main.id
+  network       = data.google_compute_network.main.id
 
   secondary_ip_range {
     range_name    = "pods"

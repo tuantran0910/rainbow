@@ -6,7 +6,7 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = 1
   deletion_protection      = false
 
-  network    = google_compute_network.main.name
+  network    = data.google_compute_network.main.name
   subnetwork = google_compute_subnetwork.main.name
 
   ip_allocation_policy {
