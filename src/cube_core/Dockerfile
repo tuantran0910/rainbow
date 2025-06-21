@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Upgrade packages
 USER root
-RUN apt-get update && apt-get install -y dist-upgrade \
+RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Use the virtual environment automatically
