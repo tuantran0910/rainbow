@@ -7,11 +7,6 @@ LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Upgrade packages
-USER root
-RUN apt-get update && apt-get install -y \
-    && rm -rf /var/lib/apt/lists/*
-
 # Use the virtual environment automatically
 ENV VIRTUAL_ENV=/opt/venv
 
@@ -26,11 +21,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 #Place entry points in the environment at the front of the path
 ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 
-# Post cleanup
-RUN apt-get remove -y gcc g++ build-essential && \
-    apt-get autoremove -y && \
-    rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
-
 # Switch back to non-root user
-RUN chown -R 1000:1000 ${DAGSTER_HOME} ${VIRTUAL_ENV}
+RUN chown -R 1000:1000 ${VIRTUAL_ENV}
 USER 1000
