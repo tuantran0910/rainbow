@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     containers {
-      image = "us-docker.pkg.dev/cloudrun/container/hello"
+      image = "us-central1-docker.pkg.dev/rainbow-data-production/rainbow-docker/api:latest"
 
       ports {
         container_port = 5000
@@ -116,6 +116,17 @@ resource "google_cloud_run_v2_service" "api" {
     data.google_secret_manager_secret_version.api_password,
     data.google_secret_manager_secret_version.jwt_secret
   ]
+
+  # Ensure IAM policy is applied after service creation
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to image - managed by CI/CD
+      template[0].containers[0].image,
+      # Ignore changes to revision and traffic - managed by CI/CD
+      template[0].revision,
+      traffic
+    ]
+  }
 }
 
 # Service Account for Cloud Run
@@ -138,10 +149,37 @@ resource "google_project_iam_member" "api_secret_accessor" {
   member  = "serviceAccount:${google_service_account.api.email}"
 }
 
-# Output the Cloud Run service name
+# IAM policy for Cloud Run service
+resource "google_cloud_run_service_iam_policy" "api_no_public_access" {
+  location = google_cloud_run_v2_service.api.location
+  project  = google_cloud_run_v2_service.api.project
+  service  = google_cloud_run_v2_service.api.name
+
+  # Empty policy data means no bindings = no public access
+  # Only authenticated users with proper IAM roles can access
+  policy_data = data.google_iam_policy.no_public_access.policy_data
+}
+
+# Define a policy with admin access but no public access
+data "google_iam_policy" "no_public_access" {
+  # Grant access to the administrator
+  binding {
+    role = "roles/run.invoker"
+    members = [
+      "user:tntuann0910@gmail.com"  # Administrator access
+    ]
+  }
+}
+
+# Output the Cloud Run service name and URL
 output "api_service_name" {
   description = "The name of the Cloud Run service"
   value       = google_cloud_run_v2_service.api.name
+}
+
+output "api_service_url" {
+  description = "The URL of the Cloud Run service"
+  value       = google_cloud_run_v2_service.api.uri
 }
 
 # VPC Access Connector for Cloud Run to connect to private resources
