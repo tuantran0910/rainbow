@@ -166,7 +166,7 @@ resource "google_sql_database" "databases" {
 
 # Create datastream user with replication permissions
 resource "google_sql_user" "datastream_user" {
-  name     = local.datastream_username
-  instance = data.google_sql_database_instance.main.name
+  name        = local.datastream_username
+  instance    = data.google_sql_database_instance.main.name
   password_wo = data.google_secret_manager_secret_version.datastream_password.secret_data
 }

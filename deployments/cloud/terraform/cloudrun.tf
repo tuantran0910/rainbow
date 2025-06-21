@@ -166,7 +166,7 @@ data "google_iam_policy" "no_public_access" {
   binding {
     role = "roles/run.invoker"
     members = [
-      "user:tntuann0910@gmail.com"  # Administrator access
+      "user:tntuann0910@gmail.com" # Administrator access
     ]
   }
 }
