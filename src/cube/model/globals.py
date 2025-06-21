@@ -6,7 +6,7 @@ import gcsfs
 from cube import TemplateContext
 from cube_dbt import Dbt
 
-USE_REMOTE_MANIFEST = os.getenv("USE_REMOTE_MANIFEST", "true").lower() == "true"
+USE_REMOTE_MANIFEST = os.getenv("USE_REMOTE_MANIFEST", "false").lower() == "true"
 DBT_GCS_PROJECT = os.getenv("DBT_GCS_PROJECT")
 DBT_GCS_BUCKET = os.getenv("DBT_GCS_BUCKET")
 MANIFEST_PATH = os.getenv("MANIFEST_PATH", "manifest.json")

@@ -4,16 +4,20 @@ commonLabels:
   owner: tuan.tran
 
 extraEnvVars:
+  - name: USE_REMOTE_MANIFEST
+    value: 'true'
   - name: DBT_GCS_PROJECT
     value: rainbow-data-production
   - name: DBT_GCS_BUCKET
     value: rainbow-data-production-dbt
+  - name: MANIFEST_PATH
+    value: dbt/manifest.json
 
 extraEnvVarsFromSecret: cube-secret
 
 image:
-  repository: cubejs/cube
-  tag: v1.3.21
+  repository: ghcr.io/tuantran0910/rainbow/cube
+  tag: 2025.06.21.0
   pullPolicy: IfNotPresent
 
 config:
