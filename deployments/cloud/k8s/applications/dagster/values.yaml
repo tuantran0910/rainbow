@@ -51,7 +51,7 @@ dagsterWebserver:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -121,7 +121,7 @@ dagster-user-deployments:
             - --structured-logs
             - --auto-iam-authn
             - --private-ip
-            - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+            - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -208,7 +208,7 @@ dagsterDaemon:
         - --structured-logs
         - --auto-iam-authn
         - --private-ip
-        - rainbow-data-production:us-central1:rainbow-data-production-db?port=5432
+        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
