@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "cube_dbt>=0.6.2",
+    "gcsfs>=2025.5.1",
 ]

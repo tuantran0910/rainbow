@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # Upgrade packages
 USER root
