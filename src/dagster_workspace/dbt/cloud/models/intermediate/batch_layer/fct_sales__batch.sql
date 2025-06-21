@@ -109,7 +109,8 @@ SELECT
             THEN order_items.quantity * (promotions.price * 1000)
         ELSE order_items.price
     END AS extended_discount_amount,
-    order_items.quantity * order_items.price AS extended_sales_amount
+    order_items.quantity * order_items.price AS extended_sales_amount,
+    orders.created_date_tz_hcm
 FROM stg_orders AS orders
 LEFT JOIN stg_order_items AS order_items
     ON orders.id = order_items.order_id
