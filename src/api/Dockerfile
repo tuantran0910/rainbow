@@ -25,6 +25,9 @@ FROM scratch
 # Copy the binary from the build stage
 COPY --from=builder /build/main /main
 
+# Copy the migrations directory
+COPY --from=builder /build/migrations /migrations
+
 # Copy the curl binary from the intermediate stage
 COPY --from=intermediate /usr/bin/curl /usr/bin/curl
 COPY --from=intermediate /lib /lib

@@ -43,20 +43,25 @@ type Config struct {
 func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
 	// Load database connection configuration
 	host := getEnv("DB_HOST", "localhost")
-	user := getEnv("API_DB_USER", "rainbow")
-	password := getEnv("API_DB_PASSWORD", "")
+	user := getEnv("DB_USER", "rainbow")
+	password := getEnv("DB_PASSWORD", "")
 	if password == "" {
-		if env == "production" {
-			return nil, fmt.Errorf(
-				"API_DB_PASSWORD is required in production environment but not set",
-			)
-		} else {
-			password = "R&inb0w2024!Data"
-		}
+		return nil, fmt.Errorf(
+			"DB_PASSWORD is required but not set",
+		)
 	}
 
-	dbName := getEnv("API_DB_NAME", "rainbow")
+	dbName := getEnv("DB_NAME", "rainbow")
 	dbPort := getEnv("DB_PORT", "5432")
+
+	// Determine SSL mode based on environment and USE_CLOUD_SQL flag
+	useCloudSQL := getEnv("USE_CLOUD_SQL", "false")
+	var sslMode string
+	if useCloudSQL == "true" || env == "production" {
+		sslMode = "require"
+	} else {
+		sslMode = "disable"
+	}
 
 	maxIdleConns, err := strconv.Atoi(getEnv("MAX_IDLE_CONNS", "10"))
 	if err != nil {
@@ -75,12 +80,13 @@ func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
 
 	// Construct the database DSN
 	dbDsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
 		host,
 		user,
 		password,
 		dbName,
 		dbPort,
+		sslMode,
 	)
 
 	return &DatabaseConfig{
