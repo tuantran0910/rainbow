@@ -5,4 +5,4 @@
 }}
 
 SELECT *
-FROM {{ ref('raw_authors__stream') }}
+FROM {{ ref('raw_authors__datastream') }}

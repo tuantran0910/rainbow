@@ -5,4 +5,4 @@
 }}
 
 SELECT *
-FROM {{ ref('raw_categories__stream') }}
+FROM {{ ref('raw_categories__datastream') }}

@@ -5,4 +5,4 @@
 }}
 
 SELECT *
-FROM {{ ref('raw_sellers__stream') }}
+FROM {{ ref('raw_sellers__datastream') }}
