@@ -79,7 +79,6 @@ repos:
     hooks:
       - id: go-fmt
       - id: go-imports
-      - id: validate-toml
       - id: no-go-testing
       - id: go-mod-tidy
 

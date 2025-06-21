@@ -3,7 +3,7 @@ name = "rainbow"
 version = "0.1.0"
 description = "Simple data platform project"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = "==3.12.*"
 authors = [{ name = "tuan.tran", email = "tntuan0910@gmail.com" }]
 keywords = ["data", "platform", "rainbow"]
 classifiers = [
