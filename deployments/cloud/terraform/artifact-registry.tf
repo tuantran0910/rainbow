@@ -10,10 +10,3 @@ resource "google_project_iam_member" "github_actions_artifact_registry_writer" {
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:github-actions-deployer@${local.project_id}.iam.gserviceaccount.com"
 }
-
-# IAM binding for Cloud Run service account to pull from Artifact Registry
-resource "google_project_iam_member" "api_artifact_registry_reader" {
-  project = local.project_id
-  role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${data.google_service_account.api.email}"
-}
