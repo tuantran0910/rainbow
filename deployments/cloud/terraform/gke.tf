@@ -80,7 +80,7 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "${local.project_id}-node-pool"
   location   = local.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 3
+  node_count = 4
 
   node_config {
     preemptible  = false
