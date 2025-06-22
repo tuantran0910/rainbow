@@ -40,6 +40,7 @@ ROLES=(
   "roles/iam.serviceAccountUser"
   "roles/secretmanager.secretAccessor"
   "roles/cloudsql.client"
+  "roles/container.clusterViewer"
 )
 
 for ROLE in "${ROLES[@]}"; do

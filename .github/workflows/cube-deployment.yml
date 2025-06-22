@@ -1,0 +1,137 @@
+name: Cube Deployment Restart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/cube/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/cube/**
+
+env:
+  GCP_PROJECT_ID: rainbow-data-production
+  GKE_CLUSTER: rainbow-data-production-gke
+  GKE_ZONE: us-central1-a
+  CUBE_NAMESPACE: cube
+
+jobs:
+  restart-cube-deployments:
+    name: Restart Cube Deployments
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+
+      - name: Check if GKE cluster exists
+        id: check-cluster
+        run: |
+          if gcloud container clusters describe ${{ env.GKE_CLUSTER }} --zone=${{ env.GKE_ZONE }} --project=${{ env.GCP_PROJECT_ID }} >/dev/null 2>&1; then
+            echo "cluster_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ GKE cluster '${{ env.GKE_CLUSTER }}' exists"
+          else
+            echo "cluster_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ GKE cluster '${{ env.GKE_CLUSTER }}' does not exist"
+          fi
+
+      - name: Get GKE credentials
+        if: steps.check-cluster.outputs.cluster_exists == 'true'
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+            --zone ${{ env.GKE_ZONE }} \
+            --project ${{ env.GCP_PROJECT_ID }}
+
+      - name: Check if cube namespace exists
+        if: steps.check-cluster.outputs.cluster_exists == 'true'
+        id: check-namespace
+        run: |
+          if kubectl get namespace ${{ env.CUBE_NAMESPACE }} >/dev/null 2>&1; then
+            echo "namespace_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Namespace '${{ env.CUBE_NAMESPACE }}' exists"
+          else
+            echo "namespace_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Namespace '${{ env.CUBE_NAMESPACE }}' does not exist"
+          fi
+
+      - name: Check and restart cube deployments
+        if: steps.check-cluster.outputs.cluster_exists == 'true' && steps.check-namespace.outputs.namespace_exists == 'true'
+        run: |
+          DEPLOYMENTS=("cube-api" "cube-refresh-worker")
+          NAMESPACE="${{ env.CUBE_NAMESPACE }}"
+
+          echo "🔍 Checking for cube deployments in namespace: $NAMESPACE"
+
+          for deployment in "${DEPLOYMENTS[@]}"; do
+            echo "Checking deployment: $deployment"
+
+            if kubectl get deployment $deployment -n $NAMESPACE >/dev/null 2>&1; then
+              echo "✅ Deployment '$deployment' exists in namespace '$NAMESPACE'"
+              echo "🔄 Performing rollout restart for deployment: $deployment"
+
+              kubectl rollout restart deployment/$deployment -n $NAMESPACE
+
+              echo "⏳ Waiting for rollout to complete for deployment: $deployment"
+              kubectl rollout status deployment/$deployment -n $NAMESPACE --timeout=300s
+
+              if [ $? -eq 0 ]; then
+                echo "✅ Rollout completed successfully for deployment: $deployment"
+              else
+                echo "❌ Rollout failed or timed out for deployment: $deployment"
+                exit 1
+              fi
+            else
+              echo "⚠️  Deployment '$deployment' not found in namespace '$NAMESPACE', skipping..."
+            fi
+            echo "---"
+          done
+
+      - name: Skip message
+        if: steps.check-cluster.outputs.cluster_exists == 'false' || steps.check-namespace.outputs.namespace_exists == 'false'
+        run: |
+          echo "⏭️  Skipping cube deployment restart:"
+          if [ "${{ steps.check-cluster.outputs.cluster_exists }}" == "false" ]; then
+            echo "   - GKE cluster does not exist"
+          fi
+          if [ "${{ steps.check-namespace.outputs.namespace_exists }}" == "false" ]; then
+            echo "   - Cube namespace does not exist"
+          fi
+          echo "This is expected if infrastructure is not yet deployed."
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 📋 Cube Deployment Restart Summary"
+          echo "- **Trigger**: Changes detected in \`src/cube/\` folder"
+          echo "- **Cluster**: ${{ env.GKE_CLUSTER }} (Zone: ${{ env.GKE_ZONE }})"
+          echo "- **Namespace**: ${{ env.CUBE_NAMESPACE }}"
+          echo "- **Target Deployments**: cube-api, cube-refresh-worker"
+
+          if [ "${{ steps.check-cluster.outputs.cluster_exists }}" == "true" ] && [ "${{ steps.check-namespace.outputs.namespace_exists }}" == "true" ]; then
+            echo "- **Action**: Rollout restart executed ✅"
+          else
+            echo "- **Action**: Skipped (infrastructure not ready) ⏭️"
+          fi
