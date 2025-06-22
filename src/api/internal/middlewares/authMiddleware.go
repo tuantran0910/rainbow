@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -25,10 +26,22 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		tokenString := parts[1]
+		if len(tokenString) == 0 {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Token cannot be empty"})
+			return
+		}
+
 		// Parse the JWT token
-		token, err := jwtHelper.ParseToken(parts[1])
-		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid or expired token"})
+		token, err := jwtHelper.ParseToken(tokenString)
+		if err != nil {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token format"})
+			return
+		}
+
+		// Validate token
+		if !token.Valid {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Token is invalid or expired"})
 			return
 		}
 
@@ -36,6 +49,17 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token claims"})
+			return
+		}
+
+		// Validate expiration explicitly (additional check)
+		if exp, ok := claims["exp"].(float64); ok {
+			if time.Now().Unix() > int64(exp) {
+				c.AbortWithStatusJSON(401, gin.H{"error": "Token has expired"})
+				return
+			}
+		} else {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Token expiration claim missing"})
 			return
 		}
 
@@ -51,7 +75,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Set user in the context
+		// Set user in the context for downstream handlers
 		c.Set("user_id", userId)
 		c.Next()
 	}

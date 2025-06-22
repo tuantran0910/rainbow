@@ -102,7 +102,13 @@ func loadServerConfig() (*ServerConfig, error) {
 	migrationsDir := getEnv("MIGRATIONS_DIR", "migrations")
 	serverName := getEnv("SERVICE_NAME", "rainbow-api")
 	serverVersion := getEnv("SERVICE_VERSION", "1.0.0")
-	jwtSecret := getEnv("JWT_SECRET", "jwt_secret")
+	jwtSecret := getEnv("JWT_SECRET", "")
+	if jwtSecret == "" {
+		return nil, fmt.Errorf("JWT_SECRET environment variable is required")
+	}
+	if len(jwtSecret) < 32 {
+		return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters long for security")
+	}
 
 	return &ServerConfig{
 		MigrationsDir:  migrationsDir,
