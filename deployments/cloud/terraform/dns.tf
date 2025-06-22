@@ -31,14 +31,7 @@ resource "google_dns_record_set" "superset_dns" {
   rrdatas      = [google_compute_global_address.superset_ingress_ip.address]
 }
 
-# DNS record for dbt docs
-resource "google_dns_record_set" "dbt_docs_dns" {
-  name         = "dbt-docs.tuantrann.work."
-  managed_zone = data.google_dns_managed_zone.tuantrann_work.name
-  type         = "A"
-  ttl          = 300
-  rrdatas      = [google_compute_global_address.dbt_docs_ip.address]
-}
+
 
 # SSL Policy
 resource "google_compute_ssl_policy" "rainbow_ssl_policy" {

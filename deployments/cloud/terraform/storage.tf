@@ -32,18 +32,3 @@ resource "google_storage_bucket_iam_member" "dbt_docs_public_read" {
   role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
-
-# Backend bucket for load balancer
-resource "google_compute_backend_bucket" "dbt_docs" {
-  name        = "dbt-docs-backend"
-  bucket_name = data.google_storage_bucket.dbt.name
-  enable_cdn  = true
-
-  cdn_policy {
-    cache_mode       = "CACHE_ALL_STATIC"
-    default_ttl      = 3600
-    max_ttl          = 86400
-    client_ttl       = 3600
-    negative_caching = true
-  }
-}
