@@ -1,6 +1,7 @@
 import dagster as dg
 
 from assets.crawler import TikiCrawler
+from assets.docs_generation import dbt_docs_generation_asset
 from assets.factory import build_dlt_pipelines
 from assets.promotions import promotion_creations
 from assets.transactions import order_transactions
@@ -16,11 +17,14 @@ from constants import RAINBOW_DB_NAME
 from constants import RAINBOW_DB_PASSWORD
 from constants import RAINBOW_DB_USER
 from jobs.crawling_jobs import crawling_job
+from jobs.docs_jobs import dbt_docs_job
 from jobs.mocking_jobs import orders_mocking_job
 from jobs.mocking_jobs import promotions_mocking_job
 from jobs.mocking_jobs import users_mocking_job
 from resources.psql_resource import PostgresResource
 from schedules.crawling_schedules import crawling_schedule
+from schedules.docs_schedules import dbt_docs_daily_schedule
+from schedules.docs_schedules import dbt_docs_sensor
 from schedules.mocking_schedules import orders_mocking_schedule
 from schedules.mocking_schedules import promotions_mocking_schedule
 from schedules.mocking_schedules import users_mocking_schedule
@@ -64,13 +68,29 @@ def tiki_resources_asset():
 
 
 defs = dg.Definitions(
-    assets=[tiki_resources_asset, user_registrations, order_transactions, promotion_creations],
-    jobs=[crawling_job, users_mocking_job, orders_mocking_job, promotions_mocking_job],
+    assets=[
+        tiki_resources_asset,
+        user_registrations,
+        order_transactions,
+        promotion_creations,
+        dbt_docs_generation_asset,
+    ],
+    jobs=[
+        crawling_job,
+        users_mocking_job,
+        orders_mocking_job,
+        promotions_mocking_job,
+        dbt_docs_job,
+    ],
     schedules=[
         crawling_schedule,
         users_mocking_schedule,
         orders_mocking_schedule,
         promotions_mocking_schedule,
+        dbt_docs_daily_schedule,
+    ],
+    sensors=[
+        dbt_docs_sensor,
     ],
     resources={
         "rainbow_psql_resource": PostgresResource(

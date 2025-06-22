@@ -24,4 +24,5 @@ local = [
 cloud = [
     "dlt[bigquery,postgres]>=1.11.0",
     "dbt-bigquery>=1.9.2",
+    "google-cloud-storage>=2.10.0",
 ]

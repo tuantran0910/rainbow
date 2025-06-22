@@ -57,7 +57,6 @@ BOOK_CLUB_SALE_MAX_DAYS = int(os.getenv("BOOK_CLUB_SALE_MAX_DAYS", "30"))
 # Dagster Resources
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 DAGSTER_ASSETS_CONFIG_DIR = Path(os.getenv("DAGSTER_ASSETS_CONFIG_DIR", "/opt/dagster/app/configs"))
-DAGSTER_DBT_TARGET_PROFILE = os.getenv("DAGSTER_DBT_TARGET_PROFILE", "production")
 DAGSTER_ASSETS_OWNER = "tntuan0910@gmail.com"
 DAGSTER_METADATA = {
     "owner": DAGSTER_ASSETS_OWNER,
@@ -74,3 +73,13 @@ DB_PORT = int(os.getenv("DB_PORT", "5432"))
 RAINBOW_DB_NAME = os.getenv("API_DB_NAME", "rainbow")
 RAINBOW_DB_USER = os.getenv("API_DB_USER", "rainbow")
 RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")
+
+# Dbt
+DBT_PROJECT_DIR = Path(__file__).absolute().parent / "dbt" / ENVIRONMENT
+DBT_PROFILES_DIR = DBT_PROJECT_DIR
+DBT_TARGET_PROFILE = os.getenv("DBT_TARGET_PROFILE", "production")
+
+# Dbt Docs Generation
+DBT_DOCS_BUCKET_NAME = os.getenv("DBT_DOCS_BUCKET_NAME", "rainbow-data-production-dbt")
+DBT_DOCS_BUCKET_FOLDER = "docs"
+DBT_DOCS_BASE_URL = os.getenv("DBT_DOCS_BASE_URL", "https://dbt-docs.tuantrann.work")

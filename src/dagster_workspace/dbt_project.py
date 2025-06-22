@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import dagster as dg
 from dagster_dbt import build_schedule_from_dbt_selection
 from dagster_dbt import dbt_assets
@@ -7,11 +5,9 @@ from dagster_dbt import DbtCliResource
 from dagster_dbt import DbtProject
 
 from assets.translators import CustomDagsterDbtTranslator
-from constants import DAGSTER_DBT_TARGET_PROFILE
-from constants import ENVIRONMENT
-
-# Points to the dbt project path
-dbt_project_dir = Path(__file__).absolute().parent / "dbt" / ENVIRONMENT
+from constants import DBT_PROFILES_DIR
+from constants import DBT_PROJECT_DIR
+from constants import DBT_TARGET_PROFILE
 
 
 def get_dbt_project() -> DbtProject:
@@ -21,7 +17,11 @@ def get_dbt_project() -> DbtProject:
     Returns:
         DbtProject: The initialized dbt project.
     """
-    dbt_project = DbtProject(project_dir=dbt_project_dir, target=DAGSTER_DBT_TARGET_PROFILE)
+    dbt_project = DbtProject(
+        project_dir=DBT_PROJECT_DIR,
+        profiles_dir=DBT_PROFILES_DIR,
+        target=DBT_TARGET_PROFILE,
+    )
 
     # Prepare the project if in development mode
     # This should be safe now since we generate manifest during build
