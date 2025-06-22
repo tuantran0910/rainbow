@@ -4,10 +4,10 @@ from dagster_dbt import dbt_assets
 from dagster_dbt import DbtCliResource
 from dagster_dbt import DbtProject
 
-from assets.translators import CustomDagsterDbtTranslator
-from constants import DBT_PROFILES_DIR
-from constants import DBT_PROJECT_DIR
-from constants import DBT_TARGET_PROFILE
+from shared.constants import DBT_PROFILES_DIR
+from shared.constants import DBT_PROJECT_DIR
+from shared.constants import DBT_TARGET_PROFILE
+from transformation.translators import CustomDagsterDbtTranslator
 
 
 def get_dbt_project() -> DbtProject:

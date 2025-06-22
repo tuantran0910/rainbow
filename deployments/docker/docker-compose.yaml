@@ -100,11 +100,13 @@ services:
     build:
       context: ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}
       dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: ${ENVIRONMENT:-local}
     container_name: dagster-workspace
     image: dagster-workspace
     environment:
-      DAGSTER_CURRENT_IMAGE: dagster-workspace
       API_BASE_URL: http://${API_HOST}:${SERVER_PORT}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     entrypoint:
       - dagster
       - code-server
@@ -117,6 +119,7 @@ services:
       - definitions
     volumes:
       - ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}:/opt/dagster/app
+      - ~/.config/gcloud/application_default_credentials.json:/secrets/gcp-credentials.json
     env_file:
       - ./.env
     depends_on:

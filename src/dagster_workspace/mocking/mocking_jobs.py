@@ -1,10 +1,10 @@
 import dagster as dg
 
-from assets.promotions import promotion_creations
-from assets.transactions import order_transactions
-from assets.users import user_registrations
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
+from mocking.promotions import promotion_creations
+from mocking.transactions import order_transactions
+from mocking.users import user_registrations
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
 
 users_mocking_job = dg.define_asset_job(
     name="users_mocking_job",

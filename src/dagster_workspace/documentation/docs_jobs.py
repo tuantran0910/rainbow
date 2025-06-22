@@ -1,8 +1,8 @@
 import dagster as dg
 
-from assets.docs_generation import dbt_docs_generation_asset
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
+from documentation.docs_generation import dbt_docs_generation_asset
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
 
 
 dbt_docs_job = dg.define_asset_job(

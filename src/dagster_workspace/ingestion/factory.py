@@ -3,11 +3,11 @@ from dagster_dlt import DagsterDltResource
 from dagster_dlt import dlt_assets
 from dlt import pipeline
 
-from assets.helpers import load_assets_configs
-from assets.helpers import make_dlt_resources
-from assets.translators import CustomDagsterDltTranslator
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
+from shared.helpers import load_assets_configs
+from shared.helpers import make_dlt_resources
+from transformation.translators import CustomDagsterDltTranslator
 
 logger = dg.get_dagster_logger(__name__)
 
@@ -33,9 +33,8 @@ def build_dlt_pipelines() -> dg.Definitions:
 
     # Construct Dagster's assets
     assets = []
-    dlt_sources, destination_type = make_dlt_resources(
-        dlt_resources_config=assets_configs.get("resources", {}),
-    )
+    dlt_resources_config = assets_configs.get("resources", {})
+    dlt_sources, destination_type = make_dlt_resources(dlt_resources_config=dlt_resources_config)
     for table_name, dlt_source in dlt_sources.items():
         asset_name = f"{base_name}__{table_name}"
 
@@ -44,6 +43,7 @@ def build_dlt_pipelines() -> dg.Definitions:
             dlt_pipeline=pipeline(
                 pipeline_name=asset_name,
                 destination=destination_type,
+                dataset_name=dlt_resources_config.get("destination", {}).get("dataset_name"),
                 progress=pipeline_progress_mode,
             ),
             name=asset_name,

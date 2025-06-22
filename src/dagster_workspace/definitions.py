@@ -1,12 +1,14 @@
 import dagster as dg
 
-import assets
-from assets import build_dlt_pipelines
-from dbt_project import build_dbt_project
+from documentation import definitions as documentation_definitions
+from ingestion import definitions as ingestion_definitions
+from mocking import definitions as mocking_definitions
+from transformation import definitions as transformation_definitions
 
 
 main_defs = dg.Definitions.merge(
-    build_dlt_pipelines(),
-    build_dbt_project(),
-    assets.defs,
+    ingestion_definitions.defs,
+    transformation_definitions.defs,
+    mocking_definitions.defs,
+    documentation_definitions.defs,
 )

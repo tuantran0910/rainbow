@@ -6,13 +6,13 @@ from dagster import AssetMaterialization
 from dagster_dbt import DbtCliResource
 from google.cloud import storage
 
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
-from constants import DBT_DOCS_BASE_URL
-from constants import DBT_DOCS_BUCKET_FOLDER
-from constants import DBT_DOCS_BUCKET_NAME
-from constants import DBT_PROFILES_DIR
-from constants import DBT_PROJECT_DIR
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
+from shared.constants import DBT_DOCS_BASE_URL
+from shared.constants import DBT_DOCS_BUCKET_FOLDER
+from shared.constants import DBT_DOCS_BUCKET_NAME
+from shared.constants import DBT_PROFILES_DIR
+from shared.constants import DBT_PROJECT_DIR
 
 
 logger = dg.get_dagster_logger(__name__)

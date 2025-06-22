@@ -9,7 +9,7 @@ from dagster_dbt import DagsterDbtTranslator
 from dagster_dlt import DagsterDltTranslator
 from dagster_dlt.translator import DltResourceTranslatorData
 
-from constants import DAGSTER_ASSETS_OWNER
+from shared.constants import DAGSTER_ASSETS_OWNER
 
 
 class CustomDagsterDltTranslator(DagsterDltTranslator):

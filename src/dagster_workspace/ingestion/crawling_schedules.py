@@ -1,8 +1,8 @@
 import dagster as dg
 
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
-from jobs.crawling_jobs import crawling_job
+from ingestion.crawling_jobs import crawling_job
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
 
 crawling_schedule = dg.ScheduleDefinition(
     name="tiki_crawling_schedule",

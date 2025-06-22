@@ -4,18 +4,18 @@ from typing import Any
 import dagster as dg
 from faker import Faker
 
-from assets.helpers import AuthTokenManager
-from assets.helpers import make_http_request
-from constants import ADMIN_EMAIL
-from constants import API_BASE_URL
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_MOCKING_ASSET_GROUP
-from constants import DAGSTER_TAGS
-from constants import DEFAULT_USER_PASSWORD
-from constants import MAX_BOOKS_PER_REQUEST
-from constants import MAX_ITEMS_PER_ORDER
-from constants import MAX_QUANTITY_PER_BOOK
-from resources.psql_resource import PostgresResource
+from shared.constants import ADMIN_EMAIL
+from shared.constants import API_BASE_URL
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_MOCKING_ASSET_GROUP
+from shared.constants import DAGSTER_TAGS
+from shared.constants import DEFAULT_USER_PASSWORD
+from shared.constants import MAX_BOOKS_PER_REQUEST
+from shared.constants import MAX_ITEMS_PER_ORDER
+from shared.constants import MAX_QUANTITY_PER_BOOK
+from shared.helpers import AuthTokenManager
+from shared.helpers import make_http_request
+from shared.resources.psql_resource import PostgresResource
 
 logger = dg.get_dagster_logger()
 

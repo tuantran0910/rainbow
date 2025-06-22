@@ -6,18 +6,19 @@ from typing import Optional
 import dagster as dg
 from pydantic import BaseModel
 
-from assets.helpers import AuthTokenManager
-from assets.helpers import make_http_request
-from assets.helpers import sanitize_text
-from constants import API_BASE_URL
-from constants import INVENTORY_MAX_STOCK
-from constants import INVENTORY_MIN_STOCK
-from constants import TIKI_BASE_PRODUCT_LISTINGS
-from constants import TIKI_BASE_SPECIFIC_PRODUCT
-from constants import TIKI_CATEGORIES
-from constants import TIKI_HEADERS
-from constants import TIKI_PRODUCT_LISTINGS_PAGE_PARAMS
-from constants import TIKI_REQUEST_DELAY
+from shared.constants import API_BASE_URL
+from shared.constants import INVENTORY_MAX_STOCK
+from shared.constants import INVENTORY_MIN_STOCK
+from shared.constants import TIKI_BASE_PRODUCT_LISTINGS
+from shared.constants import TIKI_BASE_SPECIFIC_PRODUCT
+from shared.constants import TIKI_CATEGORIES
+from shared.constants import TIKI_HEADERS
+from shared.constants import TIKI_MAX_PAGES_PER_CATEGORY
+from shared.constants import TIKI_PRODUCT_LISTINGS_PAGE_PARAMS
+from shared.constants import TIKI_REQUEST_DELAY
+from shared.helpers import AuthTokenManager
+from shared.helpers import make_http_request
+from shared.helpers import sanitize_text
 
 
 logger = dg.get_dagster_logger(__name__)
@@ -575,8 +576,11 @@ class TikiCrawler:
             logger.info(f"Waiting {self.request_delay}s before next page...")
             time.sleep(self.request_delay)
 
-            # TODO: Remove this break statement for production
-            if page == 50:
+            # Check if we've reached the maximum pages limit (if configured)
+            if TIKI_MAX_PAGES_PER_CATEGORY > 0 and page >= TIKI_MAX_PAGES_PER_CATEGORY:
+                logger.info(
+                    f"Reached maximum pages limit ({TIKI_MAX_PAGES_PER_CATEGORY}). Stopping crawl for this category."
+                )
                 break
 
     def run(self) -> None:

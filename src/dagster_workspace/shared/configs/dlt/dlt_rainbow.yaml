@@ -1,0 +1,52 @@
+name: dlt_rainbow
+enabled: false
+group_name: dlt_rainbow
+job:
+  name: dlt_rainbow_job
+  description: Job to run dlt pipeline
+schedule:
+  name: dlt_rainbow_schedule
+  description: Schedule to run dlt pipeline
+  cron_schedule: 0 0 * * *
+  execution_timezone: UTC
+resources:
+  source:
+    type: sql_database
+    credentials:
+      drivername: postgresql+psycopg2
+      host: env:DB_HOST
+      port: env:DB_PORT
+      username: env:EL_DB_USER
+      password: env:EL_DB_PASSWORD
+      database: rainbow
+    schema:
+      name: public
+      tables: {}
+        # - name: orders
+        #   incremental_field: updated_at
+        # - name: order_items
+        #   incremental_field: updated_at
+        # - name: books
+        #   incremental_field: updated_at
+        # - name: authors
+        #   incremental_field: updated_at
+        # - name: promotions
+        #   incremental_field: updated_at
+        # - name: payments
+        #   incremental_field: updated_at
+        # - name: inventories
+        #   incremental_field: updated_at
+        # - name: categories
+        #   incremental_field: updated_at
+        # - name: users
+        #   incremental_field: updated_at
+        # - name: sellers
+        #   incremental_field: updated_at
+  destination:
+    type: bigquery
+    dataset_name: rainbow
+    credentials:
+      project_id: rainbow-data-production
+    configs:
+      location: us-central1
+      autodetect_schema: true

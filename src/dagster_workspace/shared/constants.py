@@ -4,6 +4,7 @@ from typing import Any
 
 # Tiki Crawler
 TIKI_REQUEST_DELAY = 0.5
+TIKI_MAX_PAGES_PER_CATEGORY = int(os.getenv("TIKI_MAX_PAGES_PER_CATEGORY", "0"))  # 0 means no limit
 TIKI_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0",
     "Accept": "application/json, text/plain, */*",
@@ -28,7 +29,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
 INVENTORY_MIN_STOCK = int(os.getenv("INVENTORY_MIN_STOCK", "10"))
 INVENTORY_MAX_STOCK = int(os.getenv("INVENTORY_MAX_STOCK", "50"))
 
-# Tiki Mocker
+# Enhanced Mocking Configuration
 MAX_BOOKS_PER_REQUEST = int(os.getenv("MAX_BOOKS_PER_REQUEST", "10"))
 MAX_ITEMS_PER_ORDER = int(os.getenv("MAX_ITEMS_PER_ORDER", "5"))
 MAX_QUANTITY_PER_BOOK = int(os.getenv("MAX_QUANTITY_PER_BOOK", "3"))
@@ -54,9 +55,24 @@ REGULAR_SALE_MAX_DAYS = int(os.getenv("REGULAR_SALE_MAX_DAYS", "7"))
 BOOK_CLUB_SALE_MIN_DAYS = int(os.getenv("BOOK_CLUB_SALE_MIN_DAYS", "14"))
 BOOK_CLUB_SALE_MAX_DAYS = int(os.getenv("BOOK_CLUB_SALE_MAX_DAYS", "30"))
 
+# Enhanced HTTP & Authentication Configuration
+HTTP_REQUEST_TIMEOUT = int(os.getenv("HTTP_REQUEST_TIMEOUT", "30"))
+HTTP_MAX_RETRIES = int(os.getenv("HTTP_MAX_RETRIES", "3"))
+HTTP_RETRY_DELAY = float(os.getenv("HTTP_RETRY_DELAY", "1.0"))
+HTTP_RETRY_BACKOFF = float(os.getenv("HTTP_RETRY_BACKOFF", "2.0"))
+
+# Rate Limiting & Throttling
+THROTTLE_DELAY_BETWEEN_REQUESTS = float(os.getenv("THROTTLE_DELAY_BETWEEN_REQUESTS", "0.1"))
+
+# Data Quality & Validation
+ENABLE_DATA_VALIDATION = os.getenv("ENABLE_DATA_VALIDATION", "true").lower() == "true"
+MAX_DUPLICATE_EMAIL_ATTEMPTS = int(os.getenv("MAX_DUPLICATE_EMAIL_ATTEMPTS", "10"))
+
 # Dagster Resources
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
-DAGSTER_ASSETS_CONFIG_DIR = Path(os.getenv("DAGSTER_ASSETS_CONFIG_DIR", "/opt/dagster/app/configs"))
+DAGSTER_ASSETS_CONFIG_DIR = Path(
+    os.getenv("DAGSTER_ASSETS_CONFIG_DIR", str(Path(__file__).absolute().parent / "configs"))
+)
 DAGSTER_ASSETS_OWNER = "tntuan0910@gmail.com"
 DAGSTER_METADATA = {
     "owner": DAGSTER_ASSETS_OWNER,
@@ -75,7 +91,7 @@ RAINBOW_DB_USER = os.getenv("API_DB_USER", "rainbow")
 RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")
 
 # Dbt
-DBT_PROJECT_DIR = Path(__file__).absolute().parent / "dbt" / ENVIRONMENT
+DBT_PROJECT_DIR = Path(__file__).absolute().parent.parent / "dbt" / ENVIRONMENT
 DBT_PROFILES_DIR = DBT_PROJECT_DIR
 DBT_TARGET_PROFILE = os.getenv("DBT_TARGET_PROFILE", "production")
 

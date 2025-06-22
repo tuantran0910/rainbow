@@ -4,7 +4,6 @@ FROM python:${PYTHON_VERSION}-slim
 
 # Build argument to determine environment (local or cloud)
 ARG ENVIRONMENT=local
-ENV DAGSTER_ENVIRONMENT=${ENVIRONMENT}
 
 # Label the image
 LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"

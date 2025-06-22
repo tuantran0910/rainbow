@@ -430,10 +430,10 @@ sources:
 
   - name: rainbow_datastream
     description: Real-time streaming data from DataStream CDC pipeline
-    project: rainbow-data-production 
+    project: rainbow-data-production
     dataset: raw__datastream
     tables:
-      - name: categories
+      - name: rainbow_categories
         description: >
           Real-time category data from DataStream CDC pipeline
         columns:
@@ -465,7 +465,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: users
+      - name: rainbow_users
         description: >
           Real-time user data from DataStream CDC pipeline
         columns:
@@ -512,7 +512,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: authors
+      - name: rainbow_authors
         description: >
           Real-time author data from DataStream CDC pipeline
         columns:
@@ -544,7 +544,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: sellers
+      - name: rainbow_sellers
         description: >
           Real-time seller data from DataStream CDC pipeline
         columns:
@@ -579,7 +579,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: books
+      - name: rainbow_books
         description: >
           Real-time book data from DataStream CDC pipeline
         columns:
@@ -629,7 +629,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: orders
+      - name: rainbow_orders
         description: >
           Real-time order data from DataStream CDC pipeline
         columns:
@@ -667,7 +667,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: order_items
+      - name: rainbow_order_items
         description: >
           Real-time order item data from DataStream CDC pipeline
         columns:
@@ -702,7 +702,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: book_authors
+      - name: rainbow_book_authors
         description: >
           Real-time book-author relationship data from DataStream CDC pipeline
         columns:
@@ -731,7 +731,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: promotions
+      - name: rainbow_promotions
         description: >
           Real-time promotion data from DataStream CDC pipeline
         columns:
@@ -775,7 +775,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: payments
+      - name: rainbow_payments
         description: >
           Real-time payment data from DataStream CDC pipeline
         columns:
@@ -801,7 +801,7 @@ sources:
             description: DataStream deletion indicator
             data_type: BOOLEAN
 
-      - name: inventories
+      - name: rainbow_inventories
         description: >
           Real-time inventory data from DataStream CDC pipeline
         columns:

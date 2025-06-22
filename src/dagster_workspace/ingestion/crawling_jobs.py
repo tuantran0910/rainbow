@@ -1,8 +1,8 @@
 import dagster as dg
 
-from constants import DAGSTER_CRAWLING_ASSET_GROUP
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
+from shared.constants import DAGSTER_CRAWLING_ASSET_GROUP
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
 
 crawling_job = dg.define_asset_job(
     name="tiki_crawling_job",

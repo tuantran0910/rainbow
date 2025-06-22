@@ -8,31 +8,31 @@ from typing import Optional
 
 import dagster as dg
 
-from assets.helpers import AuthTokenManager
-from assets.helpers import make_http_request
-from constants import ADMIN_EMAIL
-from constants import ADMIN_PASSWORD
-from constants import API_BASE_URL
-from constants import BOOK_CLUB_SALE_MAX_DAYS
-from constants import BOOK_CLUB_SALE_MIN_DAYS
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_MOCKING_ASSET_GROUP
-from constants import DAGSTER_TAGS
-from constants import FLASH_SALE_HOURS
-from constants import FLASH_SALE_MAX_USES
-from constants import FLASH_SALE_MIN_USES
-from constants import MAX_FIXED_DISCOUNT_VND
-from constants import MAX_PERCENTAGE_DISCOUNT
-from constants import MAX_PROMOTION_USES
-from constants import MAX_PROMOTIONS_PER_REQUEST
-from constants import MIN_FIXED_DISCOUNT_VND
-from constants import MIN_PERCENTAGE_DISCOUNT
-from constants import MIN_PROMOTION_USES
-from constants import REGULAR_SALE_MAX_DAYS
-from constants import REGULAR_SALE_MIN_DAYS
-from constants import SEASONAL_SALE_MAX_DAYS
-from constants import SEASONAL_SALE_MIN_DAYS
-from constants import WEEKEND_SALE_DAYS
+from shared.constants import ADMIN_EMAIL
+from shared.constants import ADMIN_PASSWORD
+from shared.constants import API_BASE_URL
+from shared.constants import BOOK_CLUB_SALE_MAX_DAYS
+from shared.constants import BOOK_CLUB_SALE_MIN_DAYS
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_MOCKING_ASSET_GROUP
+from shared.constants import DAGSTER_TAGS
+from shared.constants import FLASH_SALE_HOURS
+from shared.constants import FLASH_SALE_MAX_USES
+from shared.constants import FLASH_SALE_MIN_USES
+from shared.constants import MAX_FIXED_DISCOUNT_VND
+from shared.constants import MAX_PERCENTAGE_DISCOUNT
+from shared.constants import MAX_PROMOTION_USES
+from shared.constants import MAX_PROMOTIONS_PER_REQUEST
+from shared.constants import MIN_FIXED_DISCOUNT_VND
+from shared.constants import MIN_PERCENTAGE_DISCOUNT
+from shared.constants import MIN_PROMOTION_USES
+from shared.constants import REGULAR_SALE_MAX_DAYS
+from shared.constants import REGULAR_SALE_MIN_DAYS
+from shared.constants import SEASONAL_SALE_MAX_DAYS
+from shared.constants import SEASONAL_SALE_MIN_DAYS
+from shared.constants import WEEKEND_SALE_DAYS
+from shared.helpers import AuthTokenManager
+from shared.helpers import make_http_request
 
 logger = dg.get_dagster_logger()
 

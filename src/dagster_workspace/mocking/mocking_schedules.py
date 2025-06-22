@@ -1,10 +1,10 @@
 import dagster as dg
 
-from constants import DAGSTER_METADATA
-from constants import DAGSTER_TAGS
-from jobs.mocking_jobs import orders_mocking_job
-from jobs.mocking_jobs import promotions_mocking_job
-from jobs.mocking_jobs import users_mocking_job
+from mocking.mocking_jobs import orders_mocking_job
+from mocking.mocking_jobs import promotions_mocking_job
+from mocking.mocking_jobs import users_mocking_job
+from shared.constants import DAGSTER_METADATA
+from shared.constants import DAGSTER_TAGS
 
 users_mocking_schedule = dg.ScheduleDefinition(
     name="users_mocking_schedule",

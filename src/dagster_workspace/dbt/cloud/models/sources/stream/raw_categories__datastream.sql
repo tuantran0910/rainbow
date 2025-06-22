@@ -6,7 +6,7 @@
 
 {{
     raw_model_sql(
-        source=source('rainbow_datastream', 'categories'),
+        source=source('rainbow_datastream', 'rainbow_categories'),
         layer='stream'
     )
 }}

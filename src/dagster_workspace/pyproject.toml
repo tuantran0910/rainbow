@@ -9,6 +9,7 @@ dependencies = [
     "dagster-dbt>=0.26.20",
     "dagster-postgres>=0.26.20",
     "dagster-dlt>=0.26.20",
+    "dagster-obstore>=0.2.3",
     "psutil>=7.0.0",
     "faker>=37.1.0",
     "dbt-core>=1.9.8",
@@ -16,7 +17,6 @@ dependencies = [
 
 [dependency-groups]
 local = [
-    "dagster-obstore>=0.2.3",
     "dlt[clickhouse,postgres]>=1.11.0",
     "dbt-clickhouse>=1.9.2",
 ]

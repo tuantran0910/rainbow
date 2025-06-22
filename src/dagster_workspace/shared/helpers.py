@@ -13,9 +13,9 @@ import yaml
 from dlt.extract.source import DltSource
 from dlt.sources.sql_database import sql_database
 
-from constants import API_BASE_URL
-from constants import DAGSTER_ASSETS_CONFIG_DIR
-from exceptions import AuthenticationError
+from shared.constants import API_BASE_URL
+from shared.constants import DAGSTER_ASSETS_CONFIG_DIR
+from shared.exceptions import AuthenticationError
 
 logger = dg.get_dagster_logger(__name__)
 
@@ -55,7 +55,9 @@ def load_assets_configs(
     return loaded_configs if loaded_configs else None
 
 
-def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, DltSource], str]:
+def make_dlt_resources(
+    dlt_resources_config: dict[str, Any],
+) -> tuple[dict[str, DltSource], str | None]:
     """
     Initializes dlt resources (including general configs, sources, and destinations).
 
@@ -63,7 +65,7 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
         dlt_resources_config (dict[str, Any]): A dictionary containing dlt resources configuration.
 
     Returns:
-        tuple[dict[str, DltSource], str]: A tuple containing the table source's name and the DltSource object.
+        tuple[dict[str, DltSource], str | None]: A tuple containing the table source's name and the DltSource object.
 
     Raises:
         ValueError: If no dlt sources or destinations are provided.
@@ -79,7 +81,8 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
     # Configure dlt source
     source: dict[str, Any] = dlt_resources_config.get("source", {})
     if not source:
-        raise ValueError("No dlt source provided")
+        logger.warning("No dlt source provided. Skipping dlt source creation.")
+        return {}, None
 
     source_type = source.get("type")
     if not source_type:
@@ -99,6 +102,7 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
     schema: dict[str, Any] = source.get("schema", {})
     if not schema:
         raise ValueError("Source schema is missing")
+
     schema_name = schema.get("name") if schema else None
     tables = schema.get("tables")
     if not tables:
@@ -106,28 +110,32 @@ def make_dlt_resources(dlt_resources_config: dict[str, Any]) -> tuple[dict[str, 
 
     dlt_sources: dict[str, DltSource] = {}
     for table in tables:
-        table_name = table["name"]
-        columns = table.get("columns")
-        incremental_field = table.get("incremental_field")
-        primary_key = table.get("primary_key")
-        initial_value = table.get("initial_value")
-        chunk_size = int(table.get("chunk_size", "50000"))
-        write_disposition = table.get("write_disposition", "append")
-        dlt_source = sql_database(schema=schema_name, chunk_size=chunk_size).with_resources(
-            table_name
-        )
-        if incremental_field:
-            table_dlt_source = getattr(dlt_source, table_name)
-            table_dlt_source.apply_hints(
-                columns=columns,
-                incremental=dlt.sources.incremental(
-                    cursor_path=incremental_field,
-                    initial_value=initial_value,
-                    primary_key=primary_key,
-                ),
-                write_disposition=write_disposition,
+        try:
+            table_name = table["name"]
+            columns = table.get("columns")
+            incremental_field = table.get("incremental_field")
+            primary_key = table.get("primary_key")
+            initial_value = table.get("initial_value")
+            chunk_size = int(table.get("chunk_size", "50000"))
+            write_disposition = table.get("write_disposition", "append")
+            dlt_source = sql_database(schema=schema_name, chunk_size=chunk_size).with_resources(
+                table_name
             )
-        dlt_sources[table_name] = dlt_source
+            if incremental_field:
+                table_dlt_source = getattr(dlt_source, table_name)
+                table_dlt_source.apply_hints(
+                    columns=columns,
+                    incremental=dlt.sources.incremental(
+                        cursor_path=incremental_field,
+                        initial_value=initial_value,
+                        primary_key=primary_key,
+                    ),
+                    write_disposition=write_disposition,
+                )
+            dlt_sources[table_name] = dlt_source
+        except Exception as e:
+            logger.error(f"Error creating dlt source for table {table_name}: {e}")
+            continue
 
     # Configure the dlt destination
     destination: dict[str, Any] = dlt_resources_config.get("destination", {})
@@ -175,6 +183,7 @@ def set_dlt_object(dlt_object: dict[str, Any], config: dict[str, Any], *, prefix
                 env_var = os.getenv(env_var_name)
                 if env_var is None:
                     logger.warning(f"Environment variable {env_var_name} not found")
+
                 value = env_var if env_var is not None else value
 
             dlt_object[full_key] = value
@@ -185,12 +194,13 @@ def set_dlt_object(dlt_object: dict[str, Any], config: dict[str, Any], *, prefix
 
 class AuthTokenManager:
     """
-    Manages authentication tokens for API requests.
+    Manages authentication tokens for API requests with improved token lifecycle management.
 
     Args:
         email (str): The email of the user.
         password (str): The password of the user.
         auth_api_url (str): The base URL of the API.
+        buffer_minutes (int): Minutes before expiry to refresh token (default: 5).
     """
 
     def __init__(
@@ -198,32 +208,56 @@ class AuthTokenManager:
         email: str,
         password: str,
         auth_api_url: str = f"{API_BASE_URL}/auth/login",
+        buffer_minutes: int = 5,
     ):
         self.email = email
         self.password = password
         self.auth_api_url = auth_api_url
         self.token = None
         self.token_expiry = 0.0
+        self.buffer_seconds = buffer_minutes * 60
+        self._login_attempts = 0
+        self._max_login_attempts = 3
 
     def get_token(self) -> Optional[str]:
         """
         Gets a valid authentication token, logging in if necessary.
+        Implements exponential backoff for failed login attempts.
 
         Returns:
             Optional[str]: The authentication token or None if login fails
+
+        Raises:
+            AuthenticationError: If max login attempts exceeded
         """
         current_time = time.time()
 
-        # Check if token exists and is not expired (with 5 min buffer)
-        if self.token and current_time < (self.token_expiry - 300):
+        # Check if token exists and is not expired (with buffer)
+        if self.token and current_time < (self.token_expiry - self.buffer_seconds):
             return self.token
 
+        # Check if we've exceeded max login attempts
+        if self._login_attempts >= self._max_login_attempts:
+            logger.error(
+                f"Maximum login attempts ({self._max_login_attempts}) exceeded for {self.email}"
+            )
+            raise AuthenticationError(
+                f"Authentication failed after {self._max_login_attempts} attempts"
+            )
+
         # Need to login and get a new token
-        logger.info("Getting new authentication token")
+        logger.info(
+            f"Getting new authentication token for {self.email} (attempt {self._login_attempts + 1})"
+        )
         login_data = {"email": self.email, "password": self.password}
         headers = {"Content-Type": "application/json"}
 
         try:
+            if self._login_attempts > 0:
+                delay = 2**self._login_attempts
+                logger.info(f"Waiting {delay}s before retry...")
+                time.sleep(delay)
+
             response = requests.post(
                 self.auth_api_url, json=login_data, headers=headers, timeout=30
             )
@@ -236,16 +270,35 @@ class AuthTokenManager:
                 self.token = token_data["token"]
             else:
                 logger.error(f"Unexpected response format: {token_data}")
+                self._login_attempts += 1
                 return None
 
-            self.token_expiry = current_time + (24 * 60 * 60)
-            logger.info("Successfully obtained authentication token")
+            self.token_expiry = current_time + 3600
+            self._login_attempts = 0  # Reset attempts on success
+            logger.info(f"Successfully obtained authentication token for {self.email}")
             return self.token
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to get authentication token: {str(e)}")
+            self._login_attempts += 1
+            logger.error(
+                f"Failed to get authentication token (attempt {self._login_attempts}): {str(e)}"
+            )
             if hasattr(e, "response") and e.response:
                 logger.error(f"Response status: {e.response.status_code}, Body: {e.response.text}")
-            raise e
+
+            if self._login_attempts >= self._max_login_attempts:
+                raise AuthenticationError(
+                    f"Authentication failed after {self._max_login_attempts} attempts: {str(e)}"
+                )
+            return None
+
+    def invalidate_token(self):
+        """Force token refresh on next request."""
+        self.token = None
+        self.token_expiry = 0.0
+
+    def reset_login_attempts(self):
+        """Reset login attempt counter."""
+        self._login_attempts = 0
 
 
 def make_http_request(
@@ -279,6 +332,10 @@ def make_http_request(
 
     Returns:
         Optional[dict[str, Any]]: JSON response or None if request failed.
+
+    Raises:
+        DagsterError: If request fails after all retries.
+        AuthenticationError: If authentication fails.
     """
     method = method.upper()
     request_headers = headers.copy() if headers else {}
@@ -291,14 +348,19 @@ def make_http_request(
     current_delay = retry_delay
 
     while attempts < max_retries:
-        # Add auth token if required (refresh on each attempt to handle expiration)
+        start_time = time.time()
         if use_auth and auth_token_manager:
-            token = auth_token_manager.get_token()
-            if token:
-                request_headers["Authorization"] = f"Bearer {token}"
-            else:
-                logger.error("Authentication required but couldn't get token")
-                raise AuthenticationError("Authentication failed")
+            try:
+                token = auth_token_manager.get_token()
+                if token:
+                    request_headers["Authorization"] = f"Bearer {token}"
+                else:
+                    logger.error("Authentication required but couldn't get token")
+                    raise AuthenticationError("Authentication failed")
+            except AuthenticationError:
+                # Reset auth token manager on auth failure
+                auth_token_manager.invalidate_token()
+                raise
 
         try:
             # Create session and prepare request
@@ -314,6 +376,11 @@ def make_http_request(
 
             # Execute request
             response = session.send(prepped, timeout=timeout)
+            request_duration = time.time() - start_time
+
+            # Log request metrics
+            logger.info(f"HTTP {method} {url} - {response.status_code} - {request_duration:.3f}s")
+
             response_json: dict[str, Any] = response.json()
 
             is_warning_response = False
@@ -331,11 +398,13 @@ def make_http_request(
 
             if not is_warning_response:
                 response.raise_for_status()
+
             return response.json()
 
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
             # Network-related errors
             attempts += 1
+
             if attempts >= max_retries:
                 logger.error(f"Request failed after {max_retries} attempts: {url} - {e}")
                 raise dg.DagsterError(f"Request failed: {e}")
@@ -345,7 +414,7 @@ def make_http_request(
             # Handle auth token refresh for 401 errors
             if status_code == 401 and use_auth and auth_token_manager:
                 # Force token refresh
-                auth_token_manager.token = None
+                auth_token_manager.invalidate_token()
                 attempts += 1
             # Only retry server errors
             elif 500 <= status_code < 600:
