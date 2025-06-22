@@ -15,6 +15,5 @@ resource "google_project_iam_member" "github_actions_artifact_registry_writer" {
 resource "google_project_iam_member" "api_artifact_registry_reader" {
   project = local.project_id
   role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.api.email}"
+  member  = "serviceAccount:${data.google_service_account.api.email}"
 }
-
