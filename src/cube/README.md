@@ -1,3 +1,3 @@
 # Cube
 
-Update number for re-fetching GCS manifest file: 0.
+Update number for re-fetching GCS manifest file: 1.
