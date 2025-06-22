@@ -80,7 +80,7 @@ jobs:
       - name: Check and restart cube deployments
         if: steps.check-cluster.outputs.cluster_exists == 'true' && steps.check-namespace.outputs.namespace_exists == 'true'
         run: |
-          DEPLOYMENTS=("cube-api" "cube-refresh-worker")
+          DEPLOYMENTS=("cube-api" "cube-worker")
           NAMESPACE="${{ env.CUBE_NAMESPACE }}"
 
           echo "🔍 Checking for cube deployments in namespace: $NAMESPACE"
@@ -128,7 +128,7 @@ jobs:
           echo "- **Trigger**: Changes detected in \`src/cube/\` folder"
           echo "- **Cluster**: ${{ env.GKE_CLUSTER }} (Zone: ${{ env.GKE_ZONE }})"
           echo "- **Namespace**: ${{ env.CUBE_NAMESPACE }}"
-          echo "- **Target Deployments**: cube-api, cube-refresh-worker"
+          echo "- **Target Deployments**: cube-api, cube-worker"
 
           if [ "${{ steps.check-cluster.outputs.cluster_exists }}" == "true" ] && [ "${{ steps.check-namespace.outputs.namespace_exists }}" == "true" ]; then
             echo "- **Action**: Rollout restart executed ✅"

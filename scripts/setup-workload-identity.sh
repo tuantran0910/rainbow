@@ -50,6 +50,34 @@ for ROLE in "${ROLES[@]}"; do
     --role="${ROLE}" >/dev/null
 done
 
+# Create and assign custom role for minimal deployment management
+echo "🎯 Creating custom role for deployment management..."
+CUSTOM_ROLE_ID="githubActionsDeploymentManager"
+CUSTOM_ROLE_TITLE="GitHub Actions Deployment Manager"
+CUSTOM_ROLE_DESCRIPTION="Minimal role for GitHub Actions to manage specific deployments"
+
+# Check if custom role exists, create if not
+if ! gcloud iam roles describe "${CUSTOM_ROLE_ID}" --project="${PROJECT_ID}" &>/dev/null; then
+  gcloud iam roles create "${CUSTOM_ROLE_ID}" \
+    --project="${PROJECT_ID}" \
+    --title="${CUSTOM_ROLE_TITLE}" \
+    --description="${CUSTOM_ROLE_DESCRIPTION}" \
+    --permissions="container.deployments.get,container.deployments.list,container.deployments.update" \
+    --stage="GA"
+  echo "✅ Custom role created successfully"
+else
+  echo "ℹ️  Custom role already exists, updating permissions..."
+  gcloud iam roles update "${CUSTOM_ROLE_ID}" \
+    --project="${PROJECT_ID}" \
+    --permissions="container.deployments.get,container.deployments.list,container.deployments.update"
+fi
+
+# Assign custom role to service account
+echo "  Adding custom role: projects/${PROJECT_ID}/roles/${CUSTOM_ROLE_ID}"
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+  --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="projects/${PROJECT_ID}/roles/${CUSTOM_ROLE_ID}" >/dev/null
+
 # Create Workload Identity Pool
 echo "🌊 Creating Workload Identity Pool..."
 if ! gcloud iam workload-identity-pools describe "${POOL_ID}" --location="global" --project="${PROJECT_ID}" &>/dev/null; then
