@@ -112,7 +112,7 @@ services:
       - -h
       - 0.0.0.0
       - -p
-      - 4000
+      - '4000'
       - -m
       - definitions
     volumes:
@@ -321,7 +321,7 @@ services:
       - cube-network
 
   cubestore_worker:
-    image: cubejs/cubestore:v1.2.19
+    image: cubejs/cubestore:v1.3.22-arm64v8
     container_name: cubestore_worker
     hostname: cubestore_worker
     environment:
@@ -340,7 +340,7 @@ services:
       - clickhouse-network
 
   cubestore_router:
-    image: cubejs/cubestore:v1.2.19
+    image: cubejs/cubestore:v1.3.22-arm64v8
     container_name: cubestore_router
     hostname: cubestore_router
     environment:
@@ -356,51 +356,81 @@ services:
       - clickhouse-network
 
   cube_refresh_worker:
-    image: cubejs/cube:v1.2.19
+    build:
+      context: ../../src/cube_core
+      dockerfile: Dockerfile
     container_name: cube_refresh_worker
     hostname: cube_refresh_worker
     environment:
-      CUBEJS_DB_TYPE: clickhouse
-      CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
-      CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
-      CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
-      CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+      USE_REMOTE_MANIFEST: true
+      DBT_GCS_PROJECT: rainbow-data-production
+      DBT_GCS_BUCKET: rainbow-data-production-dbt
+      MANIFEST_PATH: docs/manifest.json
+
+      # Clickhouse datasource
+      # CUBEJS_DB_TYPE: clickhouse
+      # CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
+      # CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
+      # CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
+      # CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
+      # CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+
+      # BigQuery datasource
+      CUBEJS_DB_TYPE: bigquery
+      CUBEJS_DB_BQ_PROJECT_ID: rainbow-data-production
+
       CUBEJS_PG_SQL_PORT: 15432
       CUBEJS_SQL_USER: ${CUBEJS_SQL_USER}
-      CUBEJS_SQL_PASS: ${CUBEJS_SQL_PASSWORD}
+      CUBEJS_SQL_PASSWORD: ${CUBEJS_SQL_PASSWORD}
       CUBEJS_CUBESTORE_HOST: cubestore_router
       CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
       CUBEJS_REFRESH_WORKER: true
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     volumes:
       - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+      - ~/.config/gcloud/application_default_credentials.json:/secrets/gcp-credentials.json
     restart: always
     networks:
       - cube-network
       - clickhouse-network
 
   cube_api:
-    image: cubejs/cube:v1.2.19
+    build:
+      context: ../../src/cube_core
+      dockerfile: Dockerfile
     container_name: cube_api
     hostname: cube_api
     ports:
       - ${CUBE_API_PORT:-4000}:4000
       - ${CUBE_SQL_API_PORT:-15432}:15432
     environment:
+      USE_REMOTE_MANIFEST: true
+      DBT_GCS_PROJECT: rainbow-data-production
+      DBT_GCS_BUCKET: rainbow-data-production-dbt
+      MANIFEST_PATH: docs/manifest.json
       CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
-      CUBEJS_DB_TYPE: clickhouse
-      CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
-      CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
-      CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
-      CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
-      CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+
+      # Clickhouse datasource
+      # CUBEJS_DB_TYPE: clickhouse
+      # CUBEJS_DB_HOST: ${CLICKHOUSE_HOST}
+      # CUBEJS_DB_PORT: ${CLICKHOUSE_HTTP_PORT}
+      # CUBEJS_DB_USER: ${CLICKHOUSE_CUBEJS_USER}
+      # CUBEJS_DB_PASS: ${CLICKHOUSE_CUBEJS_PASSWORD}
+      # CUBEJS_DB_NAME: ${CLICKHOUSE_CUBEJS_DB_NAME}
+
+      # BigQuery datasource
+      CUBEJS_DB_TYPE: bigquery
+      CUBEJS_DB_BQ_PROJECT_ID: rainbow-data-production
+
       CUBEJS_PG_SQL_PORT: 15432
       CUBEJS_SQL_USER: ${CUBEJS_SQL_USER}
-      CUBEJS_SQL_PASS: ${CUBEJS_SQL_PASSWORD}
+      CUBEJS_SQL_PASSWORD: ${CUBEJS_SQL_PASSWORD}
       CUBEJS_CUBESTORE_HOST: cubestore_router
       CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     volumes:
       - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+      - ~/.config/gcloud/application_default_credentials.json:/secrets/gcp-credentials.json
     depends_on:
       - cube_refresh_worker
       - cubestore_router

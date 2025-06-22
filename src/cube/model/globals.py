@@ -1,11 +1,13 @@
 import json
 import os
 from typing import Any
+from typing import Optional
 
-import gcsfs
 from cube import TemplateContext
 from cube_dbt import Dbt
+from google.cloud import storage
 
+# Configuration
 USE_REMOTE_MANIFEST = os.getenv("USE_REMOTE_MANIFEST", "false").lower() == "true"
 DBT_GCS_PROJECT = os.getenv("DBT_GCS_PROJECT")
 DBT_GCS_BUCKET = os.getenv("DBT_GCS_BUCKET")
@@ -14,14 +16,30 @@ MANIFEST_PATH = os.getenv("MANIFEST_PATH", "manifest.json")
 template = TemplateContext()
 
 
-def load_manifest_from_gcs(gs_path: str) -> dict[str, Any]:
+def load_manifest_from_gcs(
+    project: Optional[str], bucket_name: Optional[str], path: str
+) -> dict[str, Any]:
     """
-    Loads a manifest from a GCS path.
+    Loads a manifest from a bucket.
+
+    Args:
+        project: The project ID.
+        bucket: The bucket name.
+        path: The path to the manifest.
+
+    Returns:
+        The manifest.
     """
-    fs = gcsfs.GCSFileSystem(project=DBT_GCS_PROJECT)
-    with fs.open(gs_path, "rb") as f:
-        manifest = json.load(f)
-        return manifest
+    if not project:
+        raise ValueError("Project must be provided")
+    if not bucket_name:
+        raise ValueError("Bucket name must be provided")
+
+    client = storage.Client(project=project)
+    bucket = client.bucket(bucket_name=bucket_name)
+    blob = bucket.blob(blob_name=path)
+    manifest = json.loads(blob.download_as_bytes())
+    return manifest
 
 
 def load_manifest_from_local(local_path: str) -> dict[str, Any]:
@@ -48,7 +66,9 @@ def dbt_model(name: str):
     """
     if USE_REMOTE_MANIFEST:
         manifest = load_manifest_from_gcs(
-            f"gs://{DBT_GCS_BUCKET}/{DBT_GCS_PROJECT}/{MANIFEST_PATH}"
+            project=DBT_GCS_PROJECT,
+            bucket_name=DBT_GCS_BUCKET,
+            path=MANIFEST_PATH,
         )
     else:
         manifest = load_manifest_from_local(MANIFEST_PATH)

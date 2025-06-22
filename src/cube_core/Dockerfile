@@ -5,22 +5,19 @@ LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHTTPSVERIFY=0
 
-# Use the virtual environment automatically
-ENV VIRTUAL_ENV=/opt/venv
+# Switch to root to install packages
+USER root
 
-# Copy the dependency file and install dependencies
-ARG PYTHON_VERSION=3.12
+# Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
-COPY pyproject.toml .
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --no-cache --python ${PYTHON_VERSION} --active
 
-#Place entry points in the environment at the front of the path
-ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
+# Install Python dependencies directly in CubeJS's Python environment
+RUN uv pip install --system --no-cache-dir --break-system-packages \
+    cube_dbt>=0.6.2 \
+    google-cloud-storage>=3.1.1
 
 # Switch back to non-root user
-RUN chown -R 1000:1000 ${VIRTUAL_ENV}
 USER 1000

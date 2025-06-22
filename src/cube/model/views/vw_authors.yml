@@ -1,0 +1,6 @@
+views:
+  - name: vw_authors
+    description: Simple view for authors analytics
+    cubes:
+      - join_path: dim_authors
+        includes: '*'

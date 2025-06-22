@@ -4,7 +4,6 @@ requires-python = "==3.12.*"
 
 [manifest]
 members = [
-    "cube-core",
     "dagster-core-cloud",
     "dagster-core-local",
     "dagster-workspace",
@@ -526,33 +525,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cube-core"
-version = "0.1.0"
-source = { virtual = "src/cube_core" }
-dependencies = [
-    { name = "cube-dbt" },
-    { name = "gcsfs" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cube-dbt", specifier = ">=0.6.2" },
-    { name = "gcsfs", specifier = ">=2025.5.1" },
-]
-
-[[package]]
-name = "cube-dbt"
-version = "0.6.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/85/35/96a502f1eabf714bb750a0f1af032a80f7a013b8c81053ce40beeaaa37ec/cube_dbt-0.6.2.tar.gz", hash = "sha256:b18dafaa0f1ad1e20a2b9ef437f71b7c0fa1f9909d4cb897bb2830c42d9da1ae", size = 48147, upload-time = "2025-05-12T17:16:06.278Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/18/393a73fd5461f589fa43cd189a5d5f51a87f7df5bce27ed5b8e0353a1cae/cube_dbt-0.6.2-py3-none-any.whl", hash = "sha256:3eb6bcabe5366d8d3c66fdf47257ae236b0042d143e34017223b6ff1533f7af2", size = 5962, upload-time = "2025-05-12T17:16:04.917Z" },
-]
-
-[[package]]
 name = "daff"
 version = "1.3.46"
 source = { registry = "https://pypi.org/simple" }
@@ -759,6 +731,7 @@ dependencies = [
 cloud = [
     { name = "dbt-bigquery" },
     { name = "dlt", extra = ["bigquery", "postgres"] },
+    { name = "google-cloud-storage" },
 ]
 local = [
     { name = "dagster-obstore" },
@@ -781,6 +754,7 @@ requires-dist = [
 cloud = [
     { name = "dbt-bigquery", specifier = ">=1.9.2" },
     { name = "dlt", extras = ["bigquery", "postgres"], specifier = ">=1.11.0" },
+    { name = "google-cloud-storage", specifier = ">=2.10.0" },
 ]
 local = [
     { name = "dagster-obstore", specifier = ">=0.2.3" },

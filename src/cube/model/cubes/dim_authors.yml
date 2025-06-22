@@ -1,0 +1,16 @@
+{% set model = dbt_model('dim_authors') %}
+
+cubes:
+  - {{ model.as_cube() }}
+    dimensions:
+      {{ model.as_dimensions() }}
+      - name: author_id
+        sql: "{CUBE}.author_id"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: count
+        type: count
+        title: Total Authors
