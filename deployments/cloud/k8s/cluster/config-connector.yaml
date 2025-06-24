@@ -5,3 +5,79 @@ metadata:
 spec:
   mode: cluster
   googleServiceAccount: cnrm-sa@rainbow-data-production.iam.gserviceaccount.com
+---
+apiVersion: customize.core.cnrm.cloud.google.com/v1beta1
+kind: ControllerResource
+metadata:
+  name: cnrm-controller-manager
+spec:
+  containers:
+    - name: manager
+      resources:
+        limits:
+          cpu: 100m
+          memory: 256Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+---
+apiVersion: customize.core.cnrm.cloud.google.com/v1beta1
+kind: ControllerResource
+metadata:
+  name: cnrm-webhook-manager
+spec:
+  replicas: 1
+  containers:
+    - name: webhook
+      resources:
+        limits:
+          cpu: 50m
+          memory: 128Mi
+        requests:
+          cpu: 25m
+          memory: 64Mi
+---
+apiVersion: customize.core.cnrm.cloud.google.com/v1beta1
+kind: ControllerResource
+metadata:
+  name: cnrm-deletiondefender
+spec:
+  containers:
+    - name: deletiondefender
+      resources:
+        limits:
+          cpu: 25m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
+---
+apiVersion: customize.core.cnrm.cloud.google.com/v1beta1
+kind: ControllerResource
+metadata:
+  name: cnrm-resource-stats-recorder
+spec:
+  containers:
+    - name: recorder
+      resources:
+        limits:
+          cpu: 25m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
+---
+apiVersion: customize.core.cnrm.cloud.google.com/v1beta1
+kind: ControllerResource
+metadata:
+  name: cnrm-unmanaged-detector
+spec:
+  containers:
+    - name: unmanaged-detector
+      resources:
+        limits:
+          cpu: 25m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
