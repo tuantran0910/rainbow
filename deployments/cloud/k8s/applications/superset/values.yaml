@@ -30,8 +30,6 @@ configOverrides:
   extend_timeout: |
     SUPERSET_WEBSERVER_TIMEOUT = 150
   secret: |
-    import os
-
     SECRET_KEY = os.environ.get("SUPERSET_SECRET_KEY")
   enable_oauth: |
     from flask_appbuilder.security.manager import AUTH_OAUTH
