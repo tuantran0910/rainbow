@@ -73,7 +73,7 @@ metadata:
   name: cnrm-unmanaged-detector
 spec:
   containers:
-    - name: unmanaged-detector
+    - name: unmanageddetector
       resources:
         limits:
           cpu: 25m
