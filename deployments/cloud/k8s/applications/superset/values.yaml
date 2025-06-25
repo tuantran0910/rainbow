@@ -59,6 +59,12 @@ configOverrides:
     AUTH_USER_REGISTRATION = True
     AUTH_USER_REGISTRATION_ROLE = "Public"
 
+    # Define user role mapping based on GitHub username
+    # There are roles: Admin, Alpha, Gamma, sql_lab, Public
+    USER_ROLE_MAPPING = {
+        "tuantran0910": "Admin",
+    }
+
     class CustomSecurityManager(SupersetSecurityManager):
         def oauth_user_info(self, provider, response=None):
             if provider == "github":
@@ -79,6 +85,19 @@ configOverrides:
                     "email": primary_email or data.get("email"),
                 }
             return {}
+
+        def auth_user_oauth(self, userinfo):
+            user = super().auth_user_oauth(userinfo)
+            if user:
+                username = userinfo.get("username")
+                if username in USER_ROLE_MAPPING:
+                    role_name = USER_ROLE_MAPPING[username]
+                    role = self.find_role(role_name)
+                    if role and role not in user.roles:
+                        user.roles = [role]
+                        self.get_session.merge(user)
+                        self.get_session.commit()
+            return user
 
     CUSTOM_SECURITY_MANAGER = CustomSecurityManager
 
