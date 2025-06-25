@@ -39,6 +39,7 @@ config:
     - name: git-data
       readOnly: true
       mountPath: /cube/conf/model
+      subPath: model/src/cube/model
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
