@@ -39,7 +39,7 @@ config:
     - name: git-data
       readOnly: true
       mountPath: /cube/conf/model
-      subPath: repo/src/cube/model
+      subPath: rainbow/src/cube/model
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
@@ -74,7 +74,7 @@ config:
         - name: GITSYNC_ROOT
           value: /git
         - name: GITSYNC_DEST
-          value: repo
+          value: .
         - name: GITSYNC_SPARSE_CHECKOUT_FILE
           value: /git-sparse-checkout/sparse-checkout
         - name: GITSYNC_PERIOD
