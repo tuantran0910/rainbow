@@ -9,6 +9,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: author_name
+        sql: "{CUBE}.author_name"
+        type: string
 
     measures:
       - name: count
