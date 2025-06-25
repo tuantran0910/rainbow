@@ -11,7 +11,7 @@ extraEnvVars:
   - name: DBT_GCS_BUCKET
     value: rainbow-data-production-dbt
   - name: MANIFEST_PATH
-    value: dbt/manifest.json
+    value: docs/manifest.json
 
 extraEnvVarsFromSecret: cube-secret
 
