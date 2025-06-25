@@ -21,7 +21,7 @@ image:
   pullPolicy: IfNotPresent
 
 config:
-  devMode: true
+  devMode: false
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
