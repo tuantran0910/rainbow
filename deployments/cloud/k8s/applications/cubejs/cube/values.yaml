@@ -114,10 +114,10 @@ config:
         - -c
         - |
           while true; do
-            if [ -d "/tmp/git/rainbow/src/cube/model" ]; then
-              echo "Copying cube model files..."
+            if [ -d "/tmp/git/rainbow/src/cube" ]; then
+              echo "Copying cube files..."
               rm -rf /cube/conf/*
-              cp -r /tmp/git/rainbow/src/cube/model/* /cube/conf/ 2>/dev/null || true
+              cp -r /tmp/git/rainbow/src/cube/* /cube/conf/ 2>/dev/null || true
               echo "Copy completed"
               break
             else
