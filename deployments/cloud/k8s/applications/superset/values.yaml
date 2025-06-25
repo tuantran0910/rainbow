@@ -257,13 +257,7 @@ supersetCeleryBeat:
       drop: [ALL]
 
 init:
-  createAdmin: true
-  adminUser:
-    username: admin
-    firstname: Rainbow
-    lastname: Data
-    email: rainbow@tuantrann.work
-    password: rainbow
+  createAdmin: false
   initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
