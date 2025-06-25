@@ -74,7 +74,7 @@ config:
         - name: GITSYNC_ROOT
           value: /git
         - name: GITSYNC_DEST
-          value: src
+          value: .
         - name: GITSYNC_SPARSE_CHECKOUT_FILE
           value: /git-sparse-checkout/sparse-checkout
         - name: GITSYNC_PERIOD
