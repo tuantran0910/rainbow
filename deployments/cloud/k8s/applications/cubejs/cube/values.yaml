@@ -24,7 +24,7 @@ config:
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
-  schemaPath: model
+  schemaPath: /git/rainbow/src/cube/model
   rollupOnly: false
   scheduledRefreshTimezones: Asia/Ho_Chi_Minh
   preAggregationsSchema: cube_pre_aggregations
@@ -38,8 +38,7 @@ config:
   volumeMounts:
     - name: git-data
       readOnly: true
-      mountPath: /cube/conf/model
-      subPath: rainbow/src/cube/model
+      mountPath: /git
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
