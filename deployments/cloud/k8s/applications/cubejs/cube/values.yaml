@@ -137,8 +137,8 @@ datasources:
       type: gcp
       name: rainbow-data-production-cubejs
 
-# cubestore:
-#   host: cubestore-service
+cubestore:
+  host: cubestore-service
 
 api:
   serviceAccount:

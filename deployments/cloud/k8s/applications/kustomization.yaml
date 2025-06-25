@@ -4,4 +4,4 @@ resources:
   - dagster/
   - superset/
   # - redpanda/
-  - cubejs/
+  # - cubejs/
