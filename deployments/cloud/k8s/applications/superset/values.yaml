@@ -17,6 +17,9 @@ bootstrapScript: |
     echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap
   fi
 
+envFromSecrets:
+  - superset-secrets
+
 extraConfigs:
   import_datasources.yaml: |
     databases:
@@ -105,17 +108,6 @@ resources:
 supersetNode:
   replicas:
     replicaCount: 1
-  env:
-    GITHUB_CLIENT_ID:
-      valueFrom:
-        secretKeyRef:
-          name: superset-secrets
-          key: GITHUB_CLIENT_ID
-    GITHUB_CLIENT_SECRET:
-      valueFrom:
-        secretKeyRef:
-          name: superset-secrets
-          key: GITHUB_CLIENT_SECRET
   connections:
     # TODO: Change from Redis to Dragonfly
     # redis_host: dragonfly-master.dragonfly.svc.cluster.local
