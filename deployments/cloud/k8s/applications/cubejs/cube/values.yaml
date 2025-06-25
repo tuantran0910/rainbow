@@ -21,6 +21,7 @@ image:
   pullPolicy: IfNotPresent
 
 config:
+  devMode: true
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
@@ -135,17 +136,9 @@ datasources:
     export:
       type: gcp
       name: rainbow-data-production-cubejs
-  # Just for testing
-  doris:
-    type: mysql
-    host: doris-cluster-fe-service.doris.svc.cluster.local
-    port: 9030
-    name: mysql
-    user: cube
-    password: cube
 
-cubestore:
-  host: cubestore-service
+# cubestore:
+#   host: cubestore-service
 
 api:
   serviceAccount:
