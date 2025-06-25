@@ -20,12 +20,6 @@ bootstrapScript: |
 envFromSecrets:
   - superset-secrets
 
-extraConfigs:
-  import_datasources.yaml: |
-    databases:
-    - database_name: superset
-      sqlalchemy_uri: postgresql+psycopg2://superset-sa%40rainbow-data-production.iam@localhost:5432/superset
-
 configOverrides:
   extend_timeout: |
     SUPERSET_WEBSERVER_TIMEOUT = 150
@@ -282,6 +276,49 @@ init:
         requests:
           cpu: 50m
           memory: 64Mi
+  initscript: |-
+    #!/bin/sh
+    set -eu
+    echo "Upgrading DB schema..."
+    superset db upgrade
+    echo "Initializing roles..."
+    superset init
+    {{ if .Values.init.createAdmin }}
+    echo "Creating admin user..."
+    superset fab create-admin \
+                    --username {{ .Values.init.adminUser.username }} \
+                    --firstname {{ .Values.init.adminUser.firstname }} \
+                    --lastname {{ .Values.init.adminUser.lastname }} \
+                    --email {{ .Values.init.adminUser.email }} \
+                    --password {{ .Values.init.adminUser.password }} \
+                    || true
+    {{- end }}
+    {{ if .Values.init.loadExamples }}
+    echo "Loading examples..."
+    superset load_examples
+    {{- end }}
+    echo "Creating import_datasources.yaml in tmp dir"
+    cat<<EOF>/tmp/import_datasources.yaml
+    databases:
+    - database_name: superset
+      sqlalchemy_uri: postgresql+psycopg2://superset-sa%40rainbow-data-production.iam@localhost:5432/superset
+      expose_in_sqllab: true
+      allow_ctas: true
+      allow_cvas: true
+    - database_name: cube
+      sqlalchemy_uri: postgresql+psycopg2://cube:$CUBE_DB_PASSWORD@silver-zebra.sql.gcp-us-central1.cubecloudapp.dev:5432/silver-zebra
+      expose_in_sqllab: true
+      allow_ctas: true
+      allow_cvas: true
+    EOF
+    echo "-------------- Importing Database ----------------------"
+    superset import_datasources -p /tmp/import_datasources.yaml
+
+    if [ $? -eq 0 ]; then
+      echo "Importing DB Successful"
+    else
+      echo "Importing DB Failed"
+    fi
   podSecurityContext:
     fsGroup: 65532
     runAsNonRoot: true
