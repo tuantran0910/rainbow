@@ -4,4 +4,4 @@ metadata:
   name: sparse-checkout-config
 data:
   sparse-checkout: |
-    src/cube/model/
+    src/cube/model/*

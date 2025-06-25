@@ -24,7 +24,7 @@ config:
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
-  schemaPath: /cube/conf/rainbow/src/cube/model
+  schemaPath: /cube/conf
   rollupOnly: false
   scheduledRefreshTimezones: Asia/Ho_Chi_Minh
   preAggregationsSchema: cube_pre_aggregations
