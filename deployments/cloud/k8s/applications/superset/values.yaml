@@ -32,8 +32,6 @@ configOverrides:
   secret: |
     SECRET_KEY = "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
   enable_oauth: |
-    import os
-
     from flask_appbuilder.security.manager import AUTH_OAUTH
     from superset.security import SupersetSecurityManager
 
