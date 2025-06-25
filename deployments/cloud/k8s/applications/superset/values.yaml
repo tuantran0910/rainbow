@@ -50,7 +50,6 @@ configOverrides:
                 'client_kwargs': {
                     'scope': 'user:email'
                 },
-                'server_metadata_url': 'https://github.com/.well-known/oauth-authorization-server',
                 'api_base_url': 'https://api.github.com/',
                 'access_token_url': 'https://github.com/login/oauth/access_token',
                 'authorize_url': 'https://github.com/login/oauth/authorize',
