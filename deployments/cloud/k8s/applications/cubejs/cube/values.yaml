@@ -24,7 +24,7 @@ config:
   apiPort: 4000
   pgSqlPort: 15432
   sqlUser: cubejs
-  schemaPath: /git/rainbow/src/cube/model
+  schemaPath: /cube/conf/rainbow/src/cube/model
   rollupOnly: false
   scheduledRefreshTimezones: Asia/Ho_Chi_Minh
   preAggregationsSchema: cube_pre_aggregations
@@ -38,7 +38,7 @@ config:
   volumeMounts:
     - name: git-data
       readOnly: true
-      mountPath: /git
+      mountPath: /cube/conf
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
@@ -62,7 +62,7 @@ config:
           type: RuntimeDefault
       volumeMounts:
         - name: git-data
-          mountPath: /git
+          mountPath: /cube/conf
         - name: sparse-checkout-config
           mountPath: /git-sparse-checkout
       env:
@@ -71,7 +71,7 @@ config:
         - name: GITSYNC_BRANCH
           value: main
         - name: GITSYNC_ROOT
-          value: /git
+          value: /cube/conf
         - name: GITSYNC_SPARSE_CHECKOUT_FILE
           value: /git-sparse-checkout/sparse-checkout
         - name: GITSYNC_PERIOD
