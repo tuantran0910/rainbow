@@ -1,4 +1,4 @@
-{% set model = dbt_model('dim_authos') %}
+{% set model = dbt_model('dim_authors') %}
 
 cubes:
   - {{ model.as_cube() }}
