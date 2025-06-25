@@ -39,7 +39,6 @@ config:
     - name: git-data
       readOnly: true
       mountPath: /cube/conf/model
-      subPath: current/src/cube/model
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
@@ -73,8 +72,6 @@ config:
           value: main
         - name: GITSYNC_ROOT
           value: /git
-        - name: GITSYNC_DEST
-          value: .
         - name: GITSYNC_SPARSE_CHECKOUT_FILE
           value: /git-sparse-checkout/sparse-checkout
         - name: GITSYNC_PERIOD
@@ -84,8 +81,7 @@ config:
         - name: GITSYNC_VERBOSE
           value: '1'
         - name: GITSYNC_LINK
-          value: current
-
+          value: model
 datasources:
   default:
     type: bigquery
