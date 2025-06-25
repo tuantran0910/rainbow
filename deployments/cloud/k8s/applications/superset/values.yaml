@@ -38,6 +38,7 @@ configOverrides:
     from superset.security import SupersetSecurityManager
 
     AUTH_TYPE = AUTH_OAUTH
+    ENABLE_PROXY_FIX = True
 
     OAUTH_PROVIDERS = [
         {
