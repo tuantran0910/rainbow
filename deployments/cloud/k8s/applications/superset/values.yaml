@@ -28,6 +28,58 @@ configOverrides:
     SUPERSET_WEBSERVER_TIMEOUT = 150
   secret: |
     SECRET_KEY = "iq4Pz2aVUDoDE+zbx5zp+NH9Cl5X38L3OywAIBiq4HPJhSyyI8DvplG2"
+  oauth_config: |
+    import os
+
+    from flask_appbuilder.security.manager import AUTH_OAUTH
+    from superset.security import SupersetSecurityManager
+
+    AUTH_TYPE = AUTH_OAUTH
+
+    OAUTH_PROVIDERS = [
+        {
+            'name': 'github',
+            'token_key': 'access_token',
+            'icon': 'fa-github',
+            'remote_app': {
+                'client_id': os.environ.get('GITHUB_CLIENT_ID'),
+                'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
+                'client_kwargs': {
+                    'scope': 'user:email'
+                },
+                'server_metadata_url': 'https://github.com/.well-known/oauth-authorization-server',
+                'api_base_url': 'https://api.github.com/',
+                'access_token_url': 'https://github.com/login/oauth/access_token',
+                'authorize_url': 'https://github.com/login/oauth/authorize',
+            }
+        }
+    ]
+
+    AUTH_USER_REGISTRATION = True
+    AUTH_USER_REGISTRATION_ROLE = "Public"
+
+    class CustomSecurityManager(SupersetSecurityManager):
+        def oauth_user_info(self, provider, response=None):
+            if provider == 'github':
+                me = self.appbuilder.sm.oauth_remotes[provider].get('user')
+                data = me.json()
+
+                emails = self.appbuilder.sm.oauth_remotes[provider].get('user/emails')
+                primary_email = None
+                for email in emails.json():
+                    if email.get('primary', False):
+                        primary_email = email['email']
+                        break
+
+                return {
+                    'username': data.get('login'),
+                    'first_name': data.get('name', '').split(' ')[0] if data.get('name') else data.get('login'),
+                    'last_name': ' '.join(data.get('name', '').split(' ')[1:]) if data.get('name') and len(data.get('name', '').split(' ')) > 1 else '',
+                    'email': primary_email or data.get('email'),
+                }
+            return {}
+
+    CUSTOM_SECURITY_MANAGER = CustomSecurityManager
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/superset
@@ -53,6 +105,17 @@ resources:
 supersetNode:
   replicas:
     replicaCount: 1
+  env:
+    GITHUB_CLIENT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: superset-secrets
+          key: GITHUB_CLIENT_ID
+    GITHUB_CLIENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: superset-secrets
+          key: GITHUB_CLIENT_SECRET
   connections:
     # TODO: Change from Redis to Dragonfly
     # redis_host: dragonfly-master.dragonfly.svc.cluster.local

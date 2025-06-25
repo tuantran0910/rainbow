@@ -14,3 +14,4 @@ resources:
   - service-account.yaml
   - database.yaml
   - ingress.yaml
+  - external-secret.yaml
