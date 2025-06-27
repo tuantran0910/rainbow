@@ -39,5 +39,7 @@ models:
     intermediate:
       batch_layer:
         +schema: warehouse_batch
+      stream_layer:
+        +schema: warehouse_stream
       # Unified lambda views go to the main warehouse schema
       +schema: warehouse

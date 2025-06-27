@@ -1,13 +1,13 @@
-{% set surrogate_key_field_name = generate_surrogate_field_name(prefix='book_author') %}
+{% set surrogate_key_field_name = generate_surrogate_field_name(prefix='user') %}
 
 {{
     config(
-        materialized='view',
+        materialized='view'
     )
 }}
 
 {{ dim_scd_type_1(
-    stg_relation=ref('raw_book_authors__datastream'),
+    stg_relation=ref('stg_users__stream'),
     unique_key='id',
     updated_at_field='updated_at_tz_hcm',
     surrogate_key_field_name=surrogate_key_field_name,

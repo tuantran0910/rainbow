@@ -7,7 +7,7 @@
 {{
     lambda_view(
         batch_relation=ref(this.name ~ '__batch'),
-        stream_stg_relation=ref('stg_books__stream'),
+        stream_stg_relation=ref('dim_books__stream'),
         unique_key='id',
         updated_date_field='updated_at_tz_hcm',
         cutoff_days=1

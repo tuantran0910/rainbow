@@ -2,12 +2,12 @@
 
 {{
     config(
-        materialized='view',
+        materialized='view'
     )
 }}
 
 {{ dim_scd_type_1(
-    stg_relation=ref('raw_book_authors__datastream'),
+    stg_relation=ref('stg_book_authors__stream'),
     unique_key='id',
     updated_at_field='updated_at_tz_hcm',
     surrogate_key_field_name=surrogate_key_field_name,
