@@ -3,85 +3,94 @@ Project rainbow {
   Note: 'Relational Database for Rainbow Data Platform'
 }
 
+enum discount_type {
+  PERCENTAGE
+  FIXED
+}
+
+enum user_role {
+  USER
+  ADMIN
+}
+
 Table users {
   id uuid [primary key]
-  email varchar(100) [unique, not null]
-  password varchar(255) [not null]
-  first_name varchar(50)
-  last_name varchar(50)
+  email varchar(255) [unique, not null]
+  password varchar(255) [not null, note: 'CHECK (LENGTH(password) > 6 AND LENGTH(password) <= 255)']
+  first_name varchar(255) [not null, note: 'CHECK (LENGTH(first_name) > 0 AND LENGTH(first_name) <= 255)']
+  last_name varchar(255) [not null, note: 'CHECK (LENGTH(last_name) > 0 AND LENGTH(last_name) <= 255)']
   last_login timestamp [default: null]
-  is_active bool [default: true]
-  phone_number varchar(20)
-  role varchar(20) [default: 'USER', note: 'USER, ADMIN']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  is_active bool [default: true, not null]
+  phone_number varchar(255) [not null, note: 'CHECK (LENGTH(phone_number) = 10)']
+  role user_role [default: 'USER', not null, note: 'USER, ADMIN']
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table authors {
   id uuid [primary key]
-  secondary_id varchar(100) [unique, default: null]
-  name varchar(100) [not null]
-  slug varchar(100) [not null]
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  secondary_id varchar(255) [unique, default: null]
+  name varchar(255) [not null, note: 'CHECK (LENGTH(name) > 0 AND LENGTH(name) <= 255)']
+  slug varchar(255) [not null, note: 'CHECK (LENGTH(slug) > 0 AND LENGTH(slug) <= 255)']
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table sellers {
   id uuid [primary key]
-  secondary_id varchar(100) [unique, default: null]
-  user_id uuid [ref: > users.id, unique, not null]
-  name varchar(100) [not null, note: 'CHECK (length(name) > 0)']
-  link varchar(255) [unique, not null]
-  logo varchar(255) [unique, null]
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  secondary_id varchar(255) [unique, default: null]
+  name varchar(255) [not null, note: 'CHECK (LENGTH(name) > 0 AND LENGTH(name) <= 255)']
+  link varchar(255) [not null]
+  logo varchar(255) [null]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table categories {
   id uuid [primary key]
-  secondary_id varchar(100) [unique, default: null]
-  name varchar(255) [not null, note: 'CHECK (length(name) > 0)']
-  slug varchar(255) [not null, note: 'CHECK (length(slug) > 0)']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  secondary_id varchar(255) [unique, default: null]
+  name varchar(255) [not null, note: 'CHECK (LENGTH(name) > 0 AND LENGTH(name) <= 255)']
+  slug varchar(255) [not null, note: 'CHECK (LENGTH(slug) > 0 AND LENGTH(slug) <= 255)']
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table books {
   id uuid [pk]
-  secondary_id varchar(100) [unique, default: null]
+  secondary_id varchar(255) [unique, default: null]
   category_id uuid [ref: > categories.id, not null]
   seller_id uuid [ref: > sellers.id, not null]
-  name varchar(255) [not null, note: 'CHECK (length(name) > 0)']
-  description text
+  name varchar(255) [not null, note: 'CHECK (LENGTH(name) > 0 AND LENGTH(name) <= 255)']
+  description text [default: null]
   price decimal(10, 2) [not null, note: 'CHECK (price >= 0)']
-  original_price decimal(10, 2) [not null, note: 'CHECK (original_price >= 0 AND original_price >= price)']
-  rating_average decimal(2, 1) [not null, default: 0.0, note: 'CHECK (rating_average BETWEEN 0 AND 5)']
-  review_count int [default: 0, note: 'CHECK (review_count >= 0)']
-  page_count integer [note: 'CHECK (page_count >= 0)']
-  sold_count integer [default: 0, note: 'CHECK (sold_count >= 0)']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  original_price decimal(10, 2) [note: 'CHECK (original_price >= 0 AND original_price >= price)']
+  rating_average decimal(2, 1) [note: 'CHECK (rating_average BETWEEN 0 AND 5)']
+  review_count int [note: 'CHECK (review_count >= 0)']
+  page_count int [note: 'CHECK (page_count >= 0)']
+  sold_count int [default: 0, not null, note: 'CHECK (sold_count >= 0)']
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table book_authors {
   id uuid [pk]
-  book_id uuid [ref: > books.id, not null]
-  author_id uuid [ref: > authors.id, not null]
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  book_id uuid [ref: > books.id, null]
+  author_id uuid [ref: > authors.id, null]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table payments {
-  id uuid [pk]
+  id uuid [pk, default: `UUID_GENERATE_V4()`]
   method varchar(20) [not null]
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
@@ -90,10 +99,10 @@ Table orders {
   user_id uuid [ref: > users.id, not null]
   payment_id uuid [ref: > payments.id, not null]
   promotion_id uuid [ref: > promotions.id, null]
-  shipping_address text [not null]
+  shipping_address varchar [not null]
   total_amount decimal(10, 2) [not null, note: 'CHECK (total_amount >= 0)']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
@@ -103,19 +112,19 @@ Table order_items {
   book_id uuid [ref: > books.id, not null]
   quantity int [not null, note: 'CHECK (quantity > 0)']
   unit_price decimal(10, 2) [not null, note: 'CHECK (unit_price >= 0)']
-  discount decimal(10, 2) [default: 0.00, note: 'CHECK (discount >= 0)']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  discount decimal(10, 2) [default: 0, not null, note: 'CHECK (discount >= 0)']
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
 Table inventories {
   id uuid [pk]
   book_id uuid [ref: > books.id, unique, not null]
-  stock int [default: 0, note: 'CHECK (stock >= 0)']
-  last_restocked_at timestamp
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  stock int [not null, note: 'CHECK (stock >= 0)']
+  last_restocked_at timestamp [default: `current_timestamp`, not null]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
@@ -133,22 +142,17 @@ Table book_reviews {
   }
 }
 
-enum promotion_discount_type {
-  PERCENTAGE
-  FIXED
-}
-
 Table promotions {
   id uuid [pk]
   name varchar(100) [not null]
-  discount_type promotion_discount_type [not null]
-  discount_value decimal(10,2) [not null, note: 'CHECK (discount_value >= 0)']
+  discount_type discount_type [not null]
+  discount_value decimal(10, 2) [not null, note: 'CHECK (discount_value >= 0)']
   start_date timestamp [not null]
-  end_date timestamp [not null, note: 'CHECK (end_date >= start_date)']
+  end_date timestamp [not null, note: 'CHECK (end_date > start_date)']
   max_uses int [not null, note: 'CHECK (max_uses >= 0)']
-  used_count int [default: 0, note: 'CHECK (used_count >= 0)']
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  used_count int [default: 0, not null]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
 }
 
@@ -180,9 +184,9 @@ Table user_promotions {
   id uuid [pk]
   user_id uuid [ref: > users.id, not null]
   promotion_id uuid [ref: > promotions.id, not null]
-  used_at timestamp [default: `current_timestamp`]
-  created_at timestamp [default: `current_timestamp`]
-  updated_at timestamp [default: `current_timestamp`]
+  used_at timestamp [default: `current_timestamp`, not null]
+  created_at timestamp [default: `current_timestamp`, not null]
+  updated_at timestamp [default: `current_timestamp`, not null]
   deleted_at timestamp [default: null]
   indexes {
     (user_id, promotion_id) [unique]
