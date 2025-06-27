@@ -1,0 +1,220 @@
+Project rainbow_dw {
+  database_type: 'BigQuery'
+  Note: 'Rainbow Data Warehouse - Dimensional Model for Analytics'
+}
+
+// ========================================
+// DIMENSION TABLES
+// ========================================
+
+Table dim_dates {
+  date_key int [pk, note: 'YYYYMMDD format']
+  date date [not null]
+  year int [not null]
+  month int [not null]
+  day_of_month int [not null]
+  day_of_week int [not null]
+  day_of_year int [not null]
+  quarter int [not null]
+  quarter_name varchar(2) [not null, note: 'Q1, Q2, Q3, Q4']
+  month_name varchar(20) [not null]
+  year_month varchar(7) [not null, note: 'YYYY-MM format']
+  week_of_year int [not null]
+  week_start_date date [not null]
+  week_end_date date [not null]
+  fiscal_year int [not null]
+  fiscal_quarter int [not null]
+  fiscal_month int [not null]
+  is_holiday boolean [default: false]
+  is_weekend boolean [default: false]
+  is_first_day_of_month boolean [default: false]
+  is_last_day_of_month boolean [default: false]
+  season varchar(10) [not null, note: 'Spring, Summer, Autumn, Winter']
+}
+
+Table dim_users {
+  user_key string [pk, note: 'Surrogate key generated from id + updated_at']
+  id string [not null, note: 'Natural key from source']
+  email string [not null]
+  first_name string [not null]
+  last_name string [not null]
+  phone_number string
+  role string [not null, note: 'USER, ADMIN']
+  is_active boolean [default: true]
+  last_login datetime
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 2 fields
+  valid_from datetime [not null]
+  valid_to datetime [not null, default: '9999-12-31 23:59:59.999999']
+  is_current boolean [not null, default: true]
+}
+
+Table dim_books {
+  book_key string [pk, note: 'Surrogate key generated from id + updated_at']
+  id string [not null, note: 'Natural key from source']
+  secondary_id string
+  name string [not null]
+  description string
+  price decimal(10,2) [not null]
+  original_price decimal(10,2)
+  rating_average decimal(2,1)
+  review_count int
+  page_count int
+  sold_count int [default: 0]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 2 fields
+  valid_from datetime [not null]
+  valid_to datetime [not null, default: '9999-12-31 23:59:59.999999']
+  is_current boolean [not null, default: true]
+}
+
+Table dim_authors {
+  author_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  secondary_id string
+  name string [not null]
+  slug string [not null]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+Table dim_sellers {
+  seller_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  secondary_id string
+  name string [not null]
+  link string [not null]
+  logo string
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+Table dim_categories {
+  category_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  secondary_id string
+  name string [not null]
+  slug string [not null]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+Table dim_payments {
+  payment_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  method string [not null, note: 'CASH, CREDIT_CARD, DEBIT_CARD, TRANSFER']
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+Table dim_promotions {
+  promotion_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  name string [not null]
+  discount_type string [not null, note: 'PERCENTAGE, FIXED']
+  discount_value decimal(10,2) [not null]
+  start_date datetime [not null]
+  end_date datetime [not null]
+  max_uses int [not null]
+  used_count int [default: 0]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+Table dim_inventories {
+  inventory_key string [pk, note: 'Surrogate key generated from id']
+  id string [not null, note: 'Natural key from source']
+  stock int [not null]
+  last_restocked_at datetime
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // SCD Type 1 - overwrites existing data
+  is_current boolean [not null, default: true]
+}
+
+// ========================================
+// BRIDGE TABLES
+// ========================================
+
+Table bri_book_authors {
+  book_author_key string [pk, note: 'Surrogate key generated from book_id + author_id']
+  book_id string [not null]
+  author_id string [not null]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+  created_at_tz_hcm date
+  updated_at_tz_hcm date
+  // Bridge table - no SCD
+}
+
+// ========================================
+// FACT TABLES
+// ========================================
+
+Table fct_sales {
+  sale_key string [pk, note: 'Surrogate key from multiple dimensions']
+  date_key int [ref: > dim_dates.date_key, not null]
+  user_key string [ref: > dim_users.user_key, not null]
+  book_key string [ref: > dim_books.book_key, not null]
+  seller_key string [ref: > dim_sellers.seller_key, not null]
+  category_key string [ref: > dim_categories.category_key, not null]
+  payment_key string [ref: > dim_payments.payment_key, not null]
+  promotion_key string [ref: > dim_promotions.promotion_key, null]
+
+  // Degenerate dimensions
+  order_id string [not null, note: 'Transaction identifier']
+
+  // Measures
+  quantity int [not null, note: 'Quantity of books sold']
+  unit_price decimal(10,2) [not null, note: 'Price per unit at time of purchase']
+  discount decimal(10,2) [not null, note: 'Discount amount applied to this item']
+  discount_unit_price decimal(10,2) [not null, note: 'Calculated discount amount per unit']
+  net_unit_price decimal(10,2) [not null, note: 'Final price per unit after discount']
+  extended_discount_amount decimal(12,2) [not null, note: 'Total discount amount']
+  extended_sales_amount decimal(12,2) [not null, note: 'Total sales amount']
+}
+
+// ========================================
+// RELATIONSHIPS
+// ========================================
+
+// Bridge table relationships
+Ref: bri_book_authors.book_id > dim_books.id
+Ref: bri_book_authors.author_id > dim_authors.id
