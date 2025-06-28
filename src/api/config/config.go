@@ -57,7 +57,13 @@ func loadDatabaseConfig(env string) (*DatabaseConfig, error) {
 	// Determine SSL mode based on environment and USE_CLOUD_SQL flag
 	useCloudSQL := getEnv("USE_CLOUD_SQL", "false")
 	var sslMode string
-	if useCloudSQL == "true" || env == "production" {
+
+	// Allow explicit SSL mode override for Docker Compose and other scenarios
+	if explicitSSLMode := getEnv("DB_SSL_MODE", ""); explicitSSLMode != "" {
+		sslMode = explicitSSLMode
+	} else if useCloudSQL == "true" {
+		sslMode = "require"
+	} else if env == "production" {
 		sslMode = "require"
 	} else {
 		sslMode = "disable"

@@ -52,7 +52,7 @@ down: ## Stop all Docker compose services
 
 build: ## Build all Docker compose services
 	@echo "Building all Docker compose services..."
-	@docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) build $(filter-out $@,$(MAKECMDGOALS))
+	@COMPOSE_BAKE=true docker compose -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) build $(filter-out $@,$(MAKECMDGOALS))
 
 ps: ## Show status of all Docker compose services
 	@echo "Showing status of all Docker compose services..."
