@@ -21,30 +21,32 @@ resources:
       database: rainbow
     schema:
       name: public
-      tables: {}
-        # - name: orders
-        #   incremental_field: updated_at
-        # - name: order_items
-        #   incremental_field: updated_at
-        # - name: books
-        #   incremental_field: updated_at
-        # - name: authors
-        #   incremental_field: updated_at
-        # - name: promotions
-        #   incremental_field: updated_at
-        # - name: payments
-        #   incremental_field: updated_at
-        # - name: inventories
-        #   incremental_field: updated_at
-        # - name: categories
-        #   incremental_field: updated_at
-        # - name: users
-        #   incremental_field: updated_at
-        # - name: sellers
-        #   incremental_field: updated_at
+      tables:
+        - name: orders
+          incremental_field: updated_at
+        - name: order_items
+          incremental_field: updated_at
+        - name: books
+          incremental_field: updated_at
+        - name: authors
+          incremental_field: updated_at
+        - name: promotions
+          incremental_field: updated_at
+        - name: payments
+          incremental_field: updated_at
+        - name: inventories
+          incremental_field: updated_at
+        - name: categories
+          incremental_field: updated_at
+        - name: users
+          incremental_field: updated_at
+        - name: sellers
+          incremental_field: updated_at
+        - name: book_authors
+          incremental_field: updated_at
   destination:
     type: bigquery
-    dataset_name: rainbow
+    dataset_name: raw
     credentials:
       project_id: rainbow-data-production
     configs:
