@@ -61,6 +61,10 @@ GRANT TEMPORARY ON DATABASE rainbow TO rainbow;
 \echo 'Granting schema permissions and creating extensions in rainbow database...'
 GRANT USAGE, CREATE ON SCHEMA public TO rainbow;
 
+-- Grant table permissions for the user
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO rainbow;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+
 -- Create the extension for UUID generation (needs to be done within the rainbow database)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 \echo 'API (Rainbow) setup complete.'

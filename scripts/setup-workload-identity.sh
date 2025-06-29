@@ -20,6 +20,7 @@ echo "GitHub Repository: ${GITHUB_REPO}"
 echo "📡 Enabling required APIs..."
 gcloud services enable iamcredentials.googleapis.com --project="${PROJECT_ID}"
 gcloud services enable sts.googleapis.com --project="${PROJECT_ID}"
+gcloud services enable artifactregistry.googleapis.com --project="${PROJECT_ID}"
 
 # Create service account for GitHub Actions
 echo "👤 Creating service account for GitHub Actions..."
@@ -41,6 +42,7 @@ ROLES=(
   "roles/secretmanager.secretAccessor"
   "roles/cloudsql.client"
   "roles/container.clusterViewer"
+  "roles/artifactregistry.writer"
 )
 
 for ROLE in "${ROLES[@]}"; do
