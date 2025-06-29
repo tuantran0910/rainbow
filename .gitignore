@@ -192,3 +192,6 @@ terraform.rc
 *.tfstate.*
 crash.log
 crash.*.log
+
+# Data
+data/
