@@ -16,8 +16,10 @@ resources:
       drivername: postgresql+psycopg2
       host: env:DB_HOST
       port: env:DB_PORT
-      username: env:EL_DB_USER
-      password: env:EL_DB_PASSWORD
+      # NOTE: We are facing some issues with the permissions of the EL user.
+      # So we are using the API user instead.
+      username: env:API_DB_USER
+      password: env:API_DB_PASSWORD
       database: rainbow
     schema:
       name: public

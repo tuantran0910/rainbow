@@ -1,6 +1,7 @@
 import random
 import time
 import unicodedata
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -253,7 +254,7 @@ def register_users(user_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
                         "email": user_email,
                         "status_code": status_code,
                         "message": message,
-                        "timestamp": dg.get_current_timestamp(),
+                        "timestamp": datetime.now().isoformat(),
                         "success": status_code == 201,
                     }
                 )
@@ -265,7 +266,7 @@ def register_users(user_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
                         "email": user_email,
                         "status_code": 500,
                         "message": "No response received",
-                        "timestamp": dg.get_current_timestamp(),
+                        "timestamp": datetime.now().isoformat(),
                         "success": False,
                     }
                 )
@@ -279,7 +280,7 @@ def register_users(user_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "email": user_email,
                     "status_code": 500,
                     "message": error_message,
-                    "timestamp": dg.get_current_timestamp(),
+                    "timestamp": datetime.now().isoformat(),
                     "success": False,
                 }
             )
