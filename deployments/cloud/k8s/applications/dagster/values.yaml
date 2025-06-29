@@ -91,7 +91,7 @@ dagster-user-deployments:
     - name: rainbow-dagster-workspace
       image:
         repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
-        tag: 2025.06.22.0
+        tag: 2025.06.29.0
         pullPolicy: Always
       codeServerArgs:
         - -m
@@ -104,8 +104,14 @@ dagster-user-deployments:
           value: 127.0.0.1
         - name: DB_PORT
           value: '5432'
+        - name: API_DB_NAME
+          value: rainbow
+        - name: API_DB_USER
+          value: rainbow
         - name: API_BASE_URL
           value: https://api.tuantrann.work
+      envSecrets:
+        - name: dagster-secrets
       labels:
         app: dagster
         owner: tuan.tran
