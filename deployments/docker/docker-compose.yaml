@@ -111,12 +111,14 @@ services:
       context: ${DAGSTER_WORKSPACE_PROJ_DIR:-../../src/dagster_workspace}
       dockerfile: Dockerfile
       args:
-        ENVIRONMENT: ${ENVIRONMENT:-local}
+        ENVIRONMENT: cloud
     container_name: dagster-workspace
     image: dagster-workspace
     environment:
       API_BASE_URL: http://${API_HOST}:${SERVER_PORT}
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
+      # NOTE: Can be local or cloud
+      ENVIRONMENT: cloud
     entrypoint:
       - dagster
       - code-server

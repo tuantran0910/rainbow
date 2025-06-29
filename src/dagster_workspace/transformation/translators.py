@@ -10,6 +10,7 @@ from dagster_dlt import DagsterDltTranslator
 from dagster_dlt.translator import DltResourceTranslatorData
 
 from shared.constants import DAGSTER_ASSETS_OWNER
+from shared.constants import DAGSTER_DBT_ASSET_GROUP
 
 
 class CustomDagsterDltTranslator(DagsterDltTranslator):
@@ -27,7 +28,7 @@ class CustomDagsterDltTranslator(DagsterDltTranslator):
 
 class CustomDagsterDbtTranslator(DagsterDbtTranslator):
     @staticmethod
-    def defaul_asset_key_fn(dbt_resource_props: Mapping[str, Any]) -> AssetKey:
+    def default_asset_key_fn(dbt_resource_props: Mapping[str, Any]) -> AssetKey:
         """
         Default asset key function to return the dbt resource name.
 
@@ -60,9 +61,11 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         resource_type = dbt_resource_props["resource_type"]
         name = dbt_resource_props["name"]
         if resource_type == "source":
-            return AssetKey(f"dlt_raw__{name}")
+            dbt_resource_meta = dbt_resource_props.get("meta", {})
+            asset_key = dbt_resource_meta.get("asset_key", name)
+            return AssetKey(asset_key)
         else:
-            return self.defaul_asset_key_fn(dbt_resource_props)
+            return self.default_asset_key_fn(dbt_resource_props)
 
     def get_owners(self, dbt_resource_props: Mapping[str, Any]) -> Optional[Sequence[str]]:
         """
@@ -70,3 +73,10 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         This is used to set the owner of the asset in Dagster.
         """
         return [DAGSTER_ASSETS_OWNER]
+
+    def get_group_name(self, dbt_resource_props: Mapping[str, Any]) -> Optional[str]:
+        """
+        Overrides the get_group_name method to return a custom group name.
+        This is used to set the group name of the asset in Dagster.
+        """
+        return DAGSTER_DBT_ASSET_GROUP

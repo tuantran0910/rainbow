@@ -6,6 +6,7 @@ from dagster import AssetMaterialization
 from dagster_dbt import DbtCliResource
 from google.cloud import storage
 
+from shared.constants import DAGSTER_DBT_ASSET_GROUP
 from shared.constants import DAGSTER_METADATA
 from shared.constants import DAGSTER_TAGS
 from shared.constants import DBT_DOCS_BASE_URL
@@ -69,9 +70,8 @@ def upload_docs_to_gcs(docs_files: dict[str, Path]) -> dict[str, str]:
     description="Generate dbt documentation and upload to GCS bucket",
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
-    group_name="dbt_docs",
+    group_name=DAGSTER_DBT_ASSET_GROUP,
     kinds={"python", "dbt"},
-    deps=["dbt_models"],
 )
 def dbt_docs_generation_asset(
     context: AssetExecutionContext, dbt: DbtCliResource

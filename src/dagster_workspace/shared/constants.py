@@ -82,6 +82,7 @@ DAGSTER_TAGS = {"team": "data_engineering"}
 
 DAGSTER_CRAWLING_ASSET_GROUP = "crawling"
 DAGSTER_MOCKING_ASSET_GROUP = "mocking"
+DAGSTER_DBT_ASSET_GROUP = "dbt"
 
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))

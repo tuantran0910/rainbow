@@ -221,7 +221,7 @@ class TikiCrawler:
                 {
                     "id": str(author.get("id")),
                     "name": author.get("name"),
-                    "slug": author.get("slug"),
+                    "slug": author.get("slug", ""),
                 }
             )
         return authors_data

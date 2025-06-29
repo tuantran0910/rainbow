@@ -1,6 +1,6 @@
 name: dlt_rainbow
-enabled: false
-group_name: dlt_rainbow
+enabled: true
+group_name: dlt
 job:
   name: dlt_rainbow_job
   description: Job to run dlt pipeline

@@ -1,5 +1,6 @@
 import dagster as dg
 from dagster_dbt import build_schedule_from_dbt_selection
+from dagster_dbt import DagsterDbtTranslatorSettings
 from dagster_dbt import dbt_assets
 from dagster_dbt import DbtCliResource
 from dagster_dbt import DbtProject
@@ -45,7 +46,11 @@ def build_dbt_project() -> dg.Definitions:
     # Create a dbt asset using the dbt project
     @dbt_assets(
         manifest=dbt_project.manifest_path,
-        dagster_dbt_translator=CustomDagsterDbtTranslator(),
+        dagster_dbt_translator=CustomDagsterDbtTranslator(
+            settings=DagsterDbtTranslatorSettings(
+                enable_duplicate_source_asset_keys=True,
+            ),
+        ),
     )
     def dbt_models(context: dg.AssetExecutionContext, dbt: DbtCliResource):
         """

@@ -436,6 +436,8 @@ sources:
       - name: rainbow_categories
         description: >
           Real-time category data from DataStream CDC pipeline
+        meta:
+          asset_key: categories
         columns:
           - name: id
             description: Primary key of the categories table
@@ -468,6 +470,8 @@ sources:
       - name: rainbow_users
         description: >
           Real-time user data from DataStream CDC pipeline
+        meta:
+          asset_key: users
         columns:
           - name: id
             description: Primary key of the users table
@@ -515,6 +519,8 @@ sources:
       - name: rainbow_authors
         description: >
           Real-time author data from DataStream CDC pipeline
+        meta:
+          asset_key: authors
         columns:
           - name: id
             description: Primary key of the authors table
@@ -547,6 +553,8 @@ sources:
       - name: rainbow_sellers
         description: >
           Real-time seller data from DataStream CDC pipeline
+        meta:
+          asset_key: sellers
         columns:
           - name: id
             description: Primary key of the sellers table
@@ -582,6 +590,8 @@ sources:
       - name: rainbow_books
         description: >
           Real-time book data from DataStream CDC pipeline
+        meta:
+          asset_key: books
         columns:
           - name: id
             description: Primary key of the books table
@@ -632,6 +642,8 @@ sources:
       - name: rainbow_orders
         description: >
           Real-time order data from DataStream CDC pipeline
+        meta:
+          asset_key: orders
         columns:
           - name: id
             description: Primary key of the orders table
@@ -670,6 +682,8 @@ sources:
       - name: rainbow_order_items
         description: >
           Real-time order item data from DataStream CDC pipeline
+        meta:
+          asset_key: order_items
         columns:
           - name: id
             description: Primary key of the order_items table
@@ -705,6 +719,8 @@ sources:
       - name: rainbow_book_authors
         description: >
           Real-time book-author relationship data from DataStream CDC pipeline
+        meta:
+          asset_key: book_authors
         columns:
           - name: id
             description: Primary key of the book_authors table
@@ -734,6 +750,8 @@ sources:
       - name: rainbow_promotions
         description: >
           Real-time promotion data from DataStream CDC pipeline
+        meta:
+          asset_key: promotions
         columns:
           - name: id
             description: Primary key of the promotions table
@@ -778,6 +796,8 @@ sources:
       - name: rainbow_payments
         description: >
           Real-time payment data from DataStream CDC pipeline
+        meta:
+          asset_key: payments
         columns:
           - name: id
             description: Primary key of the payments table
@@ -804,6 +824,8 @@ sources:
       - name: rainbow_inventories
         description: >
           Real-time inventory data from DataStream CDC pipeline
+        meta:
+          asset_key: inventories
         columns:
           - name: id
             description: Primary key of the inventories table
