@@ -47,30 +47,30 @@ dagsterWebserver:
     periodSeconds: 20
     timeoutSeconds: 10
     failureThreshold: 3
-  extraContainers:
-    - name: cloud-sql-proxy
-      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
-      args:
-        - --structured-logs
-        - --auto-iam-authn
-        - --private-ip
-        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: false
-        capabilities:
-          drop:
-            - ALL
-      resources:
-        limits:
-          cpu: 100m
-          memory: 128Mi
-        requests:
-          cpu: 50m
-          memory: 64Mi
+  # extraContainers:
+  #   - name: cloud-sql-proxy
+  #     image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+  #     args:
+  #       - --structured-logs
+  #       - --auto-iam-authn
+  #       - --private-ip
+  #       - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
+  #     securityContext:
+  #       runAsNonRoot: true
+  #       runAsUser: 65532
+  #       runAsGroup: 65532
+  #       allowPrivilegeEscalation: false
+  #       readOnlyRootFilesystem: false
+  #       capabilities:
+  #         drop:
+  #           - ALL
+  #     resources:
+  #       limits:
+  #         cpu: 100m
+  #         memory: 128Mi
+  #       requests:
+  #         cpu: 50m
+  #         memory: 64Mi
   checkDbReadyInitContainer: false
 
 ####################################################################################################
@@ -116,30 +116,30 @@ dagster-user-deployments:
         requests:
           cpu: 200m
           memory: 256Mi
-      sidecarContainers:
-        - name: cloud-sql-proxy
-          image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
-          args:
-            - --structured-logs
-            - --auto-iam-authn
-            - --private-ip
-            - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            runAsGroup: 65532
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            capabilities:
-              drop:
-                - ALL
-          resources:
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 50m
-              memory: 64Mi
+      # sidecarContainers:
+      #   - name: cloud-sql-proxy
+      #     image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+      #     args:
+      #       - --structured-logs
+      #       - --auto-iam-authn
+      #       - --private-ip
+      #       - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
+      #     securityContext:
+      #       runAsNonRoot: true
+      #       runAsUser: 65532
+      #       runAsGroup: 65532
+      #       allowPrivilegeEscalation: false
+      #       readOnlyRootFilesystem: false
+      #       capabilities:
+      #         drop:
+      #           - ALL
+      #     resources:
+      #       limits:
+      #         cpu: 100m
+      #         memory: 128Mi
+      #       requests:
+      #         cpu: 50m
+      #         memory: 64Mi
       readinessProbe:
         enabled: false
       startupProbe:
@@ -182,11 +182,13 @@ runLauncher:
 ####################################################################################################
 postgresql:
   enabled: false
-  postgresqlHost: localhost
+  postgresqlHost: 10.242.1.7
   postgresqlPort: 5432
   postgresqlUsername: dagster-sa@rainbow-data-production.iam
   postgresqlPassword: ''
   postgresqlDatabase: dagster
+  postgresqlParams:
+    sslmode: require
 
 generatePostgresqlPasswordSecret: false
 
@@ -212,30 +214,30 @@ dagsterDaemon:
     requests:
       cpu: 200m
       memory: 256Mi
-  extraContainers:
-    - name: cloud-sql-proxy
-      image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
-      args:
-        - --structured-logs
-        - --auto-iam-authn
-        - --private-ip
-        - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: false
-        capabilities:
-          drop:
-            - ALL
-      resources:
-        limits:
-          cpu: 100m
-          memory: 128Mi
-        requests:
-          cpu: 50m
-          memory: 64Mi
+  # extraContainers:
+  #   - name: cloud-sql-proxy
+  #     image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
+  #     args:
+  #       - --structured-logs
+  #       - --auto-iam-authn
+  #       - --private-ip
+  #       - rainbow-data-production:us-west1:rainbow-data-production-db?port=5432
+  #     securityContext:
+  #       runAsNonRoot: true
+  #       runAsUser: 65532
+  #       runAsGroup: 65532
+  #       allowPrivilegeEscalation: false
+  #       readOnlyRootFilesystem: false
+  #       capabilities:
+  #         drop:
+  #           - ALL
+  #     resources:
+  #       limits:
+  #         cpu: 100m
+  #         memory: 128Mi
+  #       requests:
+  #         cpu: 50m
+  #         memory: 64Mi
   checkDbReadyInitContainer: false
 
 ####################################################################################################
