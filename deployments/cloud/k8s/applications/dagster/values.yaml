@@ -296,3 +296,6 @@ serviceAccount:
 ####################################################################################################
 ingress:
   enabled: false
+
+telemetry:
+  enabled: false
