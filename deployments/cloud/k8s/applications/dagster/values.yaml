@@ -149,6 +149,10 @@ dagster-user-deployments:
             requests:
               cpu: 50m
               memory: 64Mi
+      readinessProbe:
+        enabled: false
+      startupProbe:
+        enabled: false
 
 ####################################################################################################
 # Scheduler Configuration
