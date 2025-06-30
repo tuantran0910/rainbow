@@ -5,7 +5,7 @@ metadata:
   namespace: dagster
 data:
   ENVIRONMENT: cloud
-  DB_HOST: 10.242.1.7
+  DB_HOST: localhost
   DB_PORT: '5432'
   API_DB_NAME: rainbow
   API_DB_USER: rainbow
