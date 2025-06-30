@@ -187,6 +187,8 @@ postgresql:
   postgresqlUsername: dagster-sa@rainbow-data-production.iam
   postgresqlPassword: ''
   postgresqlDatabase: dagster
+  postgresqlParams:
+    sslmode: require
 
 generatePostgresqlPasswordSecret: false
 
