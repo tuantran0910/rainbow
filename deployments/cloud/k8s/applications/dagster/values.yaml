@@ -167,6 +167,7 @@ runLauncher:
   type: K8sRunLauncher
   config:
     k8sRunLauncher:
+      jobNamespace: dagster
       labels:
         app: dagster
         owner: tuan.tran
