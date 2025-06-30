@@ -75,7 +75,6 @@ dagsterWebserver:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-    fsGroup: 1000
   checkDbReadyInitContainer: false
 
 ####################################################################################################
@@ -281,7 +280,6 @@ dagsterDaemon:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-    fsGroup: 1000
   checkDbReadyInitContainer: false
 
 ####################################################################################################
