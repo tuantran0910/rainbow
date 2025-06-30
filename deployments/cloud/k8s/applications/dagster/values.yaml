@@ -168,8 +168,8 @@ runLauncher:
         owner: tuan.tran
       resources:
         limits:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 500m
+          memory: 1Gi
         requests:
           cpu: 100m
           memory: 256Mi
