@@ -100,6 +100,8 @@ dagster-user-deployments:
         - -m
         - definitions
       port: 4000
+      includeConfigInLaunchedRuns:
+        enabled: false
       env:
         - name: ENVIRONMENT
           value: cloud
