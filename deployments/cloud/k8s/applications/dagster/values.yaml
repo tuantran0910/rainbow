@@ -1,3 +1,6 @@
+global:
+  serviceAccountName: dagster
+
 nameOverride: dagster
 fullnameOverride: dagster
 
