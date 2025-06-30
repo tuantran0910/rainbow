@@ -66,11 +66,11 @@ dagsterWebserver:
             - ALL
       resources:
         limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
           cpu: 50m
           memory: 64Mi
-        requests:
-          cpu: 25m
-          memory: 32Mi
   checkDbReadyInitContainer: false
 
 ####################################################################################################
@@ -102,19 +102,8 @@ dagster-user-deployments:
       port: 4000
       includeConfigInLaunchedRuns:
         enabled: false
-      env:
-        - name: ENVIRONMENT
-          value: cloud
-        - name: DB_HOST
-          value: 127.0.0.1
-        - name: DB_PORT
-          value: '5432'
-        - name: API_DB_NAME
-          value: rainbow
-        - name: API_DB_USER
-          value: rainbow
-        - name: API_BASE_URL
-          value: https://api.tuantrann.work
+      envConfigMaps:
+        - name: dagster-config-map
       envSecrets:
         - name: dagster-secrets
       labels:
@@ -146,11 +135,11 @@ dagster-user-deployments:
                 - ALL
           resources:
             limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
               cpu: 50m
               memory: 64Mi
-            requests:
-              cpu: 25m
-              memory: 32Mi
       readinessProbe:
         enabled: false
       startupProbe:
@@ -170,6 +159,10 @@ runLauncher:
   config:
     k8sRunLauncher:
       jobNamespace: dagster
+      envConfigMaps:
+        - name: dagster-config-map
+      envSecrets:
+        - name: dagster-secrets
       labels:
         app: dagster
         owner: tuan.tran
@@ -201,11 +194,11 @@ runLauncher:
                     - ALL
               resources:
                 limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
                   cpu: 50m
                   memory: 64Mi
-                requests:
-                  cpu: 25m
-                  memory: 32Mi
         jobSpecConfig:
           ttlSecondsAfterFinished: 300
 
@@ -263,11 +256,11 @@ dagsterDaemon:
             - ALL
       resources:
         limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
           cpu: 50m
           memory: 64Mi
-        requests:
-          cpu: 25m
-          memory: 32Mi
   checkDbReadyInitContainer: false
 
 ####################################################################################################

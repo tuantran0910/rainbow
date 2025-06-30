@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dagster-config-map
+  namespace: dagster
+data:
+  ENVIRONMENT: cloud
+  DB_HOST: 127.0.0.1
+  DB_PORT: '5432'
+  API_DB_NAME: rainbow
+  API_DB_USER: rainbow
+  API_BASE_URL: https://api.tuantrann.work

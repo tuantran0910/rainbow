@@ -17,3 +17,4 @@ resources:
   - ingress.yaml
   - secret.yaml
   - external-secret.yaml
+  - configmap.yaml
