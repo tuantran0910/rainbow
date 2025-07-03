@@ -9,4 +9,4 @@ data:
   DB_PORT: '5432'
   API_DB_NAME: rainbow
   API_DB_USER: rainbow
-  API_BASE_URL: https://api.tuantrann.work
+  API_BASE_URL: https://rainbow-api-x3impskqiq-ue.a.run.app
