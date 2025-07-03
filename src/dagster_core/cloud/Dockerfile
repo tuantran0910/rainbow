@@ -7,14 +7,7 @@ LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    DAGSTER_HOME=/opt/dagster/dagster_home
-
-# Set working directory
-WORKDIR $DAGSTER_HOME
-
-# Create Dagster home directory
-RUN mkdir -p $DAGSTER_HOME
+    PYTHONDONTWRITEBYTECODE=1
 
 # Install additional system dependencies
 RUN apt-get update && apt-get install -y \
