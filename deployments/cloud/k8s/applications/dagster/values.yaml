@@ -11,7 +11,7 @@ dagsterWebserver:
   replicaCount: 1
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.06.22.0
+    tag: 2025.07.03.0
     pullPolicy: Always
   service:
     type: NodePort
@@ -94,7 +94,7 @@ dagster-user-deployments:
     - name: rainbow-dagster-workspace
       image:
         repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
-        tag: 2025.06.30.0
+        tag: 2025.07.03.0
         pullPolicy: Always
       codeServerArgs:
         - -m
@@ -223,7 +223,7 @@ dagsterDaemon:
   enabled: true
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.06.14.1
+    tag: 2025.07.03.0
   runCoordinator:
     type: QueuedRunCoordinator
     config:
