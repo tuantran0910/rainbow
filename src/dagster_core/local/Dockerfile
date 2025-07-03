@@ -18,7 +18,6 @@ WORKDIR $DAGSTER_HOME
 RUN mkdir -p $DAGSTER_HOME
 
 # Install additional system dependencies
-USER root
 RUN apt-get update && apt-get install -y libpq-dev gcc \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -42,7 +41,3 @@ RUN apt-get remove -y gcc && \
 
 # Copy Dagster instance YAML
 COPY dagster.yaml workspace.yaml $DAGSTER_HOME
-
-# Switch back to non-root user
-RUN chown -R 1000:1000 ${DAGSTER_HOME} ${VIRTUAL_ENV}
-USER 1000

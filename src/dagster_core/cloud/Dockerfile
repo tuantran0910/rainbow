@@ -17,7 +17,6 @@ WORKDIR $DAGSTER_HOME
 RUN mkdir -p $DAGSTER_HOME
 
 # Install additional system dependencies
-USER root
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
@@ -43,7 +42,3 @@ ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 RUN apt-get remove -y gcc g++ build-essential && \
     apt-get autoremove -y && \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* /var/cache/apt/archives/*
-
-# Switch back to non-root user
-RUN chown -R 1000:1000 ${DAGSTER_HOME} ${VIRTUAL_ENV}
-USER 1000

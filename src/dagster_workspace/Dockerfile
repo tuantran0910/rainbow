@@ -18,7 +18,6 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR $DAGSTER_WORKSPACE
 
 # Install additional system dependencies
-USER root
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
@@ -65,10 +64,6 @@ RUN echo "Installing dbt packages for ${ENVIRONMENT} environment..." && \
 
 # Copy all application code
 COPY . .
-
-# Switch back to non-root user
-RUN chown -R 1000:1000 ${DAGSTER_WORKSPACE} ${VIRTUAL_ENV}
-USER 1000
 
 # Expose the port
 EXPOSE 4000

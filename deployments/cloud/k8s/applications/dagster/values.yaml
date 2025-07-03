@@ -71,10 +71,6 @@ dagsterWebserver:
         requests:
           cpu: 50m
           memory: 64Mi
-  securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    runAsNonRoot: true
   checkDbReadyInitContainer: false
 
 ####################################################################################################
@@ -120,11 +116,6 @@ dagster-user-deployments:
         requests:
           cpu: 200m
           memory: 256Mi
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        fsGroup: 1000
       sidecarContainers:
         - name: cloud-sql-proxy
           image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
@@ -184,11 +175,6 @@ runLauncher:
           memory: 256Mi
       runK8sConfig:
         podSpecConfig:
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            runAsNonRoot: true
-            fsGroup: 1000
           initContainers:
             - name: cloud-sql-proxy
               image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
@@ -276,10 +262,6 @@ dagsterDaemon:
         requests:
           cpu: 50m
           memory: 64Mi
-  securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    runAsNonRoot: true
   checkDbReadyInitContainer: false
 
 ####################################################################################################
