@@ -1,4 +1,4 @@
-FROM apache/superset:4.1.2
+FROM apache/superset:v5.0.0
 
 USER root
 
