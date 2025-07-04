@@ -97,7 +97,7 @@ configOverrides:
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/superset
-  tag: 2025.07.04.0
+  tag: 2025.07.04.1
   pullPolicy: IfNotPresent
 
 service:
