@@ -1,9 +1,9 @@
 locals {
   datastream_databases = {
-    # "postgres" : {
-    #   "tables" : ["*"],
-    #   "write_disposition" : "merge",
-    # }
+    "rainbow" : {
+      "tables" : ["users"],
+      "write_disposition" : "merge",
+    }
   }
 
   datastream_databases_mapping = {
@@ -17,10 +17,7 @@ locals {
 # Google Secret Manager secret for datastream password
 data "google_secret_manager_secret" "datastream_password" {
   secret_id = "datastream-password"
-}
-
-data "google_secret_manager_secret_version" "datastream_password" {
-  secret = data.google_secret_manager_secret.datastream_password.secret_id
+  project   = local.project_id
 }
 
 # Datastream Private Connectivity
@@ -38,6 +35,11 @@ resource "google_datastream_private_connection" "datastream_private_connection" 
   depends_on = [google_project_service.required_apis]
 }
 
+data "google_secret_manager_secret_version" "datastream_password" {
+  secret  = data.google_secret_manager_secret.datastream_password.secret_id
+  project = local.project_id
+}
+
 # Connection Profile
 resource "google_datastream_connection_profile" "cloudsql_source" {
   for_each = local.datastream_databases_mapping
@@ -47,7 +49,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
   connection_profile_id = "${each.key}-source-connection-profile"
 
   postgresql_profile {
-    hostname = data.google_sql_database_instance.main.private_ip_address
+    hostname = google_compute_instance.datastream_proxy.network_interface[0].network_ip
     username = local.datastream_username
     password = data.google_secret_manager_secret_version.datastream_password.secret_data
     database = each.key
@@ -59,10 +61,8 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
 
   depends_on = [
     google_project_service.required_apis,
-    google_datastream_private_connection.datastream_private_connection,
-    data.google_sql_database_instance.main,
-    google_sql_database.databases,
-    google_sql_user.datastream_user
+    google_compute_instance.datastream_proxy,
+    google_datastream_private_connection.datastream_private_connection
   ]
 
   labels = {
@@ -73,7 +73,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
 resource "google_datastream_connection_profile" "bq_destination" {
   location              = local.region
   display_name          = "BigQuery Destination"
-  connection_profile_id = "bigquery-destination"
+  connection_profile_id = "bigquery-destination-connection-profile"
 
   bigquery_profile {}
 
@@ -108,6 +108,12 @@ resource "google_datastream_stream" "stream" {
       include_objects {
         postgresql_schemas {
           schema = "public"
+          dynamic "postgresql_tables" {
+            for_each = toset(each.value.tables)
+            content {
+              table = postgresql_tables.value
+            }
+          }
         }
       }
     }
@@ -156,17 +162,32 @@ resource "google_bigquery_dataset" "datastream_dataset" {
   }
 }
 
-# Create databases on CloudSQL instance
-resource "google_sql_database" "databases" {
-  for_each = local.datastream_databases_mapping
+resource "google_compute_instance" "datastream_proxy" {
+  name = "datastream-proxy"
+  machine_type = "e2-micro"
+  zone = local.cloud_run_zone
+  tags = ["datastream-proxy"]
 
-  name     = each.key
-  instance = data.google_sql_database_instance.main.name
-}
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
 
-# Create datastream user with replication permissions
-resource "google_sql_user" "datastream_user" {
-  name        = local.datastream_username
-  instance    = data.google_sql_database_instance.main.name
-  password_wo = data.google_secret_manager_secret_version.datastream_password.secret_data
+  network_interface {
+    subnetwork = google_compute_subnetwork.datastream.id
+    access_config {
+      // This ensures an external IP is assigned
+    }
+  }
+
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    apt-get update
+    curl -o /cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64
+    chmod +x /cloud_sql_proxy
+    ./cloud_sql_proxy -instances=${data.google_sql_database_instance.main.connection_name}=tcp:0.0.0.0:5432 &
+  EOF
+
+  depends_on = [google_project_service.required_apis]
 }

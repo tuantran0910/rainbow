@@ -27,7 +27,6 @@ config:
   sqlUser: cubejs
   schemaPath: /cube/conf
   rollupOnly: false
-  scheduledRefreshTimezones: Asia/Ho_Chi_Minh
   preAggregationsSchema: cube_pre_aggregations
   concurrency: 4
   volumes:
@@ -137,8 +136,8 @@ datasources:
       type: gcp
       name: rainbow-data-production-cubejs
 
-cubestore:
-  host: cubestore-service
+# cubestore:
+#   host: cubestore-service
 
 api:
   serviceAccount:
@@ -148,11 +147,11 @@ api:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 100m
-      memory: 512Mi
+      cpu: 500m
+      memory: 2048Mi
     limits:
       cpu: 500m
-      memory: 1024Mi
+      memory: 2048Mi
   livenessProbe:
     enabled: false
   readinessProbe:
@@ -166,11 +165,11 @@ worker:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 100m
-      memory: 512Mi
+      cpu: 500m
+      memory: 2048Mi
     limits:
       cpu: 500m
-      memory: 1024Mi
+      memory: 2048Mi
   livenessProbe:
     enabled: false
   readinessProbe:

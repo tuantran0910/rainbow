@@ -80,12 +80,12 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "${local.project_id}-node-pool"
   location   = local.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 4
+  node_count = 1
 
   node_config {
     preemptible  = false
-    machine_type = "e2-standard-2"
-    disk_size_gb = 20
+    machine_type = "c3d-standard-8"
+    disk_size_gb = 50
 
     service_account = google_service_account.gke_node_sa.email
     oauth_scopes = [

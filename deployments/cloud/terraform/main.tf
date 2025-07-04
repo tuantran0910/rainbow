@@ -48,6 +48,7 @@ resource "google_project_service" "required_apis" {
     "iamcredentials.googleapis.com",
     "sts.googleapis.com",
     "datastream.googleapis.com",
+    "bigquery.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "artifactregistry.googleapis.com",
     "storage.googleapis.com"

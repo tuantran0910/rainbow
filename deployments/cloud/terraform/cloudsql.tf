@@ -19,14 +19,17 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 }
 
 data "google_sql_database_instance" "main" {
-  name = "${local.project_id}-db"
+  name    = "${local.project_id}-db"
+  project = local.project_id
 }
 
 data "google_sql_database" "rainbow" {
   name     = "rainbow"
   instance = data.google_sql_database_instance.main.name
+  project  = local.project_id
 }
 
 data "google_secret_manager_secret_version" "api_password" {
-  secret = "api-password"
+  secret  = "api-password"
+  project = local.project_id
 }
