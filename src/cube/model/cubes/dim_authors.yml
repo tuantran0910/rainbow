@@ -12,6 +12,10 @@ cubes:
       - name: author_name
         sql: "{CUBE}.author_name"
         type: string
+      - name: created_at
+        sql: "{CUBE}.created_at"
+        type: time
+        public: true
 
     measures:
       - name: count
