@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --no-cache \
     Authlib==1.5.2 \
-    psycopg2-binary==2.9.10
+    psycopg2-binary==2.9.10 \
+    psycopg2==2.9.10
 
 USER superset
