@@ -1,0 +1,57 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-rainbow-connector
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-connect
+    app: kafka-connect
+    owner: tuan.tran
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  tasksMax: 1
+  config:
+    database.dbname: rainbow
+    database.hostname:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: DB_HOST
+    database.port:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: DB_PORT
+    database.user:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CDC_DB_USER
+    database.password:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CDC_DB_PASSWORD
+    database.server.id: '184055'
+    decimal.handling.mode: double
+    key.converter: io.confluent.connect.avro.AvroConverter
+    key.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    key.converter.schemas.enable: 'true'
+    plugin.name: pgoutput
+    publication.name: cdc_publication
+    schema.history.internal.kafka.bootstrap.servers: kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+    schema.history.internal.kafka.topic: schema-changes.postgres
+    schema.include.list: public
+    table.include.list: public.authors,public.books,public.categories,public.users,public.orders,public.payments,public.book_authors,public.book_inventory,public.promotions,public.sellers
+    time.precision.mode: adaptive
+    topic.prefix: postgres
+    transforms: unwrap,router
+    transforms.router.topic.regex: postgres.public.(.*)
+    transforms.router.topic.replacement: cdc__$1
+    transforms.router.type: io.debezium.transforms.ByLogicalTableRouter
+    transforms.unwrap.type: io.debezium.transforms.ExtractNewRecordState
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    value.converter.schemas.enable: 'true'
+    slot.name: rainbow_slot
+    snapshot.mode: initial

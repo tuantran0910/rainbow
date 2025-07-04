@@ -1,0 +1,52 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: clickhouse-rainbow-connector
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-connect
+    app: kafka-connect
+    owner: tuan.tran
+spec:
+  class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
+  tasksMax: 1
+  config:
+    database: raw
+    errors.retry.timeout: '60'
+    exactlyOnce: 'false'
+    hostname:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CLICKHOUSE_HOST
+    port:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CLICKHOUSE_HTTP_PORT
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CLICKHOUSE_CDC_USER
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: kafka-connect-credentials
+          key: CLICKHOUSE_CDC_PASSWORD
+    ssl: 'false'
+    key.converter: io.confluent.connect.avro.AvroConverter
+    key.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    key.converter.schemas.enable: 'true'
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    value.converter.schemas.enable: 'true'
+    topics: cdc__authors,cdc__books,cdc__categories,cdc__users,cdc__orders,cdc__payments,cdc__book_authors,cdc__book_inventory,cdc__promotions,cdc__sellers
+    auto.create.tables: 'true'
+    auto.evolve: 'true'
+    insert.quorum: '0'
+    insert.quorum.timeout: '60000'
+    insert.deduplicate: 'false'
+    errors.tolerance: all
+    errors.log.enable: 'true'
+    errors.log.include.messages: 'true'

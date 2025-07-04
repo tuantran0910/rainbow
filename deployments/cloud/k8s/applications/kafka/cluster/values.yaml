@@ -1,0 +1,45 @@
+replicas: 1
+
+labels:
+  app: kafka-cluster
+  owner: tuan.tran
+
+annotations:
+  iam.gke.io/gcp-service-account: kafka-sa@rainbow-data-production.iam.gserviceaccount.com
+
+# Strimzi Kafka Operator Configuration
+watchNamespaces:
+  - kafka
+
+serviceAccountCreate: false
+serviceAccount: kafka
+
+# Generate network policies
+generateNetworkPolicy: false
+
+# Image pull policy
+image:
+  pullPolicy: IfNotPresent
+
+# Logging configuration
+defaultLogLevel: INFO
+
+# Resource limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+# Security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}

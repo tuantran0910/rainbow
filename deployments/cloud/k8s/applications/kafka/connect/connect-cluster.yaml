@@ -1,0 +1,72 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: kafka-connect
+  namespace: kafka
+  labels:
+    app: kafka-connect
+    owner: tuan.tran
+  annotations:
+    strimzi.io/use-connector-resources: 'true'
+spec:
+  version: 3.8.0
+  replicas: 1
+  bootstrapServers: kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+  tls:
+    enabled: false
+  authentication:
+    type: plain
+  config:
+    group.id: connect-cluster
+    offset.storage.topic: connect-offsets
+    config.storage.topic: connect-configs
+    status.storage.topic: connect-status
+    offset.storage.replication.factor: 1
+    config.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    key.converter: io.confluent.connect.avro.AvroConverter
+    value.converter: io.confluent.connect.avro.AvroConverter
+    key.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    value.converter.schema.registry.url: http://redpanda.redpanda.svc.cluster.local:8081
+    key.converter.schemas.enable: true
+    value.converter.schemas.enable: true
+    plugin.path: /opt/kafka/plugins
+  build:
+    output:
+      type: docker
+      image: kafka-connect-debezium:latest
+    plugins:
+      - name: debezium-postgres
+        artifacts:
+          - type: tgz
+            url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.5.4.Final/debezium-connector-postgres-2.5.4.Final-plugin.tar.gz
+      - name: clickhouse-sink
+        artifacts:
+          - type: jar
+            url: https://github.com/ClickHouse/clickhouse-kafka-connect/releases/download/v1.0.15/clickhouse-kafka-connect-v1.0.15.jar
+      - name: confluent-avro
+        artifacts:
+          - type: zip
+            url: https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-avro-converter/versions/7.6.1/confluentinc-kafka-connect-avro-converter-7.6.1.zip
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+  jvmOptions: -Xms512m -Xmx1g
+  template:
+    pod:
+      metadata:
+        labels:
+          app: kafka-connect
+          owner: tuan.tran
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+    connectContainer:
+      env:
+        - name: KAFKA_CONNECT_PLUGIN_PATH
+          value: /opt/kafka/plugins
