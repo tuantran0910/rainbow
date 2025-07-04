@@ -10,5 +10,6 @@ helmCharts:
     releaseName: strimzi-kafka-operator
     valuesFile: values.yaml
 resources:
+  - kafka-nodepool.yaml
   - kafka-cluster.yaml
   - storage.yaml

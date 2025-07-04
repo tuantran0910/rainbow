@@ -6,10 +6,11 @@ metadata:
   labels:
     app: kafka-cluster
     owner: tuan.tran
+  annotations:
+    strimzi.io/kraft: enabled
 spec:
   kafka:
     version: 3.8.0
-    replicas: 1
     listeners:
       - name: plain
         port: 9092
@@ -27,59 +28,11 @@ spec:
       transaction.state.log.min.isr: 1
       default.replication.factor: 1
       min.insync.replicas: 1
-      inter.broker.protocol.version: '3.8'
       auto.create.topics.enable: true
       log.retention.hours: 168
       log.segment.bytes: 1073741824
       log.retention.check.interval.ms: 300000
-    storage:
-      type: persistent-claim
-      size: 10Gi
-      class: standard-rwo
-    resources:
-      requests:
-        memory: 256Mi
-        cpu: 250m
-      limits:
-        memory: 512Mi
-        cpu: 500m
-    jvmOptions: -Xms128m -Xmx256m
-    template:
-      pod:
-        metadata:
-          labels:
-            app: kafka
-            owner: tuan.tran
-        serviceAccountName: kafka
-        securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
-          fsGroup: 1001
-  zookeeper:
-    replicas: 1
-    storage:
-      type: persistent-claim
-      size: 5Gi
-      class: standard-rwo
-    resources:
-      requests:
-        memory: 128Mi
-        cpu: 250m
-      limits:
-        memory: 256Mi
-        cpu: 250m
-    jvmOptions: -Xms64m -Xmx128m
-    template:
-      pod:
-        metadata:
-          labels:
-            app: zookeeper
-            owner: tuan.tran
-        serviceAccountName: kafka
-        securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
-          fsGroup: 1001
+
   entityOperator:
     topicOperator:
       resources:

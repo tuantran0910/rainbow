@@ -1,0 +1,34 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: kafka-cluster-kafka
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+    app: kafka-cluster
+    owner: tuan.tran
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: persistent-claim
+    size: 10Gi
+    class: standard-rwo
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  jvmOptions:
+    -Xms: 128m
+    -Xmx: 256m
+  template:
+    pod:
+      metadata:
+        labels:
+          app: kafka
+          owner: tuan.tran
