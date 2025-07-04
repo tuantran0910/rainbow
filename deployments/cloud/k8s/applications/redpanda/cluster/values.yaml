@@ -23,7 +23,7 @@ resources:
   memory:
     enable_memory_locking: true
     container:
-      max: 4Gi
+      max: 2Gi
 
 storage:
   persistentVolume:
