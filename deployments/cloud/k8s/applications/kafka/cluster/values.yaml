@@ -4,15 +4,9 @@ labels:
   app: kafka-cluster
   owner: tuan.tran
 
-annotations:
-  iam.gke.io/gcp-service-account: kafka-sa@rainbow-data-production.iam.gserviceaccount.com
-
 # Strimzi Kafka Operator Configuration
 watchNamespaces:
   - kafka
-
-serviceAccountCreate: false
-serviceAccount: kafka
 
 # Generate network policies
 generateNetworkPolicy: false
@@ -24,14 +18,14 @@ image:
 # Logging configuration
 defaultLogLevel: INFO
 
-# Resource limits
+# Resource limits for Strimzi operator
 resources:
   limits:
-    cpu: 500m
-    memory: 1024Mi
+    cpu: 1000m
+    memory: 384Mi
   requests:
-    cpu: 250m
-    memory: 512Mi
+    cpu: 200m
+    memory: 256Mi
 
 # Security context
 podSecurityContext:

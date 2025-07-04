@@ -50,6 +50,8 @@ spec:
           labels:
             app: kafka
             owner: tuan.tran
+        spec:
+          serviceAccountName: kafka
         securityContext:
           runAsUser: 1001
           runAsGroup: 1001
@@ -74,6 +76,8 @@ spec:
           labels:
             app: zookeeper
             owner: tuan.tran
+        spec:
+          serviceAccountName: kafka
         securityContext:
           runAsUser: 1001
           runAsGroup: 1001
