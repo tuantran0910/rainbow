@@ -57,6 +57,7 @@ configOverrides:
     # There are roles: Admin, Alpha, Gamma, sql_lab, Public
     USER_ROLE_MAPPING = {
         "tuantran0910": "Admin",
+        "tuan.tran": "Admin",
     }
 
     class CustomSecurityManager(SupersetSecurityManager):
