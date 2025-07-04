@@ -180,6 +180,7 @@ def process_mock_orders(
                 method="GET",
                 use_auth=True,
                 auth_token_manager=auth_token_manager,
+                max_retries=1,
             )
             promotions = promotions_response_data.get("data", {}).get("promotions", [])
             promotion_id = None
