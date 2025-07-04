@@ -80,12 +80,12 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "${local.project_id}-node-pool"
   location   = local.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 1
+  node_count = 4
 
   node_config {
     preemptible  = false
-    machine_type = "c3d-standard-8"
-    disk_size_gb = 50
+    machine_type = "e2-standard-2"
+    disk_size_gb = 20
 
     service_account = google_service_account.gke_node_sa.email
     oauth_scopes = [
@@ -105,6 +105,12 @@ resource "google_container_node_pool" "primary_nodes" {
   management {
     auto_repair  = true
     auto_upgrade = true
+  }
+
+  upgrade_settings {
+    strategy        = "SURGE"
+    max_surge       = 0
+    max_unavailable = 1
   }
 
   depends_on = [
