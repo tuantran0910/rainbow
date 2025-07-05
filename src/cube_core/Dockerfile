@@ -11,6 +11,12 @@ ENV PYTHONUNBUFFERED=1 \
 # Switch to root to install packages
 USER root
 
+# Install git and clean up to keep image small
+RUN apt-get update && \
+    apt-get install -y git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 
