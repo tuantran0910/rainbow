@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   # - dagster/
   # - superset/
-  - redpanda/
+  # - redpanda/
   - cubejs/
   # - kafka/
