@@ -13,7 +13,7 @@ USER root
 
 # Install git and clean up to keep image small
 RUN apt-get update && \
-    apt-get install -y git && \
+    apt-get install -y git inotify-tools && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
