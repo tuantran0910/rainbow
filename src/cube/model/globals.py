@@ -14,7 +14,6 @@ DBT_GCS_BUCKET = os.getenv("DBT_GCS_BUCKET")
 MANIFEST_PATH = os.getenv("MANIFEST_PATH", "manifest.json")
 
 template = TemplateContext()
-_manifest: Optional[dict[str, Any]] = None
 
 
 def load_manifest_from_gcs(
@@ -59,25 +58,20 @@ def dbt_model(name: str):
     If USE_REMOTE_MANIFEST is true, the manifest is loaded from the remote GCS path.
     Otherwise, the manifest is loaded from the local path.
 
-    The manifest is loaded only once and cached in memory.
-
     Args:
         name: The name of the model to load.
 
     Returns:
         The Dbt object.
     """
-    global _manifest
+    if USE_REMOTE_MANIFEST:
+        manifest = load_manifest_from_gcs(
+            project=DBT_GCS_PROJECT,
+            bucket_name=DBT_GCS_BUCKET,
+            path=MANIFEST_PATH,
+        )
+    else:
+        manifest = load_manifest_from_local(MANIFEST_PATH)
 
-    if _manifest is None:
-        if USE_REMOTE_MANIFEST:
-            _manifest = load_manifest_from_gcs(
-                project=DBT_GCS_PROJECT,
-                bucket_name=DBT_GCS_BUCKET,
-                path=MANIFEST_PATH,
-            )
-        else:
-            _manifest = load_manifest_from_local(MANIFEST_PATH)
-
-    dbt = Dbt(manifest=_manifest)
+    dbt = Dbt(manifest=manifest)
     return dbt.model(name)
