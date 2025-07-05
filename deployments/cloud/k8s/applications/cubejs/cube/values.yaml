@@ -17,7 +17,7 @@ extraEnvVarsFromSecret: cube-secret
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/cube
-  tag: 2025.06.22.0
+  tag: 2025.07.05.0
   pullPolicy: IfNotPresent
 
 config:
@@ -67,6 +67,8 @@ config:
           mountPath: /tmp/git
         - name: sparse-checkout-config
           mountPath: /git-sparse-checkout
+        - name: cube-config
+          mountPath: /cube/conf
       env:
         - name: GITSYNC_REPO
           value: https://github.com/tuantran0910/rainbow
@@ -113,18 +115,42 @@ config:
       args:
         - -c
         - |
-          while true; do
+          # Function to copy files
+          copy_files() {
             if [ -d "/tmp/git/rainbow/src/cube" ]; then
               echo "Copying cube files..."
               rm -rf /cube/conf/*
               cp -r /tmp/git/rainbow/src/cube/* /cube/conf/ 2>/dev/null || true
-              echo "Copy completed"
-              break
+              # Create ready marker
+              touch /cube/conf/.git-sync-ready
+              echo "Copy completed at $(date)"
             else
-              echo "Waiting for git-sync to complete..."
-              sleep 5
+              echo "Source directory not found: /tmp/git/rainbow/src/cube"
             fi
+          }
+
+          # Initial copy
+          echo "Waiting for initial git-sync..."
+          while [ ! -d "/tmp/git/rainbow/src/cube" ]; do
+            sleep 5
           done
+          copy_files
+
+          # Set up inotify to watch for changes
+          if command -v inotifywait >/dev/null 2>&1; then
+            echo "Setting up file watcher..."
+            while true; do
+              inotifywait -r -e modify,create,delete,move /tmp/git/rainbow/src/cube/ 2>/dev/null || sleep 60
+              copy_files
+            done
+          else
+            # Fallback: periodic copy
+            echo "Using periodic copy (every 60s)..."
+            while true; do
+              sleep 60
+              copy_files
+            done
+          fi
 
 datasources:
   default:
