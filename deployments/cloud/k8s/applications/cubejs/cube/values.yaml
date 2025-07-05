@@ -41,6 +41,8 @@ config:
     - name: cube-config
       readOnly: true
       mountPath: /cube/conf
+    - name: git-data
+      mountPath: /tmp/git
   initContainers:
     - image: registry.k8s.io/git-sync/git-sync:v4.3.0
       name: git-sync
@@ -85,6 +87,8 @@ config:
         - name: GITSYNC_MAX_SYNC_FAILURES
           value: '5'
         - name: GITSYNC_VERBOSE
+          value: '1'
+        - name: GITSYNC_DEPTH
           value: '1'
     - image: busybox:1.36
       name: copy-cube-models
