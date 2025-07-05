@@ -119,8 +119,6 @@ config:
       args:
         - -c
         - |
-          apt update && apt install -y inotify-tools
-
           # Function to copy files
           copy_files() {
             if [ -d "/tmp/git/rainbow/src/cube" ]; then
