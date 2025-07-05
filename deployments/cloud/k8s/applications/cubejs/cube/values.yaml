@@ -90,7 +90,7 @@ config:
           value: '1'
         - name: GITSYNC_DEPTH
           value: '1'
-    - image: debian:12-slim
+    - image: ghcr.io/tuantran0910/rainbow/base-alpine:2025.07.05.0
       name: copy-cube-models
       restartPolicy: Always
       resources:
