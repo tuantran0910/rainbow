@@ -17,7 +17,7 @@ extraEnvVarsFromSecret: cube-secret
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/cube
-  tag: 2025.07.05.1
+  tag: 2025.07.05.0
   pullPolicy: IfNotPresent
 
 config:
@@ -90,7 +90,7 @@ config:
           value: '1'
         - name: GITSYNC_DEPTH
           value: '1'
-    - image: busybox:1.36
+    - image: debian:12-slim
       name: copy-cube-models
       restartPolicy: Always
       resources:
@@ -115,17 +115,18 @@ config:
           mountPath: /tmp/git
         - name: cube-config
           mountPath: /cube/conf
-      command: [/bin/sh]
+      command: [/bin/bash]
       args:
         - -c
         - |
+          apt update && apt install -y inotify-tools
+
           # Function to copy files
           copy_files() {
             if [ -d "/tmp/git/rainbow/src/cube" ]; then
               echo "Copying cube files..."
               rm -rf /cube/conf/*
               cp -r /tmp/git/rainbow/src/cube/* /cube/conf/ 2>/dev/null || true
-              cp -r /tmp/git/rainbow/.git /cube/conf/.git 2>/dev/null || true
               # Create ready marker
               touch /cube/conf/.git-sync-ready
               echo "Copy completed at $(date)"
