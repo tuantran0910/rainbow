@@ -12,8 +12,6 @@ extraEnvVars:
     value: rainbow-data-production-dbt
   - name: MANIFEST_PATH
     value: docs/manifest.json
-  - name: CUBEJS_PRE_AGGREGATIONS_BUILDER
-    value: 'true'
 
 extraEnvVarsFromSecret: cube-secret
 
@@ -137,6 +135,9 @@ datasources:
     export:
       type: gcp
       name: rainbow-data-production-cubejs
+
+cubestore:
+  host: cubestore-router
 
 api:
   serviceAccount:

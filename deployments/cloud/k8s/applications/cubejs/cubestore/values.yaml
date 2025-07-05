@@ -7,13 +7,13 @@ image:
   pullPolicy: IfNotPresent
 
 commonAnnotations:
-  gke-gcsfuse/volumes: "true"
-  gke-gcsfuse/cpu-request: "100m"
-  gke-gcsfuse/memory-request: "128Mi"
-  gke-gcsfuse/cpu-limit: "1"
-  gke-gcsfuse/memory-limit: "4Gi"
-  gke-gcsfuse/ephemeral-storage-request: "1Gi"
-  gke-gcsfuse/ephemeral-storage-limit: "2Gi"
+  gke-gcsfuse/volumes: 'true'
+  gke-gcsfuse/cpu-request: 100m
+  gke-gcsfuse/memory-request: 128Mi
+  gke-gcsfuse/cpu-limit: '1'
+  gke-gcsfuse/memory-limit: 4Gi
+  gke-gcsfuse/ephemeral-storage-request: 1Gi
+  gke-gcsfuse/ephemeral-storage-limit: 2Gi
 
 remoteDir:
   persistence:
@@ -33,11 +33,11 @@ router:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 250m
+      memory: 512Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1024Mi
 
 workers:
   workersCount: 1
@@ -48,7 +48,7 @@ workers:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 100m
+      cpu: 250m
       memory: 512Mi
     limits:
       cpu: 500m
