@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: cube
 resources:
   - cube/
-  - cubestore/
+  # - cubestore/
   - rbac.yaml
   - service-account.yaml
