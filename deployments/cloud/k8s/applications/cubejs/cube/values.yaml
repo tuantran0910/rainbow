@@ -131,7 +131,7 @@ datasources:
     type: bigquery
     bigquery:
       projectId: rainbow-data-production
-      location: us-central1
+      location: US
     export:
       type: gcp
       name: rainbow-data-production-cubejs
