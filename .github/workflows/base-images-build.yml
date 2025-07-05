@@ -1,0 +1,205 @@
+name: Build Base Images
+
+on:
+  push:
+    tags:
+      - release-base-*
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract base name from tag
+        id: extract_base
+        run: |
+          # Extract base name from tag (e.g., release-base-debian -> debian)
+          TAG_NAME=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
+          BASE_NAME=$(echo "$TAG_NAME" | sed 's/release-base-//')
+          echo "Base name extracted: $BASE_NAME"
+          echo "base_name=$BASE_NAME" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+          # Set image name with base suffix
+          IMAGE_NAME="${{ github.repository }}/base-$BASE_NAME"
+          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Validate base directory exists
+        run: |
+          BASE_DIR="deployments/docker/bases/${{ steps.extract_base.outputs.base_name }}"
+          if [ ! -d "$BASE_DIR" ]; then
+            echo "❌ Error: Base directory '$BASE_DIR' does not exist!"
+            exit 1
+          fi
+          if [ ! -f "$BASE_DIR/Dockerfile" ]; then
+            echo "❌ Error: Dockerfile not found in '$BASE_DIR'!"
+            exit 1
+          fi
+          echo "✅ Validated: $BASE_DIR exists with Dockerfile"
+
+      - name: Generate CalVer tag
+        id: calver
+        run: |
+          # Get current date in YYYY.MM.DD format
+          DATE=$(date +%Y.%m.%d)
+          BASE_NAME="${{ steps.extract_base.outputs.base_name }}"
+          echo "Generating CalVer tag for base: $BASE_NAME, date: $DATE"
+
+          # Try to get existing tags for today to determine the build number
+          echo "Checking for existing tags..."
+
+          EXISTING_TAGS=""
+
+          # Method 1: Try GitHub Container Registry API
+          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/container/base-$BASE_NAME/versions" 2>/dev/null || echo "[]")
+
+          if [ "$API_RESPONSE" != "[]" ] && [ -n "$API_RESPONSE" ]; then
+            echo "API Response received, parsing container tags..."
+            EXISTING_TAGS=$(echo "$API_RESPONSE" | jq -r '
+              try (
+                .[] |
+                select(.metadata.container.tags != null) |
+                .metadata.container.tags[] |
+                select(startswith("'$DATE'."))
+              ) catch empty
+            ' 2>/dev/null | sort -V | tail -1 || echo "")
+          fi
+
+          # Method 2: Fallback - check GitHub release tags (with prefix)
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No container tags found, checking GitHub release tags as fallback..."
+            EXISTING_TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" 2>/dev/null \
+              | jq -r '.[] | select(.tag_name | startswith("base-'$BASE_NAME'/")) | .tag_name' \
+              | sed 's/base-'$BASE_NAME'\///' \
+              | grep "^$DATE\." | sort -V | tail -1 || echo "")
+          fi
+
+          if [ -z "$EXISTING_TAGS" ]; then
+            echo "No existing tags found for today, starting with .0"
+            BUILD_NUMBER=0
+          else
+            echo "Found existing tag: $EXISTING_TAGS"
+            # Extract the build number and increment
+            BUILD_NUMBER=$(echo "$EXISTING_TAGS" | cut -d'.' -f4)
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            echo "Incrementing build number to: $BUILD_NUMBER"
+          fi
+
+          CALVER_TAG="${DATE}.${BUILD_NUMBER}"
+          echo "Generated CalVer tag: $CALVER_TAG"
+          echo "calver_tag=$CALVER_TAG" >> $GITHUB_OUTPUT
+
+      - name: Clean up trigger tag
+        run: |
+          # Delete the trigger tag both locally and remotely early in the process
+          TRIGGER_TAG="${{ steps.extract_base.outputs.tag_name }}"
+          echo "🧹 Cleaning up trigger tag: $TRIGGER_TAG"
+
+          # Delete the remote tag
+          git push origin --delete "$TRIGGER_TAG"
+          echo "✅ Successfully deleted remote trigger tag: $TRIGGER_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.extract_base.outputs.image_name }}
+          tags: |
+            type=raw,value=${{ steps.calver.outputs.calver_tag }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.description=Base ${{ steps.extract_base.outputs.base_name }} image for Rainbow project
+            org.opencontainers.image.vendor=Rainbow
+            org.opencontainers.image.version=${{ steps.calver.outputs.calver_tag }}
+            base.name=${{ steps.extract_base.outputs.base_name }}
+            base.calver=${{ steps.calver.outputs.calver_tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./deployments/docker/bases/${{ steps.extract_base.outputs.base_name }}
+          file: ./deployments/docker/bases/${{ steps.extract_base.outputs.base_name }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Generate build date
+        id: build_date
+        run: |
+          BUILD_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: base-${{ steps.extract_base.outputs.base_name }}/${{ steps.calver.outputs.calver_tag }}
+          name: Base ${{ steps.extract_base.outputs.base_name }} v${{ steps.calver.outputs.calver_tag }}
+          body: |
+            # Base ${{ steps.extract_base.outputs.base_name }} Release v${{ steps.calver.outputs.calver_tag }}
+
+            🚀 **New base ${{ steps.extract_base.outputs.base_name }} image is now available!**
+
+            ## 📦 Docker Images
+
+            ### Base ${{ steps.extract_base.outputs.base_name }} Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ steps.extract_base.outputs.image_name }}:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.REGISTRY }}/${{ steps.extract_base.outputs.image_name }}:latest
+            ```
+
+            ## 🔧 Build Information
+
+            - **📅 Build Date**: ${{ steps.build_date.outputs.build_date }}
+            - **🏗️ Base Type**: ${{ steps.extract_base.outputs.base_name }}
+            - **📦 Built by**: ${{ github.actor }}
+            - **🔗 Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ## 📝 Base Image Details
+
+            This base image is built from: `deployments/docker/bases/${{ steps.extract_base.outputs.base_name }}/`
+
+            Base images are foundational Docker images used across the Rainbow project to ensure consistency and reduce build times.
+
+            ---
+
+            **Full Changelog**: Compare with [previous releases](https://github.com/${{ github.repository }}/releases)
+          draft: false
+          prerelease: false
+
+      - name: Output build information
+        run: |
+          echo "🚀 Successfully built and pushed base ${{ steps.extract_base.outputs.base_name }} image!"
+          echo "📅 CalVer Tag: ${{ steps.calver.outputs.calver_tag }}"
+          echo "🏷️  Docker Image Tags:"
+          echo "   - ${{ env.REGISTRY }}/${{ steps.extract_base.outputs.image_name }}:${{ steps.calver.outputs.calver_tag }}"
+          echo "   - ${{ env.REGISTRY }}/${{ steps.extract_base.outputs.image_name }}:latest"
+          echo "🎉 GitHub Release: Base ${{ steps.extract_base.outputs.base_name }} v${{ steps.calver.outputs.calver_tag }}"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/base-${{ steps.extract_base.outputs.base_name }}/${{ steps.calver.outputs.calver_tag }}"
+          echo "🧹 Trigger tag '${{ steps.extract_base.outputs.tag_name }}' has been cleaned up"
