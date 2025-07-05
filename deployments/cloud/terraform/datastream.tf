@@ -99,9 +99,8 @@ resource "google_datastream_stream" "stream" {
   destination_config {
     destination_connection_profile = google_datastream_connection_profile.bq_destination.id
     bigquery_destination_config {
-      data_freshness = "1d"
       single_target_dataset {
-        dataset_id = google_bigquery_dataset.datastream_dataset[each.key].dataset_id
+        dataset_id = "${local.project_id}:${google_bigquery_dataset.datastream_dataset[each.key].dataset_id}"
       }
 
       dynamic "merge" {
