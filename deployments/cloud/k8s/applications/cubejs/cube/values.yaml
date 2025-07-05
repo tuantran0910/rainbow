@@ -137,7 +137,7 @@ datasources:
       name: rainbow-data-production-cubejs
 
 cubestore:
-  host: cubestore-service
+  host: cubestore-router
 
 api:
   serviceAccount:
