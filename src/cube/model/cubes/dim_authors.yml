@@ -32,7 +32,7 @@ cubes:
         time_dimension: created_at
         granularity: day
         refresh_key:
-          every: 1 minute
+          every: 15 minutes
         indexes:
           - name: author_id_idx
             columns: [author_id]
