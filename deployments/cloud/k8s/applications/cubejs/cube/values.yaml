@@ -17,7 +17,7 @@ extraEnvVarsFromSecret: cube-secret
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/cube
-  tag: 2025.07.05.0
+  tag: 2025.07.05.1
   pullPolicy: IfNotPresent
 
 config:
@@ -58,8 +58,8 @@ config:
         privileged: false
         allowPrivilegeEscalation: false
         runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
+        runAsUser: 1000
+        runAsGroup: 1000
         capabilities:
           drop: [ALL]
         seccompProfile:
@@ -104,8 +104,8 @@ config:
         privileged: false
         allowPrivilegeEscalation: false
         runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
+        runAsUser: 1000
+        runAsGroup: 1000
         capabilities:
           drop: [ALL]
         seccompProfile:
@@ -125,6 +125,7 @@ config:
               echo "Copying cube files..."
               rm -rf /cube/conf/*
               cp -r /tmp/git/rainbow/src/cube/* /cube/conf/ 2>/dev/null || true
+              cp -r /tmp/git/rainbow/.git /cube/conf/.git 2>/dev/null || true
               # Create ready marker
               touch /cube/conf/.git-sync-ready
               echo "Copy completed at $(date)"
