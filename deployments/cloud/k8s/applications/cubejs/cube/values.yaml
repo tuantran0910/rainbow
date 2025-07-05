@@ -23,6 +23,7 @@ image:
   pullPolicy: IfNotPresent
 
 config:
+  logLevel: info
   devMode: false
   apiPort: 4000
   pgSqlPort: 15432

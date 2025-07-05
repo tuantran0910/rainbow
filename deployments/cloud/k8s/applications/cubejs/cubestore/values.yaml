@@ -15,6 +15,9 @@ commonAnnotations:
   gke-gcsfuse/ephemeral-storage-request: 1Gi
   gke-gcsfuse/ephemeral-storage-limit: 2Gi
 
+config:
+  logLevel: info
+
 remoteDir:
   persistence:
     accessModes:
