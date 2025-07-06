@@ -31,7 +31,7 @@ resource "google_datastream_connection_profile" "cloudsql_source" {
 
   display_name          = "CloudSQL Source for ${each.key}"
   location              = local.region
-  connection_profile_id = "${each.key}-source-connection-profile"
+  connection_profile_id = "${each.key}-postgres-source-connection-profile"
 
   postgresql_profile {
     hostname = data.google_sql_database_instance.main.public_ip_address

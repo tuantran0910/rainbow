@@ -6,7 +6,7 @@ metadata:
 data:
   ENVIRONMENT: cloud
   DB_HOST: localhost
-  DB_PORT: '5432'
+  DB_PORT: 5432
   API_DB_NAME: rainbow
   API_DB_USER: rainbow
   API_BASE_URL: https://rainbow-api-x3impskqiq-ue.a.run.app
