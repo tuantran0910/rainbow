@@ -227,14 +227,14 @@ dagsterDaemon:
   runCoordinator:
     type: QueuedRunCoordinator
     config:
-      maxConcurrentRuns: 5
+      maxConcurrentRuns: 3
   labels:
     app: dagster
     owner: tuan.tran
   resources:
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 768Mi
     requests:
       cpu: 200m
       memory: 256Mi
