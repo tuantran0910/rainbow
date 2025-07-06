@@ -7,7 +7,7 @@ job:
 schedule:
   name: dlt_rainbow_schedule
   description: Schedule to run dlt pipeline
-  cron_schedule: 0 0 * * *
+  cron_schedule: 0 */4 * * *
   execution_timezone: UTC
 resources:
   source:
@@ -46,7 +46,7 @@ resources:
           incremental_field: updated_at
   destination:
     type: bigquery
-    dataset_name: raw
+    dataset_name: rainbow
     credentials:
       project_id: rainbow-data-production
     configs:
