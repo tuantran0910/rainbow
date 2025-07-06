@@ -14,11 +14,11 @@ resources:
     type: sql_database
     credentials:
       drivername: postgresql+psycopg2
-      host: env:DB_HOST
-      port: env:DB_PORT
+      host: localhost
+      port: 5432
       # NOTE: We are facing some issues with the permissions of the EL user.
       # So we are using the API user instead.
-      username: env:API_DB_USER
+      username: rainbow
       password: env:API_DB_PASSWORD
       database: rainbow
     schema:
@@ -35,8 +35,6 @@ resources:
         - name: promotions
           incremental_field: updated_at
         - name: payments
-          incremental_field: updated_at
-        - name: inventories
           incremental_field: updated_at
         - name: categories
           incremental_field: updated_at

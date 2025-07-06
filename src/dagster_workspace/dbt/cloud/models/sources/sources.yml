@@ -364,40 +364,6 @@ sources:
             description: Soft delete timestamp, NULL if the promotion is active
             data_type: DATETIME64
 
-      - name: inventories
-        description: >
-          This table contains information about book inventory levels.
-        columns:
-          - name: id
-            description: Primary key of the inventories table
-            data_type: STRING
-            tests:
-              - unique
-              - not_null
-          - name: book_id
-            description: Foreign key to the books table
-            data_type: STRING
-            tests:
-              - not_null
-              - unique
-          - name: stock
-            description: Current stock level of the book
-            data_type: INT64
-            tests:
-              - not_null
-          - name: last_restocked_at
-            description: Timestamp when the book was last restocked
-            data_type: DATETIME64
-          - name: created_at
-            description: Timestamp when the inventory record was created
-            data_type: DATETIME64
-          - name: updated_at
-            description: Timestamp when the inventory record was last updated
-            data_type: DATETIME64
-          - name: deleted_at
-            description: Soft delete timestamp, NULL if the inventory record is active
-            data_type: DATETIME64
-
       - name: book_authors
         description: >
           This table contains information about the authors of the books.
@@ -810,37 +776,6 @@ sources:
             data_type: DATETIME64
           - name: updated_at
             description: Timestamp when the payment was last updated
-            data_type: DATETIME64
-          - name: deleted_at
-            description: Soft delete timestamp
-            data_type: DATETIME64
-          - name: _metadata_timestamp
-            description: DataStream ingestion timestamp
-            data_type: TIMESTAMP
-          - name: _metadata_deleted
-            description: DataStream deletion indicator
-            data_type: BOOLEAN
-
-      - name: rainbow_inventories
-        description: >
-          Real-time inventory data from DataStream CDC pipeline
-        meta:
-          asset_key: inventories
-        columns:
-          - name: id
-            description: Primary key of the inventories table
-            data_type: STRING
-          - name: book_id
-            description: Foreign key to the books table
-            data_type: STRING
-          - name: quantity
-            description: Available quantity
-            data_type: INT64
-          - name: created_at
-            description: Timestamp when the inventory record was created
-            data_type: DATETIME64
-          - name: updated_at
-            description: Timestamp when the inventory was last updated
             data_type: DATETIME64
           - name: deleted_at
             description: Soft delete timestamp
