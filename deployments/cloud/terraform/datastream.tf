@@ -126,6 +126,10 @@ resource "google_datastream_stream" "stream" {
     }
   }
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   depends_on = [
     google_project_service.required_apis,
     google_datastream_connection_profile.cloudsql_source,
