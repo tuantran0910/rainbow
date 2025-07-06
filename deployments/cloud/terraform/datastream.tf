@@ -1,7 +1,18 @@
 locals {
   datastream_databases = {
     "rainbow" : {
-      "tables" : ["users"],
+      "tables" : [
+        "authors",
+        "book_authors",
+        "books",
+        "categories",
+        "order_items",
+        "orders",
+        "payments",
+        "promotions",
+        "sellers",
+        "users"
+      ],
       "write_disposition" : "merge",
     }
   }
@@ -80,8 +91,8 @@ resource "google_datastream_stream" "stream" {
     source_connection_profile = google_datastream_connection_profile.cloudsql_source[each.key].id
     postgresql_source_config {
       max_concurrent_backfill_tasks = 2
-      publication                   = "publication"
-      replication_slot              = "${each.key}_replication_slot"
+      publication                   = "${each.key}_publication"
+      replication_slot              = "${each.key}_replication"
       include_objects {
         postgresql_schemas {
           schema = "public"
@@ -131,9 +142,13 @@ resource "google_bigquery_dataset" "datastream_dataset" {
   dataset_id  = "${each.key}__datastream"
   description = "Dataset for real-time ingestion from CloudSQL ${each.key} to BigQuery"
 
-  depends_on = [google_project_service.required_apis]
-
   labels = {
     "owner" = "tuan-tran"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  depends_on = [google_project_service.required_apis]
 }
