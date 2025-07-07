@@ -26,13 +26,3 @@ data "google_storage_bucket" "cubejs" {
 #     prevent_destroy = true
 #   }
 # }
-
-data "google_storage_bucket" "dbt" {
-  name = "${local.project_id}-dbt"
-}
-
-resource "google_storage_bucket_iam_member" "dbt_docs_public_read" {
-  bucket = data.google_storage_bucket.dbt.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
