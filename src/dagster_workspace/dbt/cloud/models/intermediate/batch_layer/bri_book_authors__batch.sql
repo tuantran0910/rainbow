@@ -1,24 +1,29 @@
-{% set model_params = get_common_params(lookback_in_days=1) %}
+{% set surrogate_key_field_name = generate_surrogate_field_name(prefix='book_author') %}
 
 {{
     config(
-        materialized='incremental',
-        unique_key='id',
-        incremental_strategy='delete+insert'
+        materialized="incremental",
+        incremental_strategy="merge",
+        unique_key=surrogate_key_field_name,
+        partition_by={
+            "field": "created_date_tz_hcm",
+            "data_type": "date",
+            "granularity": "day"
+        },
+        cluster_by=[
+            "updated_date_tz_hcm",
+            "book_id",
+            "author_id"
+        ]
     )
 }}
 
-WITH
-    stg_book_authors AS (
-        SELECT *
-        FROM {{ ref('stg_book_authors') }}
-        {% if is_incremental() %}
-            WHERE updated_at_tz_hcm IN {{ model_params.incremental_dates_quoted_tz_hcm }}
-        {% endif %}
+{{
+    dim_scd_type_1(
+        stg_relation=ref('raw_book_authors'),
+        unique_keys=['book_id', 'author_id'],
+        updated_at_field='updated_at',
+        lookback_in_days=1,
+        surrogate_key_field_name=surrogate_key_field_name
     )
-
-SELECT
-    {{ dbt_utils.generate_surrogate_key(['book_id', 'author_id']) }} AS id,
-    book_id,
-    author_id
-FROM stg_book_authors
+}}

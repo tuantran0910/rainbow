@@ -1,4 +1,4 @@
-{% macro dim_scd_type_2(stg_relation, unique_key, updated_at_field, surrogate_key_field_name, except_columns_to_compare=[], lookback_in_days=1) %}
+{% macro dim_scd_type_2(stg_relation, unique_key, surrogate_key_field_name, updated_at_field=none, except_columns_to_compare=[], lookback_in_days=1) %}
 
     {# Get the columns from the staging model relation #}
     {% set stg_columns = adapter.get_columns_in_relation(stg_relation) %}
@@ -68,10 +68,10 @@
         )
 
         SELECT
-            {{ dbt_utils.generate_surrogate_key(['stg_data.' ~ unique_key, 'stg_data.' ~ updated_at_field]) }} AS {{ surrogate_key_field_name }},
-            stg_data.* EXCEPT (valid_from, valid_to, is_current),
+            {{ dbt_utils.generate_surrogate_key([unique_key, updated_at_field]) }} AS {{ surrogate_key_field_name }},
+            *,
             CURRENT_TIMESTAMP() AS valid_from,
-            toDateTime64('9999-12-31 23:59:59.999999', 6) AS valid_to,
+            TIMESTAMP('9999-12-31 23:59:59.999999') AS valid_to,
             TRUE AS is_current
         FROM stg_data
     {% endif %}

@@ -1,9 +1,9 @@
 version: 2
 
 models:
-  - name: bri_book_authors__batch
+  - name: bri_book_authors__stream
     description: >
-      This is a batch model for the bri_book_authors table.
+      This is a stream model for the bri_book_authors table.
       The model contains information about the authors of the books.
     columns:
       - name: book_author_key
@@ -40,9 +40,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_authors__batch
+  - name: dim_authors__stream
     description: >
-      This is a batch model for the dim_authors table.
+      This is a stream model for the dim_authors table.
       The model contains information about the authors.
     columns:
       - name: author_key
@@ -78,9 +78,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_books__batch
+  - name: dim_books__stream
     description: >
-      This is a batch model for the dim_books table.
+      This is a stream model for the dim_books table.
       The model contains information about the books.
     columns:
       - name: book_key
@@ -149,9 +149,9 @@ models:
         description: Flag indicating if the record is current
         data_type: BOOLEAN
 
-  - name: dim_categories__batch
+  - name: dim_categories__stream
     description: >
-      This is a batch model for the dim_categories table.
+      This is a stream model for the dim_categories table.
       The model contains information about the categories.
     columns:
       - name: category_key
@@ -187,9 +187,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_payments__batch
+  - name: dim_payments__stream
     description: >
-      This is a batch model for the dim_payments table.
+      This is a stream model for the dim_payments table.
       The model contains information about the payments.
     columns:
       - name: payment_key
@@ -219,9 +219,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_promotions__batch
+  - name: dim_promotions__stream
     description: >
-      This is a batch model for the dim_promotions table.
+      This is a stream model for the dim_promotions table.
       The model contains information about the promotions.
     columns:
       - name: promotion_key
@@ -269,9 +269,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_sellers__batch
+  - name: dim_sellers__stream
     description: >
-      This is a batch model for the dim_sellers table.
+      This is a stream model for the dim_sellers table.
       The model contains information about the sellers.
     columns:
       - name: seller_key
@@ -309,9 +309,9 @@ models:
         description: The date when the record was last updated
         data_type: DATE
 
-  - name: dim_users__batch
+  - name: dim_users__stream
     description: >
-      This is a batch model for the dim_users table.
+      This is a stream model for the dim_users table.
       The model contains information about the users.
     columns:
       - name: user_key
@@ -370,9 +370,9 @@ models:
         description: Flag indicating if the record is current
         data_type: BOOLEAN
 
-  - name: fct_sales__batch
+  - name: fct_sales__stream
     description: >
-      This is a batch model for the fct_sales table.
+      This is a stream model for the fct_sales table.
       The model contains information about the sales.
     columns:
       - name: sale_key

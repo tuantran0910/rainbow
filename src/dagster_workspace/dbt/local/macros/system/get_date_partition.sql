@@ -3,8 +3,8 @@
     {% set partitions = [] %}
     {% for i in range(num_days + 1) %}
         {% set current_date = (start_date_dt + modules.datetime.timedelta(days=i)) %}
-        {% do partitions.append(current_date.strftime('%Y-%m-%d')) %}
+        {% do partitions.append("'" + current_date.strftime('%Y-%m-%d') + "'") %}
     {% endfor %}
 
-    {{ return(partitions) }}
+    {{ return("(" + partitions | join(", ") + ")") }}
 {% endmacro %}

@@ -1,0 +1,520 @@
+version: 2
+
+models:
+  - name: bri_book_authors
+    description: >
+      This is a model for the bri_book_authors table.
+      The model contains information about the authors of the books.
+    columns:
+      - name: book_author_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: book_id
+        description: Primary key of the book table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: author_id
+        description: Primary key of the author table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: id
+        description: Primary key of the book_authors table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_authors
+    description: >
+      This is a model for the dim_authors table.
+      The model contains information about the authors.
+    columns:
+      - name: author_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: secondary_id
+        description: Secondary identifier for the author, used for external references
+        data_type: INTEGER
+      - name: slug
+        description: URL-friendly version of the author's name
+        data_type: STRING
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: name
+        description: Name of the author
+        data_type: STRING
+      - name: id
+        description: Primary key of the authors table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_books
+    description: >
+      This is a model for the dim_books table.
+      The model contains information about the books.
+    columns:
+      - name: book_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: page_count
+        description: Number of pages in the book
+        data_type: INTEGER
+      - name: seller_id
+        description: Primary key of the sellers table
+        data_type: STRING
+      - name: price
+        description: Price of the book
+        data_type: FLOAT
+      - name: sold_count
+        description: Number of times the book has been sold
+        data_type: INTEGER
+      - name: name
+        description: Name of the book
+        data_type: STRING
+      - name: review_count
+        description: Number of reviews for the book
+        data_type: INTEGER
+      - name: category_id
+        description: Primary key of the categories table
+        data_type: STRING
+      - name: rating_average
+        description: Average rating of the book
+        data_type: FLOAT
+      - name: description
+        description: Description of the book
+        data_type: STRING
+      - name: secondary_id
+        description: Secondary identifier for the book, used for external references
+        data_type: INTEGER
+      - name: original_price
+        description: Original price of the book
+        data_type: FLOAT
+      - name: id
+        description: Primary key of the books table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+      - name: valid_from
+        description: The timestamp when the record became valid
+        data_type: TIMESTAMP
+      - name: valid_to
+        description: The timestamp when the record became invalid
+        data_type: TIMESTAMP
+      - name: is_current
+        description: Flag indicating if the record is current
+        data_type: BOOLEAN
+
+  - name: dim_categories
+    description: >
+      This is a model for the dim_categories table.
+      The model contains information about the categories.
+    columns:
+      - name: category_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: secondary_id
+        description: Secondary identifier for the category, used for external references
+        data_type: INTEGER
+      - name: slug
+        description: URL-friendly version of the category's name
+        data_type: STRING
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: name
+        description: Name of the category
+        data_type: STRING
+      - name: id
+        description: Primary key of the categories table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_payments
+    description: >
+      This is a model for the dim_payments table.
+      The model contains information about the payments.
+    columns:
+      - name: payment_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: method
+        description: Method of payment
+        data_type: STRING
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: id
+        description: Primary key of the payments table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_promotions
+    description: >
+      This is a model for the dim_promotions table.
+      The model contains information about the promotions.
+    columns:
+      - name: promotion_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: discount_type
+        description: Type of discount
+        data_type: STRING
+      - name: max_uses
+        description: Maximum number of uses of the promotion
+        data_type: INTEGER
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: end_date
+        description: The timestamp when the promotion ends
+        data_type: TIMESTAMP
+      - name: used_count
+        description: Number of times the promotion has been used
+        data_type: INTEGER
+      - name: start_date
+        description: The timestamp when the promotion starts
+        data_type: TIMESTAMP
+      - name: name
+        description: Name of the promotion
+        data_type: STRING
+      - name: discount_value
+        description: Value of the discount
+        data_type: FLOAT
+      - name: id
+        description: Primary key of the promotions table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_sellers
+    description: >
+      This is a model for the dim_sellers table.
+      The model contains information about the sellers.
+    columns:
+      - name: seller_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: secondary_id
+        description: Secondary identifier for the seller, used for external references
+        data_type: INTEGER
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: logo
+        description: Logo of the seller
+        data_type: STRING
+      - name: id
+        description: Primary key of the sellers table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: link
+        description: Link to the seller's website
+        data_type: STRING
+      - name: name
+        description: Name of the seller
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+
+  - name: dim_users
+    description: >
+      This is a model for the dim_users table.
+      The model contains information about the users.
+    columns:
+      - name: user_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: role
+        description: Role of the user
+        data_type: STRING
+      - name: last_login
+        description: The timestamp when the user last logged in
+        data_type: TIMESTAMP
+      - name: created_at
+        description: The timestamp when the record was created
+        data_type: TIMESTAMP
+      - name: phone_number
+        description: Phone number of the user
+        data_type: STRING
+      - name: first_name
+        description: First name of the user
+        data_type: STRING
+      - name: is_active
+        description: Flag indicating if the user is active
+        data_type: BOOLEAN
+      - name: password
+        description: Password of the user
+        data_type: STRING
+      - name: email
+        description: Email of the user
+        data_type: STRING
+      - name: updated_at
+        description: The timestamp when the record was last updated
+        data_type: TIMESTAMP
+      - name: last_name
+        description: Last name of the user
+        data_type: STRING
+      - name: id
+        description: Primary key of the users table
+        tests:
+          - not_null
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE
+      - name: updated_date_tz_hcm
+        description: The date when the record was last updated
+        data_type: DATE
+      - name: valid_from
+        description: The timestamp when the record became valid
+        data_type: TIMESTAMP
+      - name: valid_to
+        description: The timestamp when the record became invalid
+        data_type: TIMESTAMP
+      - name: is_current
+        description: Flag indicating if the record is current
+        data_type: BOOLEAN
+
+  - name: dim_dates
+    description: >
+      This is a model for the dim_dates table.
+      The model contains information about the dates.
+    columns:
+      - name: date_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: Date of the sale
+        data_type: DATE
+      - name: year
+        description: Year of the date
+        data_type: INTEGER
+      - name: month
+        description: Month of the date
+        data_type: INTEGER
+      - name: day_of_month
+        description: Day of the month
+        data_type: INTEGER
+      - name: day_of_week
+        description: Day of the week
+        data_type: INTEGER
+      - name: day_of_year
+        description: Day of the year
+        data_type: INTEGER
+      - name: quarter
+        description: Quarter of the year
+        data_type: INTEGER
+      - name: quarter_name
+        description: Name of the quarter
+        data_type: STRING
+      - name: month_name
+        description: Name of the month
+        data_type: STRING
+      - name: year_month
+        description: Year and month
+        data_type: STRING
+      - name: week_of_year
+        description: Week of the year
+        data_type: INTEGER
+      - name: week_start_date
+        description: Start date of the week
+        data_type: DATE
+      - name: week_end_date
+        description: End date of the week
+        data_type: DATE
+      - name: fiscal_year
+        description: Fiscal year
+        data_type: INTEGER
+      - name: fiscal_quarter
+        description: Fiscal quarter
+        data_type: INTEGER
+      - name: fiscal_month
+        description: Fiscal month
+        data_type: INTEGER
+      - name: is_holiday
+        description: Flag indicating if the date is a holiday
+        data_type: BOOLEAN
+      - name: is_weekend
+        description: Flag indicating if the date is a weekend
+        data_type: BOOLEAN
+      - name: is_weekday
+        description: Flag indicating if the date is a weekday
+        data_type: BOOLEAN
+      - name: is_first_day_of_month
+        description: Flag indicating if the date is the first day of the month
+        data_type: BOOLEAN
+      - name: is_last_day_of_month
+        description: Flag indicating if the date is the last day of the month
+        data_type: BOOLEAN
+      - name: season
+        description: Season of the year
+        data_type: STRING
+
+  - name: fct_sales
+    description: >
+      This is a model for the fct_sales table.
+      The model contains information about the sales.
+    columns:
+      - name: sale_key
+        description: Surrogate key of the table
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        description: Surrogate key of the date table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: user_key
+        description: Surrogate key of the user table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: book_key
+        description: Surrogate key of the book table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: seller_key
+        description: Surrogate key of the seller table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: promotion_key
+        description: Surrogate key of the promotion table
+        data_type: STRING
+      - name: payment_key
+        description: Surrogate key of the payment table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: category_key
+        description: Surrogate key of the category table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: order_id
+        description: Primary key of the orders table
+        data_type: STRING
+        tests:
+          - not_null
+      - name: sales_quantity
+        description: Quantity of the sale
+        data_type: INTEGER
+      - name: regular_unit_price
+        description: Regular unit price of the sale
+        data_type: FLOAT
+      - name: discount_unit_price
+        description: Discount unit price of the sale
+        data_type: FLOAT
+      - name: net_unit_price
+        description: Net unit price of the sale
+        data_type: FLOAT
+      - name: extended_discount_amount
+        description: Extended discount amount of the sale
+        data_type: FLOAT
+      - name: extended_sales_amount
+        description: Extended sales amount of the sale
+        data_type: FLOAT
+      - name: created_date_tz_hcm
+        description: The date when the record was created
+        data_type: DATE

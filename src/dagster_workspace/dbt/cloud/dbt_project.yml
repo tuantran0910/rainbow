@@ -29,17 +29,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 # directory as views. These settings can be overridden in the individual model
 # files using the `{{ config(...) }}` macro.
 models:
+  +persist_docs:
+    relation: true
+    columns: true
+
   rainbow_transformations:
     +schema: warehouse
     staging:
-      batch:
-        +schema: warehouse_staging_batch
-      stream:
-        +schema: warehouse_staging_stream
+      +schema: warehouse_staging
     intermediate:
-      batch_layer:
-        +schema: warehouse_batch
-      stream_layer:
-        +schema: warehouse_stream
-      # Unified lambda views go to the main warehouse schema
       +schema: warehouse

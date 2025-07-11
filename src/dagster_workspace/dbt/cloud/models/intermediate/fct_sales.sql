@@ -5,10 +5,11 @@
 }}
 
 {{
-    lambda_fact_sales(
-        batch_fact_relation=ref(this.name ~ '__batch'),
-        stream_orders_relation=ref('stg_orders__stream'),
-        stream_order_items_relation=ref('stg_order_items__stream'),
+    lambda_view(
+        batch_relation=ref(this.name ~ '__batch'),
+        stream_stg_relation=ref(this.name ~ '__stream'),
+        unique_key='sale_key',
+        updated_date_field='created_date_tz_hcm',
         cutoff_days=1
     )
 }}
