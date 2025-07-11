@@ -51,4 +51,4 @@ resources:
       project_id: rainbow-data-production
     configs:
       location: us-central1
-      autodetect_schema: true
+      autodetect_schema: false

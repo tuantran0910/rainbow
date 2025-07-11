@@ -17,12 +17,12 @@ dependencies = [
 
 [dependency-groups]
 local = [
-    "dlt[clickhouse,postgres]>=1.11.0",
+    "dlt[clickhouse,postgres]>=1.13.0",
     "dbt-clickhouse>=1.9.2",
 ]
 
 cloud = [
-    "dlt[bigquery,postgres]>=1.11.0",
+    "dlt[bigquery,postgres]>=1.13.0",
     "dbt-bigquery>=1.9.2",
     "google-cloud-storage>=2.10.0",
     "dagster-gcp>=0.26.20",
