@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 from typing import Optional
 
+import dagster as dg
 from dagster import AssetKey
 from dagster import AssetSpec
 from dagster_dbt import DagsterDbtTranslator
@@ -80,3 +81,12 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         This is used to set the group name of the asset in Dagster.
         """
         return DAGSTER_DBT_ASSET_GROUP
+
+    def get_automation_condition(
+        self, dbt_resource_props: Mapping[str, Any]
+    ) -> Optional[dg.AutomationCondition]:
+        """
+        Overrides the get_automation_condition method to return a custom automation condition.
+        This is used to set the automation condition of the asset in Dagster.
+        """
+        return dg.AutomationCondition.eager()
