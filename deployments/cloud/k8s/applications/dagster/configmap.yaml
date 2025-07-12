@@ -6,3 +6,6 @@ metadata:
 data:
   ENVIRONMENT: cloud
   API_BASE_URL: https://rainbow-api-x3impskqiq-ue.a.run.app
+  MAX_BOOKS_PER_REQUEST: '5'
+  MAX_ITEMS_PER_ORDER: '3'
+  MAX_QUANTITY_PER_BOOK: '2'
