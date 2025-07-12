@@ -29,13 +29,13 @@ sources:
             data_type: STRING
           - name: created_at
             description: Timestamp when the category was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the category was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the category is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: users
         description: >
@@ -68,7 +68,7 @@ sources:
               - not_null
           - name: last_login
             description: Timestamp of the user's last login
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: is_active
             description: Flag indicating if the user account is active
             data_type: BOOL
@@ -80,13 +80,13 @@ sources:
             data_type: STRING
           - name: created_at
             description: Timestamp when the user was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the user was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the user is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: authors
         description: >
@@ -111,13 +111,13 @@ sources:
             data_type: STRING
           - name: created_at
             description: Timestamp when the author was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the author was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the author is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: sellers
         description: >
@@ -145,13 +145,13 @@ sources:
             data_type: STRING
           - name: created_at
             description: Timestamp when the seller was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the seller was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the seller is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: books
         description: >
@@ -206,13 +206,13 @@ sources:
             data_type: INT64
           - name: created_at
             description: Timestamp when the book was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the book was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the book is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: orders
         description: >
@@ -245,13 +245,13 @@ sources:
             data_type: DECIMAL
           - name: created_at
             description: Timestamp when the order was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the order was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the order is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: order_items
         description: >
@@ -290,13 +290,13 @@ sources:
               - not_null
           - name: created_at
             description: Timestamp when the order item was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the order item was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the order item is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: payments
         description: >
@@ -313,13 +313,13 @@ sources:
             data_type: STRING
           - name: created_at
             description: Timestamp when the payment method was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the payment method was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the payment method is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: promotions
         description: >
@@ -344,10 +344,10 @@ sources:
             data_type: DECIMAL
           - name: start_date
             description: Start date and time of the promotion
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: end_date
             description: End date and time of the promotion
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: max_uses
             description: Maximum number of times the promotion can be used
             data_type: INT64
@@ -356,13 +356,13 @@ sources:
             data_type: INT64
           - name: created_at
             description: Timestamp when the promotion was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the promotion was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the promotion is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP
 
       - name: book_authors
         description: >
@@ -386,10 +386,10 @@ sources:
               - not_null
           - name: created_at
             description: Timestamp when the book_author record was created
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: updated_at
             description: Timestamp when the book_author record was last updated
-            data_type: DATETIME64
+            data_type: TIMESTAMP
           - name: deleted_at
             description: Soft delete timestamp, NULL if the book_author record is active
-            data_type: DATETIME64
+            data_type: TIMESTAMP

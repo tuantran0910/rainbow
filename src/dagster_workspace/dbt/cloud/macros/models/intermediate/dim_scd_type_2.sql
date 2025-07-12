@@ -18,25 +18,25 @@
             stg_data AS (
                 SELECT *
                 FROM {{ stg_relation }}
-                WHERE {{ updated_at_field }} IN {{ model_params.incremental_dates_quoted_tz_hcm }}
+                WHERE DATE({{ updated_at_field }}) IN {{ model_params.incremental_dates_quoted_tz_hcm }}
             ),
 
             new_records AS (
                 SELECT
-                    {{ dbt_utils.generate_surrogate_key(['current.' ~ unique_key, 'current.' ~ updated_at_field]) }} AS {{ surrogate_key_field_name }},
-                    current.* EXCEPT (valid_from, valid_to, is_current),
+                    {{ dbt_utils.generate_surrogate_key(['stg_data.' ~ unique_key, 'stg_data.' ~ updated_at_field]) }} AS {{ surrogate_key_field_name }},
+                    stg_data.*,
                     CURRENT_TIMESTAMP() AS valid_from,
-                    toDateTime64('9999-12-31 23:59:59.999999', 6) AS valid_to,
+                    TIMESTAMP('9999-12-31 23:59:59.999999') AS valid_to,
                     TRUE AS is_current
-                FROM stg_data AS current
+                FROM stg_data
                 LEFT JOIN {{ this }} AS existing
                     ON
-                        existing.{{ unique_key }} = current.{{ unique_key }}
+                        existing.{{ unique_key }} = stg_data.{{ unique_key }}
                         AND existing.is_current = TRUE
                 WHERE
                     existing.{{ unique_key }} IS NULL
                     {% for column in compare_columns %}
-                    OR COALESCE(existing.{{ column }}, '') != COALESCE(current.{{ column }}, '')
+                    OR COALESCE(existing.{{ column }}, '') != COALESCE(stg_data.{{ column }}, '')
                     {% endfor %}
             ),
 
