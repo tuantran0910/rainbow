@@ -8,6 +8,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/dagster-workspace
+  GCP_PROJECT_ID: rainbow-data-production
+  AR_REGISTRY: us-central1-docker.pkg.dev
+  AR_REPOSITORY: rainbow-docker
 
 jobs:
   build:
@@ -16,6 +19,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -92,6 +96,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.AR_REGISTRY }} --quiet
+
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -103,7 +120,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/dagster-workspace
           tags: |
             type=raw,value=${{ steps.calver.outputs.calver_tag }}
             type=raw,value=latest
@@ -147,10 +166,16 @@ jobs:
 
             ## 📦 Docker Images
 
-            ### Production Cloud Image
+            ### GitHub Container Registry (Public)
             ```bash
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ```
+
+            ### Google Artifact Registry (Production)
+            ```bash
+            docker pull ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/dagster-workspace:${{ steps.calver.outputs.calver_tag }}
+            docker pull ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/dagster-workspace:latest
             ```
 
             ## 🔧 Build Information
@@ -173,6 +198,8 @@ jobs:
           echo "🏷️  Docker Image Tags:"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.calver.outputs.calver_tag }}"
           echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "   - ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/dagster-workspace:${{ steps.calver.outputs.calver_tag }}"
+          echo "   - ${{ env.AR_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/dagster-workspace:latest"
           echo "🎉 GitHub Release: Dagster Workspace v${{ steps.calver.outputs.calver_tag }}"
           echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/dagster-workspace/${{ steps.calver.outputs.calver_tag }}"
           TRIGGER_TAG=$(echo "${{ github.event.ref }}" | sed 's|refs/tags/||')
