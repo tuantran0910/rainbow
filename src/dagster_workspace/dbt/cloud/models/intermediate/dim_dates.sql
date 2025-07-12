@@ -6,14 +6,16 @@
 }}
 
 {% set start_date = var('dim_date_start_date', '2020-01-01') %}
-{% set years_forward = var('dim_date_years_forward', 10) %}
 
 WITH
     date_spine AS (
         SELECT
             DATE_ADD(DATE('{{ start_date }}'), INTERVAL day_num DAY) AS date_value
         FROM UNNEST(
-            GENERATE_ARRAY(0, DATE_DIFF(DATE_ADD(CURRENT_DATE(), INTERVAL {{ years_forward }} YEAR), DATE('{{ start_date }}'), DAY))
+            GENERATE_ARRAY(
+                0,
+                DATE_DIFF(DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY), DATE('{{ start_date }}'), DAY)
+            )
         ) AS day_num
     ),
 
@@ -69,7 +71,7 @@ WITH
     final AS (
         SELECT *
         FROM date_attributes
-        WHERE date <= CURRENT_DATE()
+        WHERE date <= DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
     )
 
 SELECT *
