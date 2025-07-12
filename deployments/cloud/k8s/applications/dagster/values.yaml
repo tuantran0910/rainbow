@@ -11,7 +11,7 @@ dagsterWebserver:
   replicaCount: 1
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.07.12.0
+    tag: 2025.07.12.1
     pullPolicy: Always
   service:
     type: NodePort
@@ -232,7 +232,7 @@ dagsterDaemon:
   enabled: true
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.07.12.0
+    tag: 2025.07.12.1
   runCoordinator:
     type: QueuedRunCoordinator
     config:
