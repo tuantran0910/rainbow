@@ -15,6 +15,6 @@ dependencies = [
     "dagster-gcp>=0.26.20",
     "dagster-graphql>=1.10.20",
     "dagster-webserver==1.10.20",
-    "grpcio==1.57.0",
+    "grpcio==1.73.1",
     "dagster-contrib-gcp>=0.0.6",
 ]
