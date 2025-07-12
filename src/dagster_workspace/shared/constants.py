@@ -95,8 +95,10 @@ RAINBOW_DB_PASSWORD = os.getenv("API_DB_PASSWORD")
 DBT_PROJECT_DIR = Path(__file__).absolute().parent.parent / "dbt" / ENVIRONMENT
 DBT_PROFILES_DIR = DBT_PROJECT_DIR
 DBT_TARGET_PROFILE = os.getenv("DBT_TARGET_PROFILE", "production")
+DBT_TARGET_PATH = DBT_PROJECT_DIR / "target"
 
 # Dbt Docs Generation
+DBT_GCS_PROJECT = os.getenv("DBT_GCS_PROJECT", "rainbow-data-production")
 DBT_DOCS_BUCKET_NAME = os.getenv("DBT_DOCS_BUCKET_NAME", "rainbow-data-production-dbt")
 DBT_DOCS_BUCKET_FOLDER = "docs"
 DBT_DOCS_BASE_URL = os.getenv("DBT_DOCS_BASE_URL", "https://dbt-docs.tuantrann.work")

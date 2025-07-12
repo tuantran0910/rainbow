@@ -1,19 +1,20 @@
 from pathlib import Path
 
 import dagster as dg
-from dagster import AssetExecutionContext
-from dagster import AssetMaterialization
-from dagster_dbt import DbtCliResource
 from google.cloud import storage
 
+from dbt.cli.main import dbtRunner
+from dbt.cli.main import dbtRunnerResult
 from shared.constants import DAGSTER_DBT_ASSET_GROUP
 from shared.constants import DAGSTER_METADATA
 from shared.constants import DAGSTER_TAGS
 from shared.constants import DBT_DOCS_BASE_URL
 from shared.constants import DBT_DOCS_BUCKET_FOLDER
 from shared.constants import DBT_DOCS_BUCKET_NAME
+from shared.constants import DBT_GCS_PROJECT
 from shared.constants import DBT_PROFILES_DIR
 from shared.constants import DBT_PROJECT_DIR
+from shared.constants import DBT_TARGET_PATH
 
 
 logger = dg.get_dagster_logger(__name__)
@@ -32,7 +33,7 @@ def upload_docs_to_gcs(docs_files: dict[str, Path]) -> dict[str, str]:
     logger.info(f"Initializing GCS client for bucket: {DBT_DOCS_BUCKET_NAME}")
 
     # Initialize GCS client
-    storage_client = storage.Client()
+    storage_client = storage.Client(project=DBT_GCS_PROJECT)
     bucket = storage_client.bucket(DBT_DOCS_BUCKET_NAME)
     uploaded_files = {}
     for dest_filename, source_path in docs_files.items():
@@ -73,9 +74,7 @@ def upload_docs_to_gcs(docs_files: dict[str, Path]) -> dict[str, str]:
     group_name=DAGSTER_DBT_ASSET_GROUP,
     kinds={"python", "dbt"},
 )
-def dbt_docs_generation_asset(
-    context: AssetExecutionContext, dbt: DbtCliResource
-) -> AssetMaterialization:
+def dbt_docs_generation_asset(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
     """
     Generate dbt documentation (manifest.json, static_index.html)
     and upload to GCS bucket for hosting.
@@ -91,8 +90,14 @@ def dbt_docs_generation_asset(
 
     try:
         # Generate dbt docs using the dbt CLI resource with proper flags
-        logger.info("Running dbt docs generate command with --static flag...")
-        docs_invocation = dbt.cli(
+        logger.info(
+            "Running dbt docs generate command with --static flag... in project path: %s, profiles path: %s, target path: %s",
+            DBT_PROJECT_DIR,
+            DBT_PROFILES_DIR,
+            DBT_TARGET_PATH,
+        )
+        dbt_runner = dbtRunner()
+        res: dbtRunnerResult = dbt_runner.invoke(
             [
                 "docs",
                 "generate",
@@ -100,23 +105,22 @@ def dbt_docs_generation_asset(
                 str(DBT_PROJECT_DIR),
                 "--profiles-dir",
                 str(DBT_PROFILES_DIR),
+                "--target-path",
+                str(DBT_TARGET_PATH),
                 "--static",
             ],
-            context=context,
         )
-        docs_invocation.wait()
 
-        if not docs_invocation.is_successful():
-            error = docs_invocation.get_error()
-            raise dg.DagsterError(f"dbt docs generate failed: {error}")
+        if not res.success:
+            logger.error("dbt docs generate failed")
+            raise dg.DagsterError(f"dbt docs generate failed. Details: {res.exception}")
 
         logger.info("dbt docs generate completed successfully")
 
         # Get the target path where dbt artifacts are generated
-        target_path = docs_invocation.target_path
         docs_files: dict[str, Path] = {
-            "manifest.json": target_path / "manifest.json",
-            "static_index.html": target_path / "static_index.html",
+            "manifest.json": DBT_TARGET_PATH / "manifest.json",
+            "static_index.html": DBT_TARGET_PATH / "static_index.html",
         }
 
         # Verify all required files exist
@@ -151,11 +155,7 @@ def dbt_docs_generation_asset(
 
         logger.info("dbt docs generation and upload completed successfully")
 
-        return AssetMaterialization(
-            asset_key=context.asset_key,
-            metadata=metadata,
-            description="dbt documentation generated and uploaded to GCS",
-        )
+        return dg.MaterializeResult(asset_key=context.asset_key, metadata=metadata)
 
     except Exception as e:
         logger.exception(f"dbt docs generation failed: {e}")
