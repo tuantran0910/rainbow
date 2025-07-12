@@ -1,5 +1,4 @@
 import dagster as dg
-from dagster_dbt import build_schedule_from_dbt_selection
 from dagster_dbt import DagsterDbtTranslatorSettings
 from dagster_dbt import dbt_assets
 from dagster_dbt import DbtCliResource
@@ -60,16 +59,7 @@ def build_dbt_project() -> dg.Definitions:
             dbt.cli(["build"], context=context).stream().fetch_row_counts().fetch_column_metadata()
         )
 
-    # Create a schedule for the dbt models
-    dbt_schedule = build_schedule_from_dbt_selection(
-        [dbt_models],
-        job_name="dbt_materialization_job",
-        cron_schedule="0 0 * * *",
-        dbt_select="fqn:*",
-    )
-
     return dg.Definitions(
         assets=[dbt_models],
         resources={"dbt": dbt_resource},
-        schedules=[dbt_schedule],
     )
