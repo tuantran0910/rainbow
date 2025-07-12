@@ -31,8 +31,8 @@ WITH
             FORMAT_DATE('%B', date_value) AS month_name,
             FORMAT_DATE('%Y-%m', date_value) AS year_month,
             EXTRACT(ISOWEEK FROM date_value) AS week_of_year,
-            DATE_TRUNC(date_value, WEEK(MONDAY)) AS week_start_date,
-            DATE_ADD(DATE_TRUNC(date_value, WEEK(MONDAY)), INTERVAL 6 DAY) AS week_end_date,
+            DATE_TRUNC(date_value, ISOWEEK) AS week_start_date,
+            DATE_ADD(DATE_TRUNC(date_value, ISOWEEK), INTERVAL 6 DAY) AS week_end_date,
             CASE
                 WHEN EXTRACT(MONTH FROM date_value) >= 4 THEN EXTRACT(YEAR FROM date_value)
                 ELSE EXTRACT(YEAR FROM date_value) - 1

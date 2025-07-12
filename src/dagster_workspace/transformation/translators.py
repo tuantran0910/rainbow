@@ -4,8 +4,6 @@ from typing import Any
 from typing import Optional
 
 import dagster as dg
-from dagster import AssetKey
-from dagster import AssetSpec
 from dagster_dbt import DagsterDbtTranslator
 from dagster_dlt import DagsterDltTranslator
 from dagster_dlt.translator import DltResourceTranslatorData
@@ -15,21 +13,21 @@ from shared.constants import DAGSTER_DBT_ASSET_GROUP
 
 
 class CustomDagsterDltTranslator(DagsterDltTranslator):
-    def get_asset_spec(self, data: DltResourceTranslatorData) -> AssetSpec:
+    def get_asset_spec(self, data: DltResourceTranslatorData) -> dg.AssetSpec:
         """
         Overrides asset spec to override asset key to be the dlt resource name and
         override deps to hide the default upstream assets.
         """
         default_spec = super().get_asset_spec(data)
         return default_spec.replace_attributes(
-            key=AssetKey(f"{data.resource.name}"),
+            key=dg.AssetKey(f"{data.resource.name}"),
             deps=[],
         )
 
 
 class CustomDagsterDbtTranslator(DagsterDbtTranslator):
     @staticmethod
-    def default_asset_key_fn(dbt_resource_props: Mapping[str, Any]) -> AssetKey:
+    def default_asset_key_fn(dbt_resource_props: Mapping[str, Any]) -> dg.AssetKey:
         """
         Default asset key function to return the dbt resource name.
 
@@ -45,16 +43,16 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         dagster_metadata = dbt_meta.get("dagster", {})
         asset_key_config = dagster_metadata.get("asset_key", [])
         if asset_key_config:
-            return AssetKey(asset_key_config)
+            return dg.AssetKey(asset_key_config)
 
         if dbt_resource_props.get("version"):
             components = [dbt_resource_props["alias"]]
         else:
             components = [dbt_resource_props["name"]]
 
-        return AssetKey(components)
+        return dg.AssetKey(components)
 
-    def get_asset_key(self, dbt_resource_props: Mapping[str, Any]) -> AssetKey:
+    def get_asset_key(self, dbt_resource_props: Mapping[str, Any]) -> dg.AssetKey:
         """
         Overrides the get_asset_key method to return a custom asset key.
         This is used to set the asset key in Dagster.
@@ -64,7 +62,7 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         if resource_type == "source":
             dbt_resource_meta = dbt_resource_props.get("meta", {})
             asset_key = dbt_resource_meta.get("asset_key", name)
-            return AssetKey(asset_key)
+            return dg.AssetKey(asset_key)
         else:
             return self.default_asset_key_fn(dbt_resource_props)
 
@@ -81,12 +79,3 @@ class CustomDagsterDbtTranslator(DagsterDbtTranslator):
         This is used to set the group name of the asset in Dagster.
         """
         return DAGSTER_DBT_ASSET_GROUP
-
-    def get_automation_condition(
-        self, dbt_resource_props: Mapping[str, Any]
-    ) -> Optional[dg.AutomationCondition]:
-        """
-        Overrides the get_automation_condition method to return a custom automation condition.
-        This is used to set the automation condition of the asset in Dagster.
-        """
-        return dg.AutomationCondition.eager()
