@@ -4,4 +4,6 @@ version = "0.1.0"
 description = "Rainbow Dagster Core - Cloud"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "dagster-contrib-gcp>=0.0.6",
+]
