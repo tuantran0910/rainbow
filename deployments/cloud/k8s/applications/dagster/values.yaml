@@ -11,7 +11,7 @@ dagsterWebserver:
   replicaCount: 1
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.07.03.0
+    tag: 2025.07.12.0
     pullPolicy: Always
   service:
     type: NodePort
@@ -155,7 +155,7 @@ scheduler:
 # Run Launcher: Kubernetes-based job execution
 ####################################################################################################
 runLauncher:
-  type: K8sRunLauncher
+  type: CustomRunLauncher
   config:
     k8sRunLauncher:
       jobNamespace: dagster
@@ -203,6 +203,15 @@ runLauncher:
         jobSpecConfig:
           ttlSecondsAfterFinished: 300
 
+    customRunLauncher:
+      module: dagster_contrib_gcp.cloud_run.run_launcher
+      class: CloudRunRunLauncher
+      config:
+        project: rainbow-data-production
+        region: us-east1
+      job_name_by_code_location:
+        rainbow-dagster-workspace: dagster-job
+
 ####################################################################################################
 # PostgreSQL: Configuration values for postgresql
 ####################################################################################################
@@ -223,7 +232,7 @@ dagsterDaemon:
   enabled: true
   image:
     repository: ghcr.io/tuantran0910/rainbow/dagster-core
-    tag: 2025.07.03.0
+    tag: 2025.07.12.0
   runCoordinator:
     type: QueuedRunCoordinator
     config:
