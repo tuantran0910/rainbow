@@ -94,7 +94,7 @@ dagster-user-deployments:
     - name: rainbow-dagster-workspace
       image:
         repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
-        tag: 2025.07.12.11
+        tag: 2025.07.12.12
         pullPolicy: Always
       codeServerArgs:
         - -m
