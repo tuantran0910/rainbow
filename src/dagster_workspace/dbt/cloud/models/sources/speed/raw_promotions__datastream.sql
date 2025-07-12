@@ -5,7 +5,7 @@
 }}
 
 SELECT
-    * EXCEPT (deleted_at, datastream_metadata),
+    * EXCEPT (datastream_metadata),
     DATE(created_at, 'Asia/Ho_Chi_Minh') AS created_date_tz_hcm,
     DATE(updated_at, 'Asia/Ho_Chi_Minh') AS updated_date_tz_hcm,
     STRUCT(

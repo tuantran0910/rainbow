@@ -5,10 +5,7 @@
 }}
 
 SELECT
-    * EXCEPT (deleted_at, datastream_metadata)
-    REPLACE (
-        CAST(secondary_id AS INT64) AS secondary_id
-    ),
+    * EXCEPT (datastream_metadata),
     DATE(created_at, 'Asia/Ho_Chi_Minh') AS created_date_tz_hcm,
     DATE(updated_at, 'Asia/Ho_Chi_Minh') AS updated_date_tz_hcm,
     STRUCT(
