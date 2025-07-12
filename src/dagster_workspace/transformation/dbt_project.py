@@ -57,7 +57,7 @@ def build_dbt_project() -> dg.Definitions:
         This function is used to compile the dbt project and allow Dagster to build an asset graph.
         """
         yield from (
-            dbt.cli(["build"], context=context).stream().fetch_row_counts().fetch_column_metadata()
+            dbt.cli(["run"], context=context).stream().fetch_row_counts().fetch_column_metadata()
         )
 
     # Create a schedule for the dbt models
