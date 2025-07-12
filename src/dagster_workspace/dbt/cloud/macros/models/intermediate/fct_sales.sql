@@ -8,8 +8,7 @@
     dim_sellers_relation,
     dim_promotions_relation,
     dim_payments_relation,
-    dim_categories_relation,
-    is_stream=false
+    dim_categories_relation
 ) %}
     {% set model_params = get_common_params(lookback_in_days=1) %}
 
@@ -38,17 +37,11 @@
         dim_users AS (
             SELECT *
             FROM {{ dim_users_relation }}
-            {% if not is_stream %}
-                WHERE is_current = TRUE
-            {% endif %}
         ),
 
         dim_books AS (
             SELECT *
             FROM {{ dim_books_relation }}
-            {% if not is_stream %}
-                WHERE is_current = TRUE
-            {% endif %}
         ),
 
         dim_sellers AS (

@@ -17,7 +17,6 @@
         dim_sellers_relation=ref('dim_sellers'),
         dim_promotions_relation=ref('dim_promotions'),
         dim_payments_relation=ref('dim_payments'),
-        dim_categories_relation=ref('dim_categories'),
-        is_stream=true
+        dim_categories_relation=ref('dim_categories')
     )
 }}
