@@ -1,9 +1,10 @@
 # Define the base image
-ARG DAGSTER_VERSION=1.10.20
-FROM dagster/dagster-celery-k8s:${DAGSTER_VERSION}
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-slim
 
 # Label the image
 LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
+LABEL org.opencontainers.image.description="Rainbow Dagster Core - Cloud"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -21,7 +22,6 @@ RUN apt-get update && apt-get install -y \
 ENV VIRTUAL_ENV=/opt/venv
 
 # Copy the dependency file and install dependencies
-ARG PYTHON_VERSION=3.12
 COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 COPY pyproject.toml .
 RUN --mount=type=cache,target=/root/.cache/uv \
