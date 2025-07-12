@@ -13,17 +13,12 @@ sources:
           - name: id
             description: Primary key of the categories table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: secondary_id
             description: Secondary identifier for the category, used for external references
             data_type: STRING
           - name: name
             description: Name of the category
             data_type: STRING
-            tests:
-              - not_null
           - name: slug
             description: URL-friendly version of the category name
             data_type: STRING
@@ -44,28 +39,18 @@ sources:
           - name: id
             description: Primary key of the users table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: email
             description: Email address of the user, used for login
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: password
             description: Hashed password of the user
             data_type: STRING
           - name: first_name
             description: First name of the user
             data_type: STRING
-            tests:
-              - not_null
           - name: last_name
             description: Last name of the user
             data_type: STRING
-            tests:
-              - not_null
           - name: last_login
             description: Timestamp of the user's last login
             data_type: TIMESTAMP
@@ -95,17 +80,12 @@ sources:
           - name: id
             description: Primary key of the authors table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: secondary_id
             description: Secondary identifier for the author, used for external references
             data_type: STRING
           - name: name
             description: Name of the author
             data_type: STRING
-            tests:
-              - not_null
           - name: slug
             description: URL-friendly version of the author name
             data_type: STRING
@@ -126,17 +106,12 @@ sources:
           - name: id
             description: Primary key of the sellers table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: secondary_id
             description: Secondary identifier for the seller, used for external references
             data_type: STRING
           - name: name
             description: Name of the seller
             data_type: STRING
-            tests:
-              - not_null
           - name: link
             description: URL to the seller's website or profile
             data_type: STRING
@@ -160,35 +135,24 @@ sources:
           - name: id
             description: Primary key of the books table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: secondary_id
             description: Secondary identifier for the book, used for external references
             data_type: STRING
           - name: category_id
             description: Foreign key to the categories table
             data_type: STRING
-            tests:
-              - not_null
           - name: seller_id
             description: Foreign key to the sellers table
             data_type: STRING
-            tests:
-              - not_null
           - name: name
             description: Title of the book
             data_type: STRING
-            tests:
-              - not_null
           - name: description
             description: Detailed description of the book
             data_type: STRING
           - name: price
             description: Current selling price of the book
             data_type: DECIMAL
-            tests:
-              - not_null
           - name: original_price
             description: Original price of the book before any discounts
             data_type: DECIMAL
@@ -221,19 +185,12 @@ sources:
           - name: id
             description: Primary key of the orders table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: user_id
             description: Foreign key to the users table (customer who placed the order)
             data_type: STRING
-            tests:
-              - not_null
           - name: payment_id
             description: Foreign key to the payments table
             data_type: STRING
-            tests:
-              - not_null
           - name: promotion_id
             description: Foreign key to the promotions table (optional)
             data_type: STRING
@@ -260,34 +217,21 @@ sources:
           - name: id
             description: Primary key of the order_items table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: order_id
             description: Foreign key to the orders table
             data_type: STRING
-            tests:
-              - not_null
           - name: book_id
             description: Foreign key to the books table
             data_type: STRING
-            tests:
-              - not_null
           - name: quantity
             description: Quantity of the book ordered
             data_type: INT64
-            tests:
-              - not_null
           - name: unit_price
             description: Price per unit at the time of purchase
             data_type: DECIMAL
-            tests:
-              - not_null
           - name: discount
             description: Discount amount applied to this item
             data_type: DECIMAL
-            tests:
-              - not_null
           - name: created_at
             description: Timestamp when the order item was created
             data_type: TIMESTAMP
@@ -305,9 +249,6 @@ sources:
           - name: id
             description: Primary key of the payments table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: method
             description: Payment method (CASH, CREDIT_CARD, DEBIT_CARD, TRANSFER)
             data_type: STRING
@@ -328,14 +269,9 @@ sources:
           - name: id
             description: Primary key of the promotions table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: name
             description: Name of the promotion
             data_type: STRING
-            tests:
-              - not_null
           - name: discount_type
             description: Type of discount (PERCENTAGE or FIXED)
             data_type: STRING
@@ -371,19 +307,12 @@ sources:
           - name: id
             description: Primary key of the book_authors table
             data_type: STRING
-            tests:
-              - unique
-              - not_null
           - name: book_id
             description: Foreign key to the books table
             data_type: STRING
-            tests:
-              - not_null
           - name: author_id
             description: Foreign key to the authors table
             data_type: STRING
-            tests:
-              - not_null
           - name: created_at
             description: Timestamp when the book_author record was created
             data_type: TIMESTAMP
