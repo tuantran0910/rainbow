@@ -94,7 +94,7 @@ dagster-user-deployments:
     - name: rainbow-dagster-workspace
       image:
         repository: ghcr.io/tuantran0910/rainbow/dagster-workspace
-        tag: 2025.07.12.9
+        tag: 2025.07.12.10
         pullPolicy: Always
       codeServerArgs:
         - -m
@@ -168,10 +168,10 @@ runLauncher:
         owner: tuan.tran
       resources:
         limits:
-          cpu: 500m
+          cpu: 1
           memory: 2Gi
         requests:
-          cpu: 125m
+          cpu: 250m
           memory: 512Mi
       runK8sConfig:
         podSpecConfig:
