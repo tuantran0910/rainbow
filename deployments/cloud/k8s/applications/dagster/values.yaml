@@ -168,10 +168,10 @@ runLauncher:
         owner: tuan.tran
       resources:
         limits:
-          cpu: 1
+          cpu: 500m
           memory: 2Gi
         requests:
-          cpu: 250m
+          cpu: 125m
           memory: 512Mi
       runK8sConfig:
         podSpecConfig:
