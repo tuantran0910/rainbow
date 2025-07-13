@@ -1,0 +1,28 @@
+cubes:
+  - name: total_revenue_by_period
+    sql_table: fct_sales
+    dimensions:
+      - name: year_month
+        sql: "{dim_dates.year_month}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: total_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+      - name: avg_order_value
+        sql: "SUM({CUBE}.extended_sales_amount) / COUNT(DISTINCT {CUBE}.order_id)"
+        type: number
+
+    joins:
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"

@@ -1,0 +1,11 @@
+{% set model = dbt_model('dim_dates') %}
+
+cubes:
+  - {{ model.as_cube() }}
+    dimensions:
+      {{ model.as_dimensions() }}
+      - name: date_key
+        sql: "{CUBE}.date_key"
+        type: string
+        primary_key: true
+        public: true

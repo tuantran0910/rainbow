@@ -1,0 +1,6 @@
+views:
+  - name: vw_total_revenue_by_period
+    description: Cubejs view for total revenue by period
+    cubes:
+      - join_path: total_revenue_by_period
+        includes: '*'
