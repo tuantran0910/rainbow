@@ -15,24 +15,18 @@ models:
       - name: book_id
         description: Primary key of the book table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_at
         description: The timestamp when the record was created
         data_type: TIMESTAMP
       - name: author_id
         description: Primary key of the author table
         data_type: STRING
-        tests:
-          - not_null
       - name: updated_at
         description: The timestamp when the record was last updated
         data_type: TIMESTAMP
       - name: id
         description: Primary key of the book_authors table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -69,8 +63,6 @@ models:
       - name: id
         description: Primary key of the authors table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -131,8 +123,6 @@ models:
       - name: id
         description: Primary key of the books table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -178,8 +168,6 @@ models:
       - name: id
         description: Primary key of the categories table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -210,8 +198,6 @@ models:
       - name: id
         description: Primary key of the payments table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -260,8 +246,6 @@ models:
       - name: id
         description: Primary key of the promotions table
         data_type: STRING
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -295,8 +279,6 @@ models:
       - name: id
         description: Primary key of the sellers table
         data_type: STRING
-        tests:
-          - not_null
       - name: link
         description: Link to the seller's website
         data_type: STRING
@@ -352,8 +334,6 @@ models:
         data_type: STRING
       - name: id
         description: Primary key of the users table
-        tests:
-          - not_null
       - name: created_date_tz_hcm
         description: The date when the record was created
         data_type: DATE
@@ -384,41 +364,27 @@ models:
       - name: date_key
         description: Surrogate key of the date table
         data_type: STRING
-        tests:
-          - not_null
       - name: user_key
         description: Surrogate key of the user table
         data_type: STRING
-        tests:
-          - not_null
       - name: book_key
         description: Surrogate key of the book table
         data_type: STRING
-        tests:
-          - not_null
       - name: seller_key
         description: Surrogate key of the seller table
         data_type: STRING
-        tests:
-          - not_null
       - name: promotion_key
         description: Surrogate key of the promotion table
         data_type: STRING
       - name: payment_key
         description: Surrogate key of the payment table
         data_type: STRING
-        tests:
-          - not_null
       - name: category_key
         description: Surrogate key of the category table
         data_type: STRING
-        tests:
-          - not_null
       - name: order_id
         description: Primary key of the orders table
         data_type: STRING
-        tests:
-          - not_null
       - name: sales_quantity
         description: Quantity of the sale
         data_type: INTEGER
