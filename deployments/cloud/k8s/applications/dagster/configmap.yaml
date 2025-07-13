@@ -9,3 +9,5 @@ data:
   MAX_BOOKS_PER_REQUEST: '5'
   MAX_ITEMS_PER_ORDER: '3'
   MAX_QUANTITY_PER_BOOK: '2'
+  DAGIT_BASE_URL: https://dagster.tuantrann.work
+  SLACK_CHANNEL: '#alerts'
