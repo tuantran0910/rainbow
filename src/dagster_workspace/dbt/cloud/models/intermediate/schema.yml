@@ -435,9 +435,6 @@ models:
       - name: is_weekend
         description: Flag indicating if the date is a weekend
         data_type: BOOLEAN
-      - name: is_weekday
-        description: Flag indicating if the date is a weekday
-        data_type: BOOLEAN
       - name: is_first_day_of_month
         description: Flag indicating if the date is the first day of the month
         data_type: BOOLEAN
