@@ -119,6 +119,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
       # NOTE: Can be local or cloud
       ENVIRONMENT: cloud
+      DAGIT_BASE_URL: http://127.0.0.1:3001
     entrypoint:
       - dagster
       - code-server

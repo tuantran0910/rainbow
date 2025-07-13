@@ -102,3 +102,10 @@ DBT_GCS_PROJECT = os.getenv("DBT_GCS_PROJECT", "rainbow-data-production")
 DBT_DOCS_BUCKET_NAME = os.getenv("DBT_DOCS_BUCKET_NAME", "rainbow-data-production-dbt")
 DBT_DOCS_BUCKET_FOLDER = "docs"
 DBT_DOCS_BASE_URL = os.getenv("DBT_DOCS_BASE_URL", "https://dbt-docs.tuantrann.work")
+
+# Dagit
+DAGIT_BASE_URL = os.getenv("DAGIT_BASE_URL", "http://127.0.0.1:3000")
+
+# Slack
+SLACK_CHANNEL = os.getenv("SLACK_CHANNEL")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
