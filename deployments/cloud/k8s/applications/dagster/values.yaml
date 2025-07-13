@@ -236,7 +236,8 @@ dagsterDaemon:
   runCoordinator:
     type: QueuedRunCoordinator
     config:
-      maxConcurrentRuns: 3
+      queuedRunCoordinator:
+        maxConcurrentRuns: 3
   labels:
     app: dagster
     owner: tuan.tran
