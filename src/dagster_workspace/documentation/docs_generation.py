@@ -69,11 +69,9 @@ def upload_docs_to_gcs(docs_files: dict[str, Path]) -> dict[str, str]:
 @dg.asset(
     name="dbt_docs_generation",
     description="Generate dbt documentation and upload to GCS bucket",
-    deps=dg.AssetSelection.groups("dbt"),
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
     group_name=DAGSTER_DBT_ASSET_GROUP,
-    auto_materialize_policy=dg.AutoMaterializePolicy.eager(),
     kinds={"python", "dbt"},
 )
 def dbt_docs_generation_asset(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
