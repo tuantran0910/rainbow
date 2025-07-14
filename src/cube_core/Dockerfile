@@ -1,4 +1,4 @@
-FROM cubejs/cube:v1.3.21
+FROM cubejs/cube:v1.3.36
 
 # Label the image
 LABEL org.opencontainers.image.authors="Tuan Tran <tntuan0910@gmail.com>"
