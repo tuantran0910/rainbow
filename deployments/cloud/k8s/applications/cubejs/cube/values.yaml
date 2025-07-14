@@ -19,7 +19,7 @@ extraEnvVarsFromSecret: cube-secret
 
 image:
   repository: ghcr.io/tuantran0910/rainbow/cube
-  tag: 2025.07.05.0
+  tag: 2025.07.14.0
   pullPolicy: IfNotPresent
 
 config:

@@ -3,7 +3,7 @@ fullnameOverride: cubestore
 
 image:
   repository: cubejs/cubestore
-  tag: v1.3.21
+  tag: v1.3.36
   pullPolicy: IfNotPresent
 
 commonAnnotations:
