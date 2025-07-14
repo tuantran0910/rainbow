@@ -1,0 +1,25 @@
+views:
+  - name: vw_top_performance_books
+    description: Cubejs view for top performance books
+    cubes:
+      - join_path: top_performance_books
+        includes:
+          - book_title
+          - units_sold
+          - total_revenue
+          - avg_rating
+          - avg_selling_price
+          - distinct_orders
+
+  - name: vw_top_performing_categories
+    description: Cubejs view for top performing categories
+    cubes:
+      - join_path: top_performing_categories
+        includes:
+          - category
+          - unique_books
+          - total_units_sold
+          - total_revenue
+          - avg_category_rating
+          - avg_selling_price
+          - revenue_per_unit

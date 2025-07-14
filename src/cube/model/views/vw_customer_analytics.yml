@@ -1,0 +1,25 @@
+views:
+  - name: vw_customer_purchase_metrics
+    description: Cubejs view for customer purchase metrics
+    cubes:
+      - join_path: customer_purchase_metrics
+        includes:
+          - customer_id
+          - customer_name
+          - total_orders
+          - total_spent
+          - total_books_purchased
+          - avg_order_value
+          - first_purchase_date
+          - last_purchase_date
+          - total_discount_amount
+          - customer_lifespan_days
+
+  # - name: vw_monthly_new_and_returning_customers
+  #   description: Cubejs view for monthly new and returning customers
+  #   cubes:
+  #     - join_path: monthly_new_and_returning_customers
+  #       includes:
+  #         - year_month
+  #         - new_customers
+  #         - returning_customers

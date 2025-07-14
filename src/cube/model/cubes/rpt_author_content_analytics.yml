@@ -1,0 +1,81 @@
+cubes:
+  - name: author_performance
+    extends: fct_sales
+    dimensions:
+      - name: author_name
+        sql: "{bri_book_authors.author_name}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: books_published
+        sql: "{bri_book_authors.book_id}"
+        type: count_distinct
+      - name: total_units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: avg_rating
+        sql: "{bri_book_authors.rating_average}"
+        type: avg
+      - name: avg_page_count
+        sql: "{bri_book_authors.page_count}"
+        type: avg
+      - name: avg_selling_price
+        sql: "{CUBE}.net_unit_price"
+        type: avg
+
+    joins:
+      - name: bri_book_authors
+        relationship: one_to_many
+        sql: "{CUBE}.id = {bri_book_authors.author_id}"
+
+
+  - name: book_characteristics_performance
+    extends: fct_sales
+    dimensions:
+      - name: book_length_category
+        case:
+          when:
+            - sql: "{dim_books.page_count} < 200"
+              label: "Short"
+            - sql: "{dim_books.page_count} < 400"
+              label: "Medium"
+          else:
+            label: "Long"
+        type: string
+        primary_key: true
+        public: true
+      - name: rating_category
+        case:
+          when:
+            - sql: "{dim_books.rating_average} < 3"
+              label: "Low Rating (< 3.0)"
+            - sql: "{dim_books.rating_average} < 4"
+              label: "Good Rating (3.0-4.0)"
+          else:
+            label: "Excellent Rating (> 4.0)"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: book_count
+        type: count
+      - name: avg_units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: avg
+      - name: avg_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: avg
+      - name: avg_price
+        sql: "{CUBE}.net_unit_price"
+        type: avg
+
+    joins:
+      - name: dim_books
+        relationship: one_to_one
+        sql: "{CUBE}.book_key = {dim_books.book_key}"

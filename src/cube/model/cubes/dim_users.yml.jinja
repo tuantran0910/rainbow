@@ -1,0 +1,11 @@
+{% set model = dbt_model('dim_users') %}
+
+cubes:
+  - {{ model.as_cube() }}
+    dimensions:
+      {{ model.as_dimensions() }}
+      - name: user_key
+        sql: "{CUBE}.user_key"
+        type: string
+        primary_key: true
+        public: true

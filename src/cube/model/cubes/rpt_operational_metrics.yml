@@ -1,0 +1,42 @@
+cubes:
+  - name: period_analysis
+    extends: fct_sales
+    dimensions:
+      - name: day_name
+        case:
+          when:
+            - sql: "{dim_dates.day_of_week} = 1"
+              label: "Monday"
+            - sql: "{dim_dates.day_of_week} = 2"
+              label: "Tuesday"
+            - sql: "{dim_dates.day_of_week} = 3"
+              label: "Wednesday"
+            - sql: "{dim_dates.day_of_week} = 4"
+              label: "Thursday"
+            - sql: "{dim_dates.day_of_week} = 5"
+              label: "Friday"
+            - sql: "{dim_dates.day_of_week} = 6"
+              label: "Saturday"
+            - sql: "{dim_dates.day_of_week} = 7"
+              label: "Sunday"
+          else:
+            label: "Unknown"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: total_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: avg_order_value
+        sql: "SUM({CUBE}.extended_sales_amount) / SUM({CUBE}.sales_quantity)"
+        type: number
+
+    joins:
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"

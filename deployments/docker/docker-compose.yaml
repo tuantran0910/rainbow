@@ -337,7 +337,7 @@ services:
       - cube-network
 
   cubestore_worker:
-    image: cubejs/cubestore:v1.3.22-arm64v8
+    image: cubejs/cubestore:v1.3.36-arm64v8
     container_name: cubestore_worker
     hostname: cubestore_worker
     environment:
@@ -346,6 +346,7 @@ services:
       CUBESTORE_WORKER_PORT: 10000
       CUBESTORE_REMOTE_DIR: /cube/data
       CUBESTORE_META_ADDR: cubestore_router:9999
+      CUBESTORE_LOG_LEVEL: debug
     volumes:
       - cubestore:/cube/data
     depends_on:
@@ -356,7 +357,7 @@ services:
       - clickhouse-network
 
   cubestore_router:
-    image: cubejs/cubestore:v1.3.22-arm64v8
+    image: cubejs/cubestore:v1.3.36-arm64v8
     container_name: cubestore_router
     hostname: cubestore_router
     environment:
@@ -364,6 +365,7 @@ services:
       CUBESTORE_REMOTE_DIR: /cube/data
       CUBESTORE_META_PORT: 9999
       CUBESTORE_SERVER_NAME: cubestore_router:9999
+      CUBESTORE_LOG_LEVEL: debug
     volumes:
       - cubestore:/cube/data
     restart: always
@@ -401,6 +403,7 @@ services:
       CUBEJS_CUBESTORE_HOST: cubestore_router
       CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
       CUBEJS_REFRESH_WORKER: true
+      CUBEJS_LOG_LEVEL: debug
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     volumes:
       - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
@@ -425,6 +428,7 @@ services:
       DBT_GCS_BUCKET: rainbow-data-production-dbt
       MANIFEST_PATH: docs/manifest.json
       CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
+      CUBEJS_LOG_LEVEL: debug
 
       # Clickhouse datasource
       # CUBEJS_DB_TYPE: clickhouse

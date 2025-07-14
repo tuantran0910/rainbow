@@ -1,0 +1,25 @@
+views:
+  - name: vw_author_performance
+    description: Cubejs view for author performance
+    cubes:
+      - join_path: author_performance
+        includes:
+          - author_name
+          - books_published
+          - total_units_sold
+          - total_revenue
+          - avg_rating
+          - avg_page_count
+          - avg_selling_price
+
+  - name: vw_book_characteristics_performance
+    description: Cubejs view for book characteristics performance
+    cubes:
+      - join_path: book_characteristics_performance
+        includes:
+          - book_length_category
+          - rating_category
+          - book_count
+          - avg_units_sold
+          - avg_revenue
+          - avg_price

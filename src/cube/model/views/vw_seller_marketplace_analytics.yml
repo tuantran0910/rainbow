@@ -1,0 +1,13 @@
+views:
+  - name: vw_seller_performance
+    description: Cubejs view for seller performance
+    cubes:
+      - join_path: seller_performance
+        includes:
+          - seller_name
+          - books_in_catalog
+          - total_units_sold
+          - total_revenue
+          - avg_book_rating
+          - unique_customers
+          - revenue_per_customer

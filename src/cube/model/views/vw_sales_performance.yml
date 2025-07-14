@@ -3,4 +3,20 @@ views:
     description: Cubejs view for total revenue by period
     cubes:
       - join_path: total_revenue_by_period
-        includes: '*'
+        includes:
+          - date
+          - total_revenue
+          - units_sold
+          - total_orders
+          - avg_order_value
+
+  - name: vw_discount_effectiveness
+    description: Cubejs view for discount effectiveness
+    cubes:
+      - join_path: discount_effectiveness
+        includes:
+          - date
+          - total_revenue
+          - total_discounts
+          - discount_rate_pct
+          - orders_with_discount

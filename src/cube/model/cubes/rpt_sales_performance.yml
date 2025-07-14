@@ -1,0 +1,58 @@
+cubes:
+  - name: total_revenue_by_period
+    extends: fct_sales
+    dimensions:
+      - name: date
+        sql: "{dim_dates.date}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: total_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+      - name: avg_order_value
+        sql: "SUM({CUBE}.extended_sales_amount) / COUNT(DISTINCT {CUBE}.order_id)"
+        type: number
+
+    joins:
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+  - name: discount_effectiveness
+    extends: fct_sales
+    dimensions:
+      - name: date
+        sql: "{dim_dates.date}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: total_discounts
+        sql: "{CUBE}.extended_discount_amount"
+        type: sum
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: discount_rate_pct
+        sql: "SUM({CUBE}.extended_discount_amount) / SUM({CUBE}.extended_sales_amount) * 100"
+        type: number
+      - name: orders_with_discount
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+        filters:
+          - sql: "{CUBE}.discount_unit_price > 0"
+
+    joins:
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"

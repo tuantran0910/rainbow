@@ -1,0 +1,10 @@
+views:
+  - name: vw_period_analysis
+    description: Cubejs view for period analysis
+    cubes:
+      - join_path: period_analysis
+        includes:
+          - day_name
+          - total_orders
+          - total_revenue
+          - avg_order_value

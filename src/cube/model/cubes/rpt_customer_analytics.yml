@@ -1,0 +1,94 @@
+cubes:
+  - name: customer_purchase_metrics
+    extends: fct_sales
+    dimensions:
+      - name: customer_id
+        sql: "{dim_users.id}"
+        type: string
+        primary_key: true
+        public: true
+      - name: customer_name
+        sql: "CONCAT({dim_users.first_name}, ' ', {dim_users.last_name})"
+        type: string
+
+    measures:
+      - name: total_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+      - name: total_spent
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: total_books_purchased
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: avg_order_value
+        sql: "SUM({CUBE}.extended_sales_amount) / SUM({CUBE}.sales_quantity)"
+        type: number
+      - name: first_purchase_date
+        sql: "{dim_dates.date}"
+        type: min
+      - name: last_purchase_date
+        sql: "{dim_dates.date}"
+        type: max
+      - name: total_discount_amount
+        sql: "{CUBE}.extended_discount_amount"
+        type: sum
+      - name: customer_lifespan_days
+        sql: "DATE_DIFF(MAX({dim_dates.date}), MIN({dim_dates.date}))"
+        type: number
+
+    joins:
+      - name: dim_users
+        relationship: one_to_one
+        sql: "{CUBE}.user_key = {dim_users.user_key}"
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+  - name: customer_rank
+    extends: fct_sales
+    dimensions:
+      - name: user_key
+        sql: "{CUBE}.user_key"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: first_order_month
+        sql: "FORMAT_DATE('%Y-%m', MIN({dim_dates.date}))"
+        type: string
+
+    joins:
+      - name: dim_dates
+        relationship: one_to_one
+        sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+  # - name: monthly_new_and_returning_customers
+  #   extends: fct_sales
+  #   dimensions:
+  #     - name: year_month
+  #       sql: "{dim_dates.year_month}"
+  #       type: string
+  #       primary_key: true
+  #       public: true
+
+  #   measures:
+  #     - name: new_customers
+  #       sql: "{CUBE}.user_key"
+  #       type: count_distinct
+  #       filters:
+  #         - sql: "customer_rank.first_order_month = {CUBE}.year_month"
+  #     - name: returning_customers
+  #       sql: "{CUBE}.user_key"
+  #       type: count_distinct
+  #       filters:
+  #         - sql: "customer_rank.first_order_month != {CUBE}.year_month"
+
+  #   joins:
+  #     - name: dim_dates
+  #       relationship: one_to_one
+  #       sql: "{CUBE}.date_key = {dim_dates.date_key}"
+  #     - name: customer_rank
+  #       relationship: one_to_one
+  #       sql: "{CUBE}.user_key = {customer_rank.user_key}"

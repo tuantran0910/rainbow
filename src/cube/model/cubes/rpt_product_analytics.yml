@@ -1,0 +1,68 @@
+cubes:
+  - name: top_performance_books
+    extends: fct_sales
+    dimensions:
+      - name: book_title
+        sql: "{dim_books.name}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: avg_rating
+        sql: "{dim_books.rating_average}"
+        type: avg
+      - name: avg_selling_price
+        sql: "{CUBE}.net_unit_price"
+        type: avg
+      - name: distinct_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+
+    joins:
+      - name: dim_books
+        relationship: one_to_one
+        sql: "{CUBE}.book_key = {dim_books.book_key}"
+
+  - name: top_performing_categories
+    extends: fct_sales
+    dimensions:
+      - name: category
+        sql: "{dim_categories.name}"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: unique_books
+        sql: "{dim_books.id}"
+        type: count_distinct
+      - name: total_units_sold
+        sql: "{CUBE}.sales_quantity"
+        type: sum
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: avg_category_rating
+        sql: "{dim_books.rating_average}"
+        type: avg
+      - name: avg_selling_price
+        sql: "{CUBE}.net_unit_price"
+        type: avg
+      - name: revenue_per_unit
+        sql: "SUM({CUBE}.extended_sales_amount) / SUM({CUBE}.sales_quantity)"
+        type: number
+
+    joins:
+      - name: dim_categories
+        relationship: one_to_one
+        sql: "{CUBE}.category_key = {dim_categories.category_key}"
+      - name: dim_books
+        relationship: one_to_one
+        sql: "{CUBE}.book_key = {dim_books.book_key}"

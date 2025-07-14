@@ -1,0 +1,31 @@
+{% set model = dbt_model('bri_book_authors') %}
+
+cubes:
+  - {{ model.as_cube() }}
+    dimensions:
+      {{ model.as_dimensions() }}
+      - name: book_author_key
+        sql: "{CUBE}.book_author_key"
+        type: string
+        primary_key: true
+        public: true
+      - name: rating_average
+        sql: "{dim_books.rating_average}"
+        type: number
+      - name: page_count
+        sql: "{dim_books.page_count}"
+        type: number
+      - name: sales_quantity
+        sql: "{dim_books.sales_quantity}"
+        type: number
+      - name: author_name
+        sql: "{dim_authors.name}"
+        type: string
+
+    joins:
+      - name: dim_books
+        relationship: one_to_many
+        sql: "{CUBE}.book_id = {dim_books.id}"
+      - name: dim_authors
+        relationship: many_to_one
+        sql: "{CUBE}.author_id = {dim_authors.id}"
