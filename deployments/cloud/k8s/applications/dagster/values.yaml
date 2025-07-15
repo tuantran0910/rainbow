@@ -69,7 +69,7 @@ dagsterWebserver:
           cpu: 100m
           memory: 128Mi
         requests:
-          cpu: 50m
+          cpu: 25m
           memory: 64Mi
   checkDbReadyInitContainer: false
 
@@ -171,7 +171,7 @@ runLauncher:
           cpu: 750m
           memory: 2Gi
         requests:
-          cpu: 250m
+          cpu: 150m
           memory: 512Mi
       runK8sConfig:
         podSpecConfig:
