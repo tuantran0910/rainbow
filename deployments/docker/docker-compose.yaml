@@ -346,7 +346,7 @@ services:
       CUBESTORE_WORKER_PORT: 10000
       CUBESTORE_REMOTE_DIR: /cube/data
       CUBESTORE_META_ADDR: cubestore_router:9999
-      CUBESTORE_LOG_LEVEL: debug
+      CUBESTORE_LOG_LEVEL: info
     volumes:
       - cubestore:/cube/data
     depends_on:
@@ -365,7 +365,7 @@ services:
       CUBESTORE_REMOTE_DIR: /cube/data
       CUBESTORE_META_PORT: 9999
       CUBESTORE_SERVER_NAME: cubestore_router:9999
-      CUBESTORE_LOG_LEVEL: debug
+      CUBESTORE_LOG_LEVEL: info
     volumes:
       - cubestore:/cube/data
     restart: always
@@ -380,10 +380,10 @@ services:
     container_name: cube_refresh_worker
     hostname: cube_refresh_worker
     environment:
-      USE_REMOTE_MANIFEST: true
+      USE_REMOTE_MANIFEST: false
       DBT_GCS_PROJECT: rainbow-data-production
       DBT_GCS_BUCKET: rainbow-data-production-dbt
-      MANIFEST_PATH: docs/manifest.json
+      MANIFEST_PATH: /cube/tmp/manifest.json
 
       # Clickhouse datasource
       # CUBEJS_DB_TYPE: clickhouse
@@ -403,10 +403,11 @@ services:
       CUBEJS_CUBESTORE_HOST: cubestore_router
       CUBEJS_API_SECRET: ${CUBE_API_SECRET:-secret}
       CUBEJS_REFRESH_WORKER: true
-      CUBEJS_LOG_LEVEL: debug
+      CUBEJS_LOG_LEVEL: info
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     volumes:
       - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+      - ../../src/dagster_workspace/dbt/cloud/target/manifest.json:/cube/tmp/manifest.json
       - ~/.config/gcloud/application_default_credentials.json:/secrets/gcp-credentials.json
     restart: always
     networks:
@@ -423,12 +424,12 @@ services:
       - ${CUBE_API_PORT:-4000}:4000
       - ${CUBE_SQL_API_PORT:-15432}:15432
     environment:
-      USE_REMOTE_MANIFEST: true
+      USE_REMOTE_MANIFEST: false
       DBT_GCS_PROJECT: rainbow-data-production
       DBT_GCS_BUCKET: rainbow-data-production-dbt
-      MANIFEST_PATH: docs/manifest.json
+      MANIFEST_PATH: /cube/tmp/manifest.json
       CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-false}
-      CUBEJS_LOG_LEVEL: debug
+      CUBEJS_LOG_LEVEL: info
 
       # Clickhouse datasource
       # CUBEJS_DB_TYPE: clickhouse
@@ -450,6 +451,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp-credentials.json
     volumes:
       - ${CUBE_PROJ_DIR:-../../src/cube}:/cube/conf
+      - ../../src/dagster_workspace/dbt/cloud/target/manifest.json:/cube/tmp/manifest.json
       - ~/.config/gcloud/application_default_credentials.json:/secrets/gcp-credentials.json
     depends_on:
       - cube_refresh_worker
