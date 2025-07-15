@@ -306,11 +306,11 @@ init:
       expose_in_sqllab: true
       allow_ctas: true
       allow_cvas: true
-    - database_name: cube
-      sqlalchemy_uri: postgresql+psycopg2://cubejs:$CUBEJS_SQL_PASSWORD@cube.cube.svc.cluster.local:15432/postgres
-      expose_in_sqllab: true
-      allow_ctas: true
-      allow_cvas: true
+    # - database_name: cube
+    #   sqlalchemy_uri: postgresql+psycopg2://cubejs:$CUBEJS_SQL_PASSWORD@cube.cube.svc.cluster.local:15432/postgres
+    #   expose_in_sqllab: true
+    #   allow_ctas: true
+    #   allow_cvas: true
     EOF
     echo "-------------- Importing Database ----------------------"
     superset import_datasources -p /tmp/import_datasources.yaml
