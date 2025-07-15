@@ -88,6 +88,7 @@ cubes:
       )
 
       SELECT
+        fct_sales.created_date_tz_hcm,
         fct_sales.date_key,
         fct_sales.user_key,
         customer_rank.first_order_month
@@ -101,7 +102,7 @@ cubes:
         primary_key: true
         public: true
       - name: created_at
-        sql: "CAST({dim_dates.date} AS TIMESTAMP)"
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
         type: time
 
     measures:
