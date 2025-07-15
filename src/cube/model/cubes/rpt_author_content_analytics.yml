@@ -79,6 +79,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: created_at
+        sql: "CAST({dim_dates.date} AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: book_count
@@ -108,7 +111,7 @@ cubes:
           - avg_units_sold
           - avg_revenue
           - avg_price
-        time_dimension: created_date_tz_hcm
+        time_dimension: created_at
         granularity: day
         refresh_key:
           every: 15 minutes
