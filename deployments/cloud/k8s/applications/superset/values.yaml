@@ -51,7 +51,7 @@ configOverrides:
     ]
 
     AUTH_USER_REGISTRATION = True
-    AUTH_USER_REGISTRATION_ROLE = "Public"
+    AUTH_USER_REGISTRATION_ROLE = "Gamma"
 
     # Define user role mapping based on GitHub username
     # There are roles: Admin, Alpha, Gamma, sql_lab, Public
@@ -307,7 +307,7 @@ init:
       allow_ctas: true
       allow_cvas: true
     - database_name: cube
-      sqlalchemy_uri: postgresql+psycopg2://cubejs:$CUBE_DB_PASSWORD@cube.cube.svc.cluster.local:15432/postgres
+      sqlalchemy_uri: postgresql+psycopg2://cubejs:$CUBEJS_SQL_PASSWORD@cube.cube.svc.cluster.local:15432/postgres
       expose_in_sqllab: true
       allow_ctas: true
       allow_cvas: true
