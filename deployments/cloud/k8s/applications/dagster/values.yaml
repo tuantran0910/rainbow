@@ -237,7 +237,7 @@ dagsterDaemon:
     type: QueuedRunCoordinator
     config:
       queuedRunCoordinator:
-        maxConcurrentRuns: 2
+        maxConcurrentRuns: 3
   runRetries:
     enabled: true
     maxRetries: 2
