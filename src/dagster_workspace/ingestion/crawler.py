@@ -396,7 +396,7 @@ class TikiCrawler:
 
         return None
 
-    def _upsert_data(self, data: list[dict]) -> None:
+    def _upsert_data(self, data: list[dict]) -> None:  # noqa: C901
         """
         Upserts data into the database via API.
 
@@ -421,6 +421,11 @@ class TikiCrawler:
         for record in data:
             # Seller
             if record["seller_id"] and record["seller_id"] not in seller_ids:
+                # Simple check: skip if seller name is empty
+                if not record["seller_name"] or record["seller_name"].strip() == "":
+                    logger.warning(f"Skipping seller {record['seller_id']} - empty name")
+                    continue
+
                 seller_to_upsert = TikiSeller(
                     secondary_id=record["seller_id"],
                     name=sanitize_text(record["seller_name"]),
@@ -437,6 +442,10 @@ class TikiCrawler:
                 # Process all authors
                 for author in record["authors"]:
                     if author["id"] not in author_ids:
+                        if not author["name"] or author["name"].strip() == "":
+                            logger.warning(f"Skipping author {author['id']} - empty name")
+                            continue
+
                         author_to_upsert = TikiAuthor(
                             secondary_id=author["id"],
                             name=sanitize_text(author["name"]),
@@ -449,6 +458,10 @@ class TikiCrawler:
 
             # Category
             if record["category_id"] and record["category_id"] not in category_ids:
+                if not record["category_name"] or record["category_name"].strip() == "":
+                    logger.warning(f"Skipping category {record['category_id']} - empty name")
+                    continue
+
                 category_to_upsert = TikiCategory(
                     secondary_id=record["category_id"],
                     name=sanitize_text(record["category_name"]),
@@ -482,6 +495,10 @@ class TikiCrawler:
 
                 # Only create the book if we have all required UUIDs
                 if category_uuid and seller_uuid:
+                    if not record["name"] or record["name"].strip() == "":
+                        logger.warning(f"Skipping book {record['id']} - empty name")
+                        continue
+
                     book_to_upsert = TikiBook(
                         secondary_id=record["id"],
                         category_id=category_uuid,
