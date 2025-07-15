@@ -40,7 +40,7 @@ router:
       memory: 512Mi
     limits:
       cpu: 500m
-      memory: 1024Mi
+      memory: 1Gi
 
 workers:
   workersCount: 1
@@ -55,7 +55,7 @@ workers:
       memory: 512Mi
     limits:
       cpu: 500m
-      memory: 1024Mi
+      memory: 1Gi
   initRouter:
     resources:
       requests:

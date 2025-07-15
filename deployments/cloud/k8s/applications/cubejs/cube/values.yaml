@@ -182,11 +182,11 @@ api:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 500m
-      memory: 2048Mi
+      cpu: 250m
+      memory: 1Gi
     limits:
       cpu: 500m
-      memory: 2048Mi
+      memory: 2Gi
   livenessProbe:
     enabled: false
   readinessProbe:
@@ -200,11 +200,11 @@ worker:
       iam.gke.io/gcp-service-account: cube-sa@rainbow-data-production.iam.gserviceaccount.com
   resources:
     requests:
-      cpu: 500m
-      memory: 2048Mi
+      cpu: 250m
+      memory: 1Gi
     limits:
       cpu: 500m
-      memory: 2048Mi
+      memory: 2Gi
   livenessProbe:
     enabled: false
   readinessProbe:
