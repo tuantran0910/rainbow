@@ -80,7 +80,7 @@ cubes:
         primary_key: true
         public: true
       - name: created_at
-        sql: "CAST({dim_dates.date} AS TIMESTAMP)"
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
         type: time
 
     measures:
