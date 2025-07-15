@@ -34,7 +34,7 @@ def get_users(rainbow_psql_resource: PostgresResource) -> list[str]:
         rainbow_psql_resource (PostgresResource): A resource for interacting with the PostgreSQL database.
 
     Returns:
-        list[str]: A list of user emails (maximum 5).
+        list[str]: A list of user emails (maximum n).
 
     Raises:
         Exception: If database query fails.
