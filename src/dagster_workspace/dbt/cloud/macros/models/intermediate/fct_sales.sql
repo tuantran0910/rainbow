@@ -103,7 +103,7 @@
         order_items.quantity * order_items.unit_price AS extended_sales_amount,
         orders.created_date_tz_hcm
     FROM stg_orders AS orders
-    LEFT JOIN stg_order_items AS order_items
+    JOIN stg_order_items AS order_items
         ON orders.id = order_items.order_id
     LEFT JOIN dim_dates AS dates
         ON orders.created_date_tz_hcm = dates.date
