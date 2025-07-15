@@ -7,6 +7,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: created_at
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: total_revenue
@@ -27,6 +30,26 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
 
+    pre_aggregations:
+      - name: total_revenue_by_period_rollup
+        dimensions:
+          - year_month
+        measures:
+          - total_revenue
+          - units_sold
+          - total_orders
+          - avg_order_value
+        time_dimension: created_at
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: total_revenue_by_period_year_month_index
+            columns:
+              - year_month
+
+
   - name: discount_effectiveness
     extends: fct_sales
     dimensions:
@@ -35,6 +58,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: created_at
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: total_discounts
@@ -56,3 +82,22 @@ cubes:
       - name: dim_dates
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+    pre_aggregations:
+      - name: discount_effectiveness_rollup
+        dimensions:
+          - year_month
+        measures:
+          - total_discounts
+          - total_revenue
+          - discount_rate_pct
+          - orders_with_discount
+        time_dimension: created_at
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: discount_effectiveness_year_month_index
+            columns:
+              - year_month

@@ -10,6 +10,9 @@ cubes:
       - name: customer_name
         sql: "CONCAT({dim_users.first_name}, ' ', {dim_users.last_name})"
         type: string
+      - name: created_at
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: total_orders
@@ -45,6 +48,33 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
 
+    pre_aggregations:
+      - name: customer_purchase_metrics_rollup
+        dimensions:
+          - customer_id
+          - customer_name
+        measures:
+          - total_orders
+          - total_spent
+          - total_books_purchased
+          - avg_order_value
+          - first_purchase_date
+          - last_purchase_date
+          - total_discount_amount
+          - customer_lifespan_days
+        time_dimension: created_at
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: customer_purchase_metrics_customer_id_index
+            columns:
+              - customer_id
+          - name: customer_purchase_metrics_customer_name_index
+            columns:
+              - customer_name
+
   - name: monthly_new_and_returning_customers
     sql: >
       WITH customer_rank AS (
@@ -70,6 +100,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: created_at
+        sql: "CAST({dim_dates.date} AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: new_customers
@@ -87,3 +120,20 @@ cubes:
       - name: dim_dates
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+    pre_aggregations:
+      - name: monthly_new_and_returning_customers_rollup
+        dimensions:
+          - year_month
+        measures:
+          - new_customers
+          - returning_customers
+        time_dimension: created_at
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: monthly_new_and_returning_customers_year_month_index
+            columns:
+              - year_month

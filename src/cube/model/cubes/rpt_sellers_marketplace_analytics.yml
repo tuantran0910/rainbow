@@ -7,6 +7,9 @@ cubes:
         type: string
         primary_key: true
         public: true
+      - name: created_at
+        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
+        type: time
 
     measures:
       - name: books_in_catalog
@@ -38,3 +41,24 @@ cubes:
       - name: dim_users
         relationship: one_to_one
         sql: "{CUBE}.user_key = {dim_users.user_key}"
+
+    pre_aggregations:
+      - name: seller_performance_rollup
+        dimensions:
+          - seller_name
+        measures:
+          - books_in_catalog
+          - total_units_sold
+          - total_revenue
+          - avg_book_rating
+          - unique_customers
+          - revenue_per_customer
+        time_dimension: created_at
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: seller_performance_seller_name_index
+            columns:
+              - seller_name
