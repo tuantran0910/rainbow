@@ -30,6 +30,28 @@ cubes:
         relationship: many_to_one
         sql: "{CUBE}.book_id = {dim_books.id}"
 
+    pre_aggregations:
+      - name: author_performance_rollup
+        dimensions:
+          - author_id
+          - author_name
+        measures:
+          - books_published
+          - avg_rating
+          - avg_page_count
+        time_dimension: created_at
+        granularity: month
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: author_performance_author_id_index
+            columns:
+              - author_id
+          - name: author_performance_author_name_index
+            columns:
+              - author_name
+
   - name: book_characteristics_performance
     extends: fct_sales
     dimensions:
