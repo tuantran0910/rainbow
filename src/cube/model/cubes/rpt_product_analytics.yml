@@ -7,9 +7,6 @@ cubes:
         type: string
         primary_key: true
         public: true
-      - name: created_at
-        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
-        type: time
 
     measures:
       - name: units_sold
@@ -33,26 +30,6 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.book_key = {dim_books.book_key}"
 
-    pre_aggregations:
-      - name: top_performance_books_rollup
-        dimensions:
-          - book_title
-        measures:
-          - units_sold
-          - total_revenue
-          - avg_rating
-          - avg_selling_price
-          - distinct_orders
-        time_dimension: created_at
-        granularity: day
-        refresh_key:
-          every: 15 minutes
-        partition_granularity: month
-        indexes:
-          - name: top_performance_books_book_title_index
-            columns:
-              - book_title
-
   - name: top_performing_categories
     extends: fct_sales
     dimensions:
@@ -61,9 +38,6 @@ cubes:
         type: string
         primary_key: true
         public: true
-      - name: created_at
-        sql: "CAST({CUBE}.created_date_tz_hcm AS TIMESTAMP)"
-        type: time
 
     measures:
       - name: unique_books
@@ -92,24 +66,3 @@ cubes:
       - name: dim_books
         relationship: one_to_one
         sql: "{CUBE}.book_key = {dim_books.book_key}"
-
-    pre_aggregations:
-      - name: top_performing_categories_rollup
-        dimensions:
-          - category
-        measures:
-          - unique_books
-          - total_units_sold
-          - total_revenue
-          - avg_category_rating
-          - avg_selling_price
-          - revenue_per_unit
-        time_dimension: created_at
-        granularity: day
-        refresh_key:
-          every: 15 minutes
-        partition_granularity: month
-        indexes:
-          - name: top_performing_categories_category_index
-            columns:
-              - category
