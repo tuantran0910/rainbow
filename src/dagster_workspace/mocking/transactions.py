@@ -13,6 +13,7 @@ from shared.constants import DEFAULT_USER_PASSWORD
 from shared.constants import MAX_BOOKS_PER_REQUEST
 from shared.constants import MAX_ITEMS_PER_ORDER
 from shared.constants import MAX_QUANTITY_PER_BOOK
+from shared.constants import MAX_USERS_MAKING_ORDERS
 from shared.helpers import AuthTokenManager
 from shared.helpers import make_http_request
 from shared.resources.psql_resource import PostgresResource
@@ -22,18 +23,18 @@ logger = dg.get_dagster_logger()
 
 @dg.op(
     name="get_users",
-    description="Get all users from the PostgreSQL database.",
+    description="Get a random sample of 5 users from the PostgreSQL database.",
     out=dg.Out(description="A list of user emails."),
 )
 def get_users(rainbow_psql_resource: PostgresResource) -> list[str]:
     """
-    Get all users from the PostgreSQL database.
+    Get a random sample of 5 users from the PostgreSQL database.
 
     Args:
         rainbow_psql_resource (PostgresResource): A resource for interacting with the PostgreSQL database.
 
     Returns:
-        list[str]: A list of user emails.
+        list[str]: A list of user emails (maximum 5).
 
     Raises:
         Exception: If database query fails.
@@ -48,7 +49,15 @@ def get_users(rainbow_psql_resource: PostgresResource) -> list[str]:
         if not users:
             raise dg.DagsterError("No users found in the database")
 
-        return [user[0] for user in users if user[0] != ADMIN_EMAIL]
+        # Filter out admin email and get random sample of n users
+        filtered_users = [user[0] for user in users if user[0] != ADMIN_EMAIL]
+        if not filtered_users:
+            logger.warning("No non-admin users found in the database")
+            return []
+
+        # Return random sample of up to n users
+        sample_size = min(MAX_USERS_MAKING_ORDERS, len(filtered_users))
+        return random.sample(filtered_users, sample_size)
     except Exception as e:
         raise dg.DagsterError(f"Failed to fetch users: {e}")
 
@@ -219,7 +228,7 @@ def process_mock_orders(
 
 @dg.graph_asset(
     name="order_transactions",
-    description="A graph asset that creates mock orders for all users in the database.",
+    description="A graph asset that creates mock orders for a random sample of 5 users in the database.",
     metadata=DAGSTER_METADATA,
     tags=DAGSTER_TAGS,
     group_name=DAGSTER_MOCKING_ASSET_GROUP,
@@ -227,12 +236,12 @@ def process_mock_orders(
 )
 def order_transactions() -> list[dict[str, Any]]:
     """
-    A graph asset that creates mock orders for all users in the database.
+    A graph asset that creates mock orders for a random sample of 5 users in the database.
 
     This asset:
-    1. Retrieves all users from the database
+    1. Retrieves a random sample of 5 users from the database
     2. Fetches available books, payment methods, and promotions
-    3. Creates a random order for each user
+    3. Creates a random order for each selected user
 
     Returns:
         list[dict[str, Any]]: A list of created order objects.
