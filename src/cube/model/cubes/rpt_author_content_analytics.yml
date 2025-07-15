@@ -40,7 +40,7 @@ cubes:
           - avg_rating
           - avg_page_count
         time_dimension: created_at
-        granularity: month
+        granularity: day
         refresh_key:
           every: 15 minutes
         partition_granularity: month
@@ -97,3 +97,26 @@ cubes:
       - name: dim_books
         relationship: one_to_one
         sql: "{CUBE}.book_key = {dim_books.book_key}"
+
+    pre_aggregations:
+      - name: book_characteristics_performance_rollup
+        dimensions:
+          - book_length_category
+          - rating_category
+        measures:
+          - book_count
+          - avg_units_sold
+          - avg_revenue
+          - avg_price
+        time_dimension: created_date_tz_hcm
+        granularity: day
+        refresh_key:
+          every: 15 minutes
+        partition_granularity: month
+        indexes:
+          - name: book_characteristics_performance_book_length_category_index
+            columns:
+              - book_length_category
+          - name: book_characteristics_performance_rating_category_index
+            columns:
+              - rating_category
