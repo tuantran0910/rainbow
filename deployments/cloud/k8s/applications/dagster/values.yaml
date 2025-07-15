@@ -238,6 +238,9 @@ dagsterDaemon:
     config:
       queuedRunCoordinator:
         maxConcurrentRuns: 3
+  runRetries:
+    enabled: true
+    maxRetries: 2
   labels:
     app: dagster
     owner: tuan.tran
