@@ -19,7 +19,7 @@ from shared.constants import HTTP_REQUEST_TIMEOUT
 from shared.constants import HTTP_RETRY_BACKOFF
 from shared.constants import HTTP_RETRY_DELAY
 from shared.constants import MAX_DUPLICATE_EMAIL_ATTEMPTS
-from shared.constants import MAX_USERS_PER_REQUEST
+from shared.constants import MAX_USERS_REGISTERING
 from shared.constants import THROTTLE_DELAY_BETWEEN_REQUESTS
 from shared.helpers import make_http_request
 
@@ -32,7 +32,7 @@ class UserRole(str, Enum):
 
 
 class UserGenerationOpConfig(dg.Config):
-    num_users: int = MAX_USERS_PER_REQUEST
+    num_users: int = MAX_USERS_REGISTERING
     enable_validation: bool = ENABLE_DATA_VALIDATION
     max_duplicate_attempts: int = MAX_DUPLICATE_EMAIL_ATTEMPTS
 
