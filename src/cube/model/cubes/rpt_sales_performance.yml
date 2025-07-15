@@ -2,8 +2,8 @@ cubes:
   - name: total_revenue_by_period
     extends: fct_sales
     dimensions:
-      - name: date
-        sql: "{dim_dates.date}"
+      - name: year_month
+        sql: "{dim_dates.year_month}"
         type: string
         primary_key: true
         public: true
@@ -30,8 +30,8 @@ cubes:
   - name: discount_effectiveness
     extends: fct_sales
     dimensions:
-      - name: date
-        sql: "{dim_dates.date}"
+      - name: year_month
+        sql: "{dim_dates.year_month}"
         type: string
         primary_key: true
         public: true

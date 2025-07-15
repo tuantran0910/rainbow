@@ -1,38 +1,34 @@
 cubes:
   - name: author_performance
-    extends: fct_sales
+    extends: bri_book_authors
     dimensions:
-      - name: author_name
-        sql: "{bri_book_authors.author_name}"
+      - name: author_id
+        sql: "{CUBE}.author_id"
         type: string
         primary_key: true
         public: true
+      - name: author_name
+        sql: "{dim_authors.name}"
+        type: string
 
     measures:
       - name: books_published
-        sql: "{bri_book_authors.book_id}"
+        sql: "{CUBE}.book_id"
         type: count_distinct
-      - name: total_units_sold
-        sql: "{CUBE}.sales_quantity"
-        type: sum
-      - name: total_revenue
-        sql: "{CUBE}.extended_sales_amount"
-        type: sum
       - name: avg_rating
-        sql: "{bri_book_authors.rating_average}"
+        sql: "{dim_books.rating_average}"
         type: avg
       - name: avg_page_count
-        sql: "{bri_book_authors.page_count}"
-        type: avg
-      - name: avg_selling_price
-        sql: "{CUBE}.net_unit_price"
+        sql: "{dim_books.page_count}"
         type: avg
 
     joins:
-      - name: bri_book_authors
-        relationship: one_to_many
-        sql: "{CUBE}.id = {bri_book_authors.author_id}"
-
+      - name: dim_authors
+        relationship: many_to_one
+        sql: "{CUBE}.author_id = {dim_authors.id}"
+      - name: dim_books
+        relationship: many_to_one
+        sql: "{CUBE}.book_id = {dim_books.id}"
 
   - name: book_characteristics_performance
     extends: fct_sales

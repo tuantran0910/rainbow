@@ -4,7 +4,7 @@ views:
     cubes:
       - join_path: total_revenue_by_period
         includes:
-          - date
+          - year_month
           - total_revenue
           - units_sold
           - total_orders
@@ -15,7 +15,7 @@ views:
     cubes:
       - join_path: discount_effectiveness
         includes:
-          - date
+          - year_month
           - total_revenue
           - total_discounts
           - discount_rate_pct

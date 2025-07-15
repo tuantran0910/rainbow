@@ -34,7 +34,7 @@ cubes:
         sql: "{CUBE}.extended_discount_amount"
         type: sum
       - name: customer_lifespan_days
-        sql: "DATE_DIFF(MAX({dim_dates.date}), MIN({dim_dates.date}))"
+        sql: "DATE_DIFF(MAX({dim_dates.date}), MIN({dim_dates.date}), DAY)"
         type: number
 
     joins:
@@ -45,50 +45,45 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
 
-  - name: customer_rank
-    extends: fct_sales
+  - name: monthly_new_and_returning_customers
+    sql: >
+      WITH customer_rank AS (
+        SELECT
+          fct_sales.user_key,
+          FORMAT_DATE('%Y-%m', MIN(dim_dates.date)) AS first_order_month
+        FROM warehouse.fct_sales AS fct_sales
+        LEFT JOIN warehouse.dim_dates AS dim_dates
+          ON fct_sales.date_key = dim_dates.date_key
+        GROUP BY 1
+      )
+
+      SELECT
+        fct_sales.date_key,
+        fct_sales.user_key,
+        customer_rank.first_order_month
+      FROM warehouse.fct_sales AS fct_sales
+      LEFT JOIN customer_rank
+        ON fct_sales.user_key = customer_rank.user_key
     dimensions:
-      - name: user_key
-        sql: "{CUBE}.user_key"
+      - name: year_month
+        sql: "{dim_dates.year_month}"
         type: string
         primary_key: true
         public: true
 
     measures:
-      - name: first_order_month
-        sql: "FORMAT_DATE('%Y-%m', MIN({dim_dates.date}))"
-        type: string
+      - name: new_customers
+        sql: "{CUBE}.user_key"
+        type: count_distinct
+        filters:
+          - sql: "{CUBE}.first_order_month = {dim_dates.year_month}"
+      - name: returning_customers
+        sql: "{CUBE}.user_key"
+        type: count_distinct
+        filters:
+          - sql: "{CUBE}.first_order_month != {dim_dates.year_month}"
 
     joins:
       - name: dim_dates
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
-
-  # - name: monthly_new_and_returning_customers
-  #   extends: fct_sales
-  #   dimensions:
-  #     - name: year_month
-  #       sql: "{dim_dates.year_month}"
-  #       type: string
-  #       primary_key: true
-  #       public: true
-
-  #   measures:
-  #     - name: new_customers
-  #       sql: "{CUBE}.user_key"
-  #       type: count_distinct
-  #       filters:
-  #         - sql: "customer_rank.first_order_month = {CUBE}.year_month"
-  #     - name: returning_customers
-  #       sql: "{CUBE}.user_key"
-  #       type: count_distinct
-  #       filters:
-  #         - sql: "customer_rank.first_order_month != {CUBE}.year_month"
-
-  #   joins:
-  #     - name: dim_dates
-  #       relationship: one_to_one
-  #       sql: "{CUBE}.date_key = {dim_dates.date_key}"
-  #     - name: customer_rank
-  #       relationship: one_to_one
-  #       sql: "{CUBE}.user_key = {customer_rank.user_key}"

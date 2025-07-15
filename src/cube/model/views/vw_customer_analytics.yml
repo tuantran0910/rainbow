@@ -15,11 +15,11 @@ views:
           - total_discount_amount
           - customer_lifespan_days
 
-  # - name: vw_monthly_new_and_returning_customers
-  #   description: Cubejs view for monthly new and returning customers
-  #   cubes:
-  #     - join_path: monthly_new_and_returning_customers
-  #       includes:
-  #         - year_month
-  #         - new_customers
-  #         - returning_customers
+  - name: vw_monthly_new_and_returning_customers
+    description: Cubejs view for monthly new and returning customers
+    cubes:
+      - join_path: monthly_new_and_returning_customers
+        includes:
+          - year_month
+          - new_customers
+          - returning_customers
