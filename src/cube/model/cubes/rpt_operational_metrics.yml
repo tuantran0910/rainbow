@@ -44,20 +44,20 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
 
-    pre_aggregations:
-      - name: period_analysis_rollup
-        dimensions:
-          - day_name
-        measures:
-          - total_orders
-          - total_revenue
-          - avg_order_value
-        time_dimension: created_at
-        granularity: day
-        refresh_key:
-          every: 15 minutes
-        partition_granularity: month
-        indexes:
-          - name: period_analysis_day_name_index
-            columns:
-              - day_name
+    # pre_aggregations:
+    #   - name: period_analysis_rollup
+    #     dimensions:
+    #       - day_name
+    #     measures:
+    #       - total_orders
+    #       - total_revenue
+    #       - avg_order_value
+    #     time_dimension: created_at
+    #     granularity: day
+    #     refresh_key:
+    #       every: 15 minutes
+    #     partition_granularity: month
+    #     indexes:
+    #       - name: period_analysis_day_name_index
+    #         columns:
+    #           - day_name
