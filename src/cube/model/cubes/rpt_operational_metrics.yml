@@ -85,4 +85,4 @@ cubes:
     joins:
       - name: dim_payments
         relationship: one_to_one
-        sql: "{CUBE}.payment_key = {dim_payments}.payment_key"
+        sql: "{CUBE}.payment_key = {dim_payments.payment_key}"
