@@ -304,35 +304,46 @@ services:
     networks:
       - redpanda-network
 
-  metabase:
-    image: metabase/metabase:v0.53.5.4
-    container_name: metabase
-    hostname: ${METABASE_HOST}
+  superset:
+    image: apache/superset:4.1.2
+    container_name: superset
+    hostname: ${SUPERSET_HOST:-superset}
     ports:
-      - ${METABASE_PORT:-3000}:3000
+      - ${SUPERSET_PORT:-8088}:8088
+    command: >
+      bash -c "
+        pip install psycopg2-binary==2.9.10
+        superset db upgrade &&
+        superset fab create-admin --username admin --firstname Admin --lastname User --email admin@superset.com --password admin &&
+        superset init &&
+        superset run -h 0.0.0.0 -p 8088 --with-threads --reload --debugger
+      "
     environment:
-      MB_DB_TYPE: postgres
-      MB_DB_DBNAME: ${METABASE_DB_NAME}
-      MB_DB_PORT: ${DB_PORT}
-      MB_DB_USER: ${METABASE_DB_USER}
-      MB_DB_PASS: ${METABASE_DB_PASSWORD}
-      MB_DB_HOST: ${DB_HOST}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      DATABASE_DIALECT: postgresql
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_HOST: ${DB_HOST}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_DB: ${SUPERSET_DB_NAME:-superset}
+      FLASK_ENV: production
     env_file:
       - ./.env
     volumes:
       - /dev/urandom:/dev/random:ro
-      - metabase-data:/metabase-data
+      - superset_data:/app/superset_home
     healthcheck:
-      test: [CMD, curl, --fail, -I, http://localhost:3000/api/health]
+      test: [CMD, curl, --fail, -I, http://localhost:8088/health]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: always
     networks:
-      - metabase-network
+      - superset-network
       - postgres-network
       - cube-network
 
@@ -507,7 +518,7 @@ services:
 volumes:
   postgres_data:
   clickhouse_data:
-  metabase-data:
+  superset_data:
   cubestore:
   minio_data:
   redpanda:
@@ -524,7 +535,7 @@ networks:
     driver: bridge
   redpanda-network:
     driver: bridge
-  metabase-network:
+  superset-network:
     driver: bridge
   cube-network:
     driver: bridge
