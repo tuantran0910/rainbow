@@ -81,8 +81,14 @@ cubes:
       - name: avg_order_value
         sql: "SUM({CUBE}.extended_sales_amount) / SUM({CUBE}.sales_quantity)"
         type: number
+      - name: unique_customers
+        sql: "{dim_users.id}"
+        type: count_distinct
 
     joins:
       - name: dim_payments
         relationship: one_to_one
         sql: "{CUBE}.payment_key = {dim_payments.payment_key}"
+      - name: dim_users
+        relationship: one_to_one
+        sql: "{CUBE}.user_key = {dim_users.user_key}"
