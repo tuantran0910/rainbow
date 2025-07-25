@@ -182,7 +182,7 @@ supersetCeleryBeat:
       drop: [ALL]
 
 init:
-  createAdmin: false
+  createAdmin: true
   initContainers:
     - name: cloud-sql-proxy
       image: asia.gcr.io/cloud-sql-connectors/cloud-sql-proxy
