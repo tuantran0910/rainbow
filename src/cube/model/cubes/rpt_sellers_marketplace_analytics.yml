@@ -42,6 +42,9 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.user_key = {dim_users.user_key}"
 
+    refresh_key:
+      every: 5 minutes
+
     # pre_aggregations:
     #   - name: seller_performance_rollup
     #     dimensions:

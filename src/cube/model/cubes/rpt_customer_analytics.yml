@@ -48,6 +48,9 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
 
+    refresh_key:
+      every: 5 minutes
+
     # pre_aggregations:
     #   - name: customer_purchase_metrics_rollup
     #     dimensions:
@@ -121,6 +124,9 @@ cubes:
       - name: dim_dates
         relationship: one_to_one
         sql: "{CUBE}.date_key = {dim_dates.date_key}"
+
+    refresh_key:
+      every: 5 minutes
 
     # pre_aggregations:
     #   - name: monthly_new_and_returning_customers_rollup

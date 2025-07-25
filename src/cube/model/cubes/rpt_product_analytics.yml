@@ -33,6 +33,9 @@ cubes:
         relationship: one_to_one
         sql: "{CUBE}.book_key = {dim_books.book_key}"
 
+    refresh_key:
+      every: 5 minutes
+
     # pre_aggregations:
     #   - name: top_performance_books_rollup
     #     dimensions:
@@ -92,6 +95,9 @@ cubes:
       - name: dim_books
         relationship: one_to_one
         sql: "{CUBE}.book_key = {dim_books.book_key}"
+
+    refresh_key:
+      every: 5 minutes
 
     # pre_aggregations:
     #   - name: top_performing_categories_rollup
