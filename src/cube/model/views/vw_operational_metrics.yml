@@ -8,3 +8,13 @@ views:
           - total_orders
           - total_revenue
           - avg_order_value
+
+  - name: vw_payment_method_analysis
+    description: Cubejs view for payment method analysis
+    cubes:
+      - join_path: payment_method_analysis
+        includes:
+          - method
+          - total_orders
+          - total_revenue
+          - avg_order_value

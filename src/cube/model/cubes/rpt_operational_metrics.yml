@@ -61,3 +61,28 @@ cubes:
     #       - name: period_analysis_day_name_index
     #         columns:
     #           - day_name
+
+  - name: payment_method_analysis
+    extends: fct_sales
+    dimensions:
+      - name: method
+        sql: "{dim_payments}.payment_method"
+        type: string
+        primary_key: true
+        public: true
+
+    measures:
+      - name: total_orders
+        sql: "{CUBE}.order_id"
+        type: count_distinct
+      - name: total_revenue
+        sql: "{CUBE}.extended_sales_amount"
+        type: sum
+      - name: avg_order_value
+        sql: "SUM({CUBE}.extended_sales_amount) / SUM({CUBE}.sales_quantity)"
+        type: number
+
+    joins:
+      - name: dim_payments
+        relationship: one_to_one
+        sql: "{CUBE}.payment_key = {dim_payments}.payment_key"
